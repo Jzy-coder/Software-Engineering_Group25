@@ -1,2 +1,1 @@
 # Software-Engineering_Group25
-# This is the basic structure file of the project. It has been packaged using the Mevan tool and the .exe file is available in the target folder. You can double-click to run the program. Meanwhile, the basic user login and registration interfaces have been completed, and the account and password verification function has been implemented. The basic structure of the program's main interface has also been realized. Subsequent developers can place the source code in the corresponding folders under the src\main\java\com\finance directory.
