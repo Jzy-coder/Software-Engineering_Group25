@@ -1,9 +1,21 @@
 package com.finance.gui;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  * Main window class, serves as the application's main interface
@@ -61,15 +73,17 @@ public class MainWindow extends JFrame {
         
         // Add mouse hover effect
         button.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 button.setBackground(new Color(75, 75, 75));
             }
+            @Override
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 button.setBackground(new Color(51, 51, 51));
             }
         });
         
-        button.addActionListener(e -> cardLayout.show(contentPanel, text));
+        button.addActionListener(_ -> cardLayout.show(contentPanel, text));
         
         // Add button to navigation panel
         navigationPanel.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -124,8 +138,8 @@ public class MainWindow extends JFrame {
             try {
                 UIManager.setLookAndFeel(
                     UIManager.getSystemLookAndFeelClassName());
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+                System.err.println("Error setting look and feel: " + e.getMessage());
             }
             
             MainWindow window = new MainWindow();
