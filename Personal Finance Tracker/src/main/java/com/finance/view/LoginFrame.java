@@ -404,6 +404,25 @@ public class LoginFrame extends JFrame {
                 return;
             }
 
+            if (!username.matches("^[a-zA-Z_]+$")) {
+                JOptionPane.showMessageDialog(dialog, "Username can only contain letters and underscore", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Validate password must contain uppercase, lowercase letters and numbers, and nothing else
+            boolean hasUpperCase = !password.equals(password.toLowerCase());
+            boolean hasLowerCase = !password.equals(password.toUpperCase());
+            boolean hasDigit = password.matches(".*\\d.*");
+            boolean onlyAllowedChars = password.matches("^[a-zA-Z0-9]+$");
+
+            if (!(hasUpperCase && hasLowerCase && hasDigit && onlyAllowedChars)) {
+                JOptionPane.showMessageDialog(dialog, 
+                    "Password must contain uppercase letters, lowercase letters, and numbers. No other characters allowed.", 
+                    "Password Format Error", 
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
             if (!password.equals(confirmPassword)) {
                 JOptionPane.showMessageDialog(dialog, "Passwords do not match", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
