@@ -47,6 +47,13 @@
             <version>2.10.1</version>
         </dependency>
         
+        <!-- JFreeChart依赖 -->
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.5.4</version>
+        </dependency>
+
         <!-- 日志框架 -->
         <dependency>
             <groupId>org.slf4j</groupId>

@@ -13,3 +13,4 @@ com\finance\view\LoginFrame$3.class
 com\finance\gui\MainWindow.class
 com\finance\view\LoginFrame$5.class
 com\finance\service\TransactionService.class
+com\finance\gui\MainWindow$2.class
