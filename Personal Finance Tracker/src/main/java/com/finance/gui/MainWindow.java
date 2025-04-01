@@ -83,7 +83,7 @@ public class MainWindow extends JFrame {
             }
         });
         
-        button.addActionListener(_ -> cardLayout.show(contentPanel, text));
+        button.addActionListener(e -> cardLayout.show(contentPanel, text));
         
         // Add button to navigation panel
         navigationPanel.add(Box.createRigidArea(new Dimension(0, 10)));

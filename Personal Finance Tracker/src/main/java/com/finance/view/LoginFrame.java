@@ -224,7 +224,7 @@ public class LoginFrame extends JFrame {
         mainPanel.add(usernameComboBox, gbc);
 
         // Listen for username selection changes
-        usernameComboBox.addActionListener(_ -> {
+        usernameComboBox.addActionListener(e -> {
             String selectedUsername = (String) usernameComboBox.getSelectedItem();
             if (selectedUsername != null && !selectedUsername.trim().isEmpty()) {
                 String savedPassword = getSavedPassword(selectedUsername);
@@ -290,8 +290,8 @@ public class LoginFrame extends JFrame {
         gbc.anchor = GridBagConstraints.CENTER;
         mainPanel.add(buttonPanel, gbc);
 
-        loginButton.addActionListener(_ -> handleLogin());
-        registerButton.addActionListener(_ -> showRegisterDialog());
+        loginButton.addActionListener(e -> handleLogin());
+        registerButton.addActionListener(e -> showRegisterDialog());
 
         loadSavedUserInfo();
 
@@ -436,7 +436,7 @@ public class LoginFrame extends JFrame {
         gbc.gridwidth = 2;
         dialog.add(registerButton, gbc);
 
-        registerButton.addActionListener(_ -> {
+        registerButton.addActionListener(e -> {
             String username = newUsernameField.getText();
             String password = new String(newPasswordField.getPassword());
             String confirmPassword = new String(confirmPasswordField.getPassword());
