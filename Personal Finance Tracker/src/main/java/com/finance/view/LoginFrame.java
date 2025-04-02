@@ -264,6 +264,8 @@ public class LoginFrame extends JFrame {
 
         if (validateLogin(username, password)) {
             saveUserInfo(username, password);
+            // 设置当前登录用户名
+            com.finance.gui.LoginManager.setCurrentUsername(username);
             JOptionPane.showMessageDialog(this, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
             MainWindow mainWindow = new MainWindow();
             mainWindow.setVisible(true);
