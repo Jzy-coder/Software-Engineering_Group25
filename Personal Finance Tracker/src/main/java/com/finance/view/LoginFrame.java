@@ -402,7 +402,29 @@ public class LoginFrame extends JFrame {
             String confirmPassword = new String(confirmPasswordField.getPassword());
 
             if (username.isEmpty() || password.isEmpty()) {
-                JOptionPane.showMessageDialog(dialog, "Username and password cannot be empty", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "用户名和密码不能为空", "错误", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // 验证用户名只能包含字母、数字和下划线
+            if (!username.matches("^[a-zA-Z0-9_]+$")) {
+                JOptionPane.showMessageDialog(dialog, "用户名只能包含字母、数字和下划线", "错误", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // 验证密码是否至少包含两类字符
+            boolean hasUpperCase = password.matches(".*[A-Z].*");
+            boolean hasLowerCase = password.matches(".*[a-z].*");
+            boolean hasDigit = password.matches(".*\\d.*");
+            boolean hasUnderscore = password.matches(".*_.*");
+            
+            int characterTypeCount = (hasUpperCase ? 1 : 0) + 
+                                    (hasLowerCase ? 1 : 0) + 
+                                    (hasDigit ? 1 : 0) + 
+                                    (hasUnderscore ? 1 : 0);
+            
+            if (characterTypeCount < 2) {
+                JOptionPane.showMessageDialog(dialog, "密码必须至少包含大写字母、小写字母、数字、下划线中的两类字符", "错误", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
