@@ -1,5 +1,6 @@
 package com.finance.gui;
 
+import com.finance.view.LoginFrame;
 import com.toedter.calendar.JCalendar;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -316,6 +317,35 @@ public class MainWindow extends JFrame {
             JButton button = new JButton(label);
             button.setPreferredSize(new Dimension(80, 15));
             button.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
+            
+            // 为Name按钮添加点击事件
+            if ("Name".equals(label)) {
+                button.addActionListener(e -> {
+                    NameChangeDialog dialog = new NameChangeDialog(this, welcomeLabel);
+                    dialog.setVisible(true);
+                });
+            } else if ("Gender".equals(label)) {
+                button.addActionListener(e -> {
+                    GenderDialog dialog = new GenderDialog(this);
+                    dialog.setVisible(true);
+                });
+            } else if ("Area".equals(label)) {
+                button.addActionListener(e -> {
+                    AreaDialog dialog = new AreaDialog(this);
+                    dialog.setVisible(true);
+                });
+            } else if ("Occupation".equals(label)) {
+                button.addActionListener(e -> {
+                    OccupationDialog dialog = new OccupationDialog(this);
+                    dialog.setVisible(true);
+                });
+            } else if ("Change the password".equals(label)) {
+                button.addActionListener(e -> {
+                    PasswordChangeDialog dialog = new PasswordChangeDialog(this);
+                    dialog.setVisible(true);
+                });
+            }
+            
             buttonPanel.add(button);
         }
         
@@ -339,6 +369,20 @@ public class MainWindow extends JFrame {
         Font buttonFont = new Font("Microsoft YaHei", Font.PLAIN, 14);
         switchAccountButton.setFont(buttonFont);
         logoutButton.setFont(buttonFont);
+        
+        // 添加Switch accounts按钮点击事件
+        switchAccountButton.addActionListener(e -> {
+            dispose(); // 关闭当前窗口
+            SwingUtilities.invokeLater(() -> {
+                LoginFrame loginFrame = new LoginFrame();
+                loginFrame.setVisible(true);
+            });
+        });
+        
+        // 添加Log out按钮点击事件
+        logoutButton.addActionListener(e -> {
+            System.exit(0); // 关闭应用程序
+        });
         
         bottomPanel.add(switchAccountButton);
         bottomPanel.add(logoutButton);
