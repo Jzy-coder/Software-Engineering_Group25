@@ -276,9 +276,14 @@ public class LoginFrame extends JFrame {
     }
 
     private boolean validateLogin(String username, String password) {
-        File userFile = new File("UserInfo" + File.separator + username + ".txt");
+        // 优先检查target目录下的用户文件，因为这是最新的文件位置
+        File userFile = new File(System.getProperty("user.dir") + File.separator + "target" + File.separator + "UserInfo" + File.separator + username + ".txt");
         if (!userFile.exists()) {
-            return false;
+            // 如果在target目录下没有找到，尝试在当前目录下查找
+            userFile = new File(System.getProperty("user.dir") + File.separator + "UserInfo" + File.separator + username + ".txt");
+            if (!userFile.exists()) {
+                return false;
+            }
         }
         try (BufferedReader reader = new BufferedReader(new FileReader(userFile))) {
             String line;
@@ -313,10 +318,29 @@ public class LoginFrame extends JFrame {
 
     private void saveUserToFile(String username, String hashedPassword) {
         createUserInfoDirectory();
+        // 在当前目录和target目录下都保存用户文件
         File userFile = new File("UserInfo" + File.separator + username + ".txt");
-        try (PrintWriter writer = new PrintWriter(new FileWriter(userFile))) {
-            writer.println("Username: " + username);
-            writer.println("Password: " + hashedPassword);
+        File targetUserFile = new File(System.getProperty("user.dir") + File.separator + "target" + File.separator + "UserInfo" + File.separator + username + ".txt");
+        
+        // 确保target目录下的UserInfo文件夹存在
+        File targetUserInfoDir = new File(System.getProperty("user.dir") + File.separator + "target" + File.separator + "UserInfo");
+        if (!targetUserInfoDir.exists()) {
+            targetUserInfoDir.mkdirs();
+        }
+
+        // 保存到两个位置
+        try {
+            // 保存到当前目录
+            try (PrintWriter writer = new PrintWriter(new FileWriter(userFile))) {
+                writer.println("Username: " + username);
+                writer.println("Password: " + hashedPassword);
+            }
+            
+            // 保存到target目录
+            try (PrintWriter writer = new PrintWriter(new FileWriter(targetUserFile))) {
+                writer.println("Username: " + username);
+                writer.println("Password: " + hashedPassword);
+            }
         } catch (IOException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Failed to save user information", "Error", JOptionPane.ERROR_MESSAGE);
