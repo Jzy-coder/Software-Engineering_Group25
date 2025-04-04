@@ -276,9 +276,14 @@ public class LoginFrame extends JFrame {
     }
 
     private boolean validateLogin(String username, String password) {
-        File userFile = new File("UserInfo" + File.separator + username + ".txt");
+        // 优先检查target目录下的用户文件，因为这是最新的文件位置
+        File userFile = new File(System.getProperty("user.dir") + File.separator + "target" + File.separator + "UserInfo" + File.separator + username + ".txt");
         if (!userFile.exists()) {
-            return false;
+            // 如果在target目录下没有找到，尝试在当前目录下查找
+            userFile = new File(System.getProperty("user.dir") + File.separator + "UserInfo" + File.separator + username + ".txt");
+            if (!userFile.exists()) {
+                return false;
+            }
         }
         try (BufferedReader reader = new BufferedReader(new FileReader(userFile))) {
             String line;
@@ -313,10 +318,29 @@ public class LoginFrame extends JFrame {
 
     private void saveUserToFile(String username, String hashedPassword) {
         createUserInfoDirectory();
+        // 在当前目录和target目录下都保存用户文件
         File userFile = new File("UserInfo" + File.separator + username + ".txt");
-        try (PrintWriter writer = new PrintWriter(new FileWriter(userFile))) {
-            writer.println("Username: " + username);
-            writer.println("Password: " + hashedPassword);
+        File targetUserFile = new File(System.getProperty("user.dir") + File.separator + "target" + File.separator + "UserInfo" + File.separator + username + ".txt");
+        
+        // 确保target目录下的UserInfo文件夹存在
+        File targetUserInfoDir = new File(System.getProperty("user.dir") + File.separator + "target" + File.separator + "UserInfo");
+        if (!targetUserInfoDir.exists()) {
+            targetUserInfoDir.mkdirs();
+        }
+
+        // 保存到两个位置
+        try {
+            // 保存到当前目录
+            try (PrintWriter writer = new PrintWriter(new FileWriter(userFile))) {
+                writer.println("Username: " + username);
+                writer.println("Password: " + hashedPassword);
+            }
+            
+            // 保存到target目录
+            try (PrintWriter writer = new PrintWriter(new FileWriter(targetUserFile))) {
+                writer.println("Username: " + username);
+                writer.println("Password: " + hashedPassword);
+            }
         } catch (IOException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Failed to save user information", "Error", JOptionPane.ERROR_MESSAGE);
@@ -328,12 +352,31 @@ public class LoginFrame extends JFrame {
         int userIndex = -1;
         for (String key : userProps.stringPropertyNames()) {
             if (key.endsWith(".username") && userProps.getProperty(key).equals(username)) {
-                userIndex = Integer.parseInt(key.split("\\.")[0]);
-                break;
+                try {
+                    userIndex = Integer.parseInt(key.split("\\.")[0]);
+                    break;
+                } catch (NumberFormatException e) {
+                    // 如果key的前缀不是数字，则跳过
+                    continue;
+                }
             }
         }
         if (userIndex == -1) {
-            userIndex = userProps.size() / 3;
+            // 找一个安全的索引值，避免使用已有的非数字索引
+            int maxIndex = 0;
+            for (String key : userProps.stringPropertyNames()) {
+                if (key.contains(".")) {
+                    try {
+                        int idx = Integer.parseInt(key.split("\\.")[0]);
+                        if (idx > maxIndex) {
+                            maxIndex = idx;
+                        }
+                    } catch (NumberFormatException e) {
+                        // 忽略非数字索引
+                    }
+                }
+            }
+            userIndex = maxIndex + 1;
         }
         
         userProps.setProperty(userIndex + ".username", username);
@@ -350,11 +393,16 @@ public class LoginFrame extends JFrame {
     private String getSavedPassword(String username) {
         for (String key : userProps.stringPropertyNames()) {
             if (key.endsWith(".username") && userProps.getProperty(key).equals(username)) {
-                String baseKey = key.substring(0, key.length() - ".username".length());
-                String originalPassword = userProps.getProperty(baseKey + ".original_password");
-                if (originalPassword != null) {
-                    rememberPasswordBox.setSelected(true);
-                    return originalPassword;
+                try {
+                    String baseKey = key.substring(0, key.length() - ".username".length());
+                    String originalPassword = userProps.getProperty(baseKey + ".original_password");
+                    if (originalPassword != null) {
+                        rememberPasswordBox.setSelected(true);
+                        return originalPassword;
+                    }
+                } catch (Exception e) {
+                    // 忽略任何异常，继续检查其他可能的键
+                    continue;
                 }
             }
         }
@@ -402,7 +450,29 @@ public class LoginFrame extends JFrame {
             String confirmPassword = new String(confirmPasswordField.getPassword());
 
             if (username.isEmpty() || password.isEmpty()) {
-                JOptionPane.showMessageDialog(dialog, "Username and password cannot be empty", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "用户名和密码不能为空", "错误", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // 验证用户名只能包含字母、数字和下划线
+            if (!username.matches("^[a-zA-Z0-9_]+$")) {
+                JOptionPane.showMessageDialog(dialog, "用户名只能包含字母、数字和下划线", "错误", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // 验证密码是否至少包含两类字符
+            boolean hasUpperCase = password.matches(".*[A-Z].*");
+            boolean hasLowerCase = password.matches(".*[a-z].*");
+            boolean hasDigit = password.matches(".*\\d.*");
+            boolean hasUnderscore = password.matches(".*_.*");
+            
+            int characterTypeCount = (hasUpperCase ? 1 : 0) + 
+                                    (hasLowerCase ? 1 : 0) + 
+                                    (hasDigit ? 1 : 0) + 
+                                    (hasUnderscore ? 1 : 0);
+            
+            if (characterTypeCount < 2) {
+                JOptionPane.showMessageDialog(dialog, "密码必须至少包含大写字母、小写字母、数字、下划线中的两类字符", "错误", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
