@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.AnalysisController">
+    <top>
+        <VBox spacing="10" style="-fx-padding: 10;">
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <ComboBox fx:id="modelComboBox" prefWidth="120" promptText="选择模型" />
+                <RadioButton fx:id="incomeRadio" text="收入" selected="true">
+                    <toggleGroup>
+                        <ToggleGroup fx:id="typeGroup" />
+                    </toggleGroup>
+                </RadioButton>
+                <RadioButton fx:id="expenseRadio" text="支出" toggleGroup="$typeGroup" />
+                <Button fx:id="dateButton" text="选择日期" onAction="#handleDateSelection" />
+                <Label fx:id="dateLabel" style="-fx-font-size: 14; -fx-font-weight: bold;" />
+            </HBox>
+        </VBox>
+    </top>
+    
+    <center>
+        <StackPane>
+            <PieChart fx:id="pieChart" title="收支分布" labelLineLength="20" legendVisible="true" />
+        </StackPane>
+    </center>
+</BorderPane> 

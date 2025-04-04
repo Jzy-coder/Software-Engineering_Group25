@@ -1,0 +1,112 @@
+/* 应用程序全局样式 */
+.root {
+    -fx-font-family: "Microsoft YaHei", "SimSun", "Arial";
+    font-family: "Microsoft YaHei", "SimSun", "Arial";
+    -fx-background-color: #f5f5f5;
+    background-color: #f5f5f5;
+}
+
+/* 标签样式 */
+.label {
+    -fx-text-fill: #333333;
+}
+
+/* 按钮样式 */
+.button {
+    -fx-background-color: #4CAF50;
+    background-color: #4CAF50;
+    -fx-text-fill: white;
+    -fx-background-radius: 4;
+    -fx-padding: 6 12;
+    padding: 6px 12px;
+}
+
+.button:hover {
+    -fx-background-color: #45a049;
+    background-color: #45a049;
+}
+
+.button:pressed {
+    -fx-background-color: #3d8b40;
+    background-color: #3d8b40;
+}
+
+/* 表格样式 */
+.table-view {
+    -fx-background-color: white;
+    background-color: white;
+    -fx-border-color: #dddddd;
+    border-color: #dddddd;
+    -fx-border-width: 1;
+    border-width: 1px;
+}
+
+.table-view .column-header {
+    -fx-background-color: #f2f2f2;
+    background-color: #f2f2f2;
+    -fx-font-weight: bold;
+    font-weight: bold;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #f9f9f9;
+    background-color: #f9f9f9;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #4CAF50;
+    background-color: #4CAF50;
+    -fx-text-fill: white;
+}
+
+/* 菜单样式 */
+.menu-bar {
+    -fx-background-color: #f5f5f5;
+    background-color: #f5f5f5;
+}
+
+.menu {
+    -fx-text-fill: #333333;
+}
+
+.menu-item {
+    -fx-text-fill: black;
+}
+
+/* 标签页样式 */
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: #f2f2f2;
+    background-color: #f2f2f2;
+}
+
+.tab {
+    -fx-background-color: #e6e6e6;
+    background-color: #e6e6e6;
+    -fx-background-radius: 4 4 0 0;
+}
+
+.tab:selected {
+    -fx-background-color: white;
+    background-color: white;
+}
+
+.tab .tab-label {
+    -fx-text-fill: #333333;
+}
+
+/* 文本框样式 */
+.text-field {
+    -fx-background-color: white;
+    background-color: white;
+    -fx-border-color: #cccccc;
+    border-color: #cccccc;
+    -fx-border-radius: 4;
+    border-radius: 4px;
+    -fx-padding: 5;
+    padding: 5px;
+}
+
+.text-field:focused {
+    -fx-border-color: #4CAF50;
+    border-color: #4CAF50;
+}

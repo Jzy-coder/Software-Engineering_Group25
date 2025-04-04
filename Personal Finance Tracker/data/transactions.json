@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "category": "Income",
+    "type": "Shopping",
+    "amount": 10.0,
+    "description": "",
+    "date": "2025-03-30 15:48:05"
+  },
+  {
+    "id": 2,
+    "category": "Expense",
+    "type": "Food",
+    "amount": 30.0,
+    "description": "",
+    "date": "2025-03-31 09:01:52"
+  }
+]
