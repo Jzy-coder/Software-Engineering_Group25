@@ -352,12 +352,31 @@ public class LoginFrame extends JFrame {
         int userIndex = -1;
         for (String key : userProps.stringPropertyNames()) {
             if (key.endsWith(".username") && userProps.getProperty(key).equals(username)) {
-                userIndex = Integer.parseInt(key.split("\\.")[0]);
-                break;
+                try {
+                    userIndex = Integer.parseInt(key.split("\\.")[0]);
+                    break;
+                } catch (NumberFormatException e) {
+                    // 如果key的前缀不是数字，则跳过
+                    continue;
+                }
             }
         }
         if (userIndex == -1) {
-            userIndex = userProps.size() / 3;
+            // 找一个安全的索引值，避免使用已有的非数字索引
+            int maxIndex = 0;
+            for (String key : userProps.stringPropertyNames()) {
+                if (key.contains(".")) {
+                    try {
+                        int idx = Integer.parseInt(key.split("\\.")[0]);
+                        if (idx > maxIndex) {
+                            maxIndex = idx;
+                        }
+                    } catch (NumberFormatException e) {
+                        // 忽略非数字索引
+                    }
+                }
+            }
+            userIndex = maxIndex + 1;
         }
         
         userProps.setProperty(userIndex + ".username", username);
@@ -374,11 +393,16 @@ public class LoginFrame extends JFrame {
     private String getSavedPassword(String username) {
         for (String key : userProps.stringPropertyNames()) {
             if (key.endsWith(".username") && userProps.getProperty(key).equals(username)) {
-                String baseKey = key.substring(0, key.length() - ".username".length());
-                String originalPassword = userProps.getProperty(baseKey + ".original_password");
-                if (originalPassword != null) {
-                    rememberPasswordBox.setSelected(true);
-                    return originalPassword;
+                try {
+                    String baseKey = key.substring(0, key.length() - ".username".length());
+                    String originalPassword = userProps.getProperty(baseKey + ".original_password");
+                    if (originalPassword != null) {
+                        rememberPasswordBox.setSelected(true);
+                        return originalPassword;
+                    }
+                } catch (Exception e) {
+                    // 忽略任何异常，继续检查其他可能的键
+                    continue;
                 }
             }
         }
