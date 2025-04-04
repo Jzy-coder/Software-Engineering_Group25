@@ -1,6 +1,8 @@
 package com.finance.service;
 
 import com.finance.dao.TransactionDAO;
+import com.finance.event.TransactionEvent;
+import com.finance.event.TransactionEventManager;
 import com.finance.model.Transaction;
 
 import java.util.List;
@@ -20,7 +22,11 @@ public class TransactionService {
      * Get all transaction records
      */
     public List<Transaction> getAllTransactions() {
-        return transactionDAO.findAll();
+        List<Transaction> transactions = transactionDAO.findAll();
+        // 触发数据加载事件
+        TransactionEventManager.getInstance().fireTransactionEvent(
+            new TransactionEvent(this, TransactionEvent.EventType.LOADED));
+        return transactions;
     }
     
     /**
@@ -28,6 +34,9 @@ public class TransactionService {
      */
     public void addTransaction(Transaction transaction) {
         transactionDAO.save(transaction);
+        // 触发交易添加事件
+        TransactionEventManager.getInstance().fireTransactionEvent(
+            new TransactionEvent(this, TransactionEvent.EventType.ADDED));
     }
     
     /**
@@ -35,6 +44,9 @@ public class TransactionService {
      */
     public void deleteTransaction(Long id) {
         transactionDAO.delete(id);
+        // 触发交易删除事件
+        TransactionEventManager.getInstance().fireTransactionEvent(
+            new TransactionEvent(this, TransactionEvent.EventType.DELETED));
     }
     
     /**
@@ -42,6 +54,9 @@ public class TransactionService {
      */
     public void updateTransaction(Transaction transaction) {
         transactionDAO.update(transaction);
+        // 触发交易更新事件
+        TransactionEventManager.getInstance().fireTransactionEvent(
+            new TransactionEvent(this, TransactionEvent.EventType.UPDATED));
     }
     
     /**

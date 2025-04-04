@@ -1,23 +1,58 @@
 package com.finance.view;
 
-import javax.swing.*;
-import javax.swing.plaf.basic.BasicComboBoxUI;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Properties;
-import java.net.URL;
+
 import javax.imageio.ImageIO;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.plaf.basic.BasicComboBoxUI;
+
 import com.finance.gui.MainWindow;
 
 public class LoginFrame extends JFrame {
-    private JTextField usernameField;
     private JComboBox<String> usernameComboBox;
     private JPasswordField passwordField;
-    private JCheckBox rememberPasswordBox;
+    private final JCheckBox rememberPasswordBox;
     private Properties userProps = new Properties();
     private File configFile = new File(System.getProperty("user.home") + File.separator + ".finance_tracker_config");
 
@@ -29,7 +64,8 @@ public class LoginFrame extends JFrame {
                 // Initialize by clearing the password field
                 passwordField.setText("");
             } catch (IOException e) {
-                e.printStackTrace();
+                String errorMsg = "Failed to load configuration file: " + e.getMessage();
+                System.err.println(errorMsg);
                 JOptionPane.showMessageDialog(this, "Failed to load configuration file", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
@@ -55,7 +91,8 @@ public class LoginFrame extends JFrame {
         try (FileOutputStream out = new FileOutputStream(configFile)) {
             userProps.store(out, "User Configuration");
         } catch (IOException e) {
-            e.printStackTrace();
+            String errorMsg = "Failed to save configuration file: " + e.getMessage();
+            System.err.println(errorMsg);
             JOptionPane.showMessageDialog(this, "Failed to save configuration file", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -65,6 +102,9 @@ public class LoginFrame extends JFrame {
         setSize(600, 450);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        setResizable(false);
+        setMaximumSize(new Dimension(600, 450));
+        setMinimumSize(new Dimension(600, 450));
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -107,9 +147,9 @@ public class LoginFrame extends JFrame {
                     } else {
                         System.err.println("Failed to load avatar image: Resource file not found");
                     }
-                } catch (Exception e) {
-                    System.err.println("Error loading avatar image: " + e.getMessage());
-                    e.printStackTrace();
+                } catch (IOException | IllegalArgumentException e) {
+                    String errorMsg = "Error loading avatar image: " + e.getMessage();
+                    System.err.println(errorMsg);
                 }
             }
             
@@ -179,7 +219,7 @@ public class LoginFrame extends JFrame {
         // Add mouse click event to show dropdown list when clicked
         usernameComboBox.getEditor().getEditorComponent().addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void mouseClicked(MouseEvent event) {
                 usernameComboBox.showPopup();
             }
         });
@@ -203,8 +243,11 @@ public class LoginFrame extends JFrame {
 
         // Listen for username text changes
         ((JTextField) usernameComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
             public void insertUpdate(javax.swing.event.DocumentEvent e) { updatePassword(); }
+            @Override
             public void removeUpdate(javax.swing.event.DocumentEvent e) { updatePassword(); }
+            @Override
             public void changedUpdate(javax.swing.event.DocumentEvent e) { updatePassword(); }
             
             private void updatePassword() {
@@ -266,6 +309,8 @@ public class LoginFrame extends JFrame {
             saveUserInfo(username, password);
             JOptionPane.showMessageDialog(this, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
             MainWindow mainWindow = new MainWindow();
+            mainWindow.setSize(1400, 900);
+            mainWindow.setResizable(false);
             mainWindow.setVisible(true);
             this.dispose();
         } else {
@@ -297,7 +342,8 @@ public class LoginFrame extends JFrame {
             // Otherwise, hash the input password before comparison
             return storedPassword.equals(hashPassword(password));
         } catch (IOException e) {
-            e.printStackTrace();
+            String errorMsg = "Error validating login: " + e.getMessage();
+            System.err.println(errorMsg);
             return false;
         }
     }
@@ -316,7 +362,8 @@ public class LoginFrame extends JFrame {
             writer.println("Username: " + username);
             writer.println("Password: " + hashedPassword);
         } catch (IOException e) {
-            e.printStackTrace();
+            String errorMsg = "Failed to save user information: " + e.getMessage();
+            System.err.println(errorMsg);
             JOptionPane.showMessageDialog(this, "Failed to save user information", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -432,7 +479,8 @@ public class LoginFrame extends JFrame {
             }
             return hexString.toString();
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            String errorMsg = "Error hashing password: " + e.getMessage();
+            System.err.println(errorMsg);
             return null;
         }
     }
@@ -441,8 +489,9 @@ public class LoginFrame extends JFrame {
         SwingUtilities.invokeLater(() -> {
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+                String errorMsg = "Error setting look and feel: " + e.getMessage();
+                System.err.println(errorMsg);
             }
             new LoginFrame().setVisible(true);
         });

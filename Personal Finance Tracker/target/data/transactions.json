@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "category": "Income",
+    "type": "Salary",
+    "amount": 2.0,
+    "description": "",
+    "date": "2025-04-04 22:36:46"
+  },
+  {
+    "id": 2,
+    "category": "Income",
+    "type": "Bonus",
+    "amount": 20.0,
+    "description": "",
+    "date": "2025-04-04 22:36:50"
+  },
+  {
+    "id": 3,
+    "category": "Income",
+    "type": "Food",
+    "amount": 200.0,
+    "description": "",
+    "date": "2025-04-04 22:36:54"
+  },
+  {
+    "id": 4,
+    "category": "Expense",
+    "type": "Shopping",
+    "amount": 300.0,
+    "description": "",
+    "date": "2025-04-04 22:36:59"
+  },
+  {
+    "id": 5,
+    "category": "Expense",
+    "type": "Transportation",
+    "amount": 5.0,
+    "description": "",
+    "date": "2025-04-04 22:37:05"
+  },
+  {
+    "id": 6,
+    "category": "Expense",
+    "type": "Housing",
+    "amount": 60.0,
+    "description": "",
+    "date": "2025-04-04 22:37:11"
+  }
+]
