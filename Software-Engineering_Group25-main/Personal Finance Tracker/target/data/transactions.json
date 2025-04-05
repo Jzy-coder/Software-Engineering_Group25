@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "category": "Income",
+    "type": "Bonus",
+    "amount": 1000.0,
+    "description": "",
+    "date": "2025-04-05 00:00:00"
+  },
+  {
+    "id": 2,
+    "category": "Expense",
+    "type": "Shopping",
+    "amount": 100.0,
+    "description": "",
+    "date": "2025-04-04 00:00:00"
+  },
+  {
+    "id": 3,
+    "category": "Expense",
+    "type": "Transportation",
+    "amount": 10.0,
+    "description": "",
+    "date": "2025-04-05 00:00:00"
+  }
+]
