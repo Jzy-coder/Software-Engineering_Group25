@@ -1,5 +1,8 @@
 package com.finance.controller;
 
+import com.finance.event.TransactionEvent;
+import com.finance.event.TransactionEventListener;
+import com.finance.event.TransactionEventManager;
 import com.finance.model.Transaction;
 import com.finance.service.TransactionService;
 import javafx.collections.FXCollections;
@@ -7,6 +10,8 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.chart.PieChart;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
@@ -19,7 +24,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class AnalysisController implements Initializable {
+public class AnalysisController implements Initializable, TransactionEventListener {
 
     @FXML
     private ComboBox<String> modelComboBox;
@@ -44,18 +49,29 @@ public class AnalysisController implements Initializable {
 
     private TransactionService transactionService;
     private ObservableList<Transaction> transactions;
-    private LocalDate selectedDate = LocalDate.now();
+    private LocalDate selectedDate;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        transactionService = new TransactionService();
+        // 使用LoginManager中的TransactionService实例，确保用户数据隔离
+        transactionService = com.finance.gui.LoginManager.getTransactionService();
         transactions = FXCollections.observableArrayList(transactionService.getAllTransactions());
 
         // 初始化模型下拉框
-        modelComboBox.setItems(FXCollections.observableArrayList("时间", "金额", "交易类型"));
+        modelComboBox.setItems(FXCollections.observableArrayList("Transaction Type"));
         modelComboBox.getSelectionModel().selectFirst();
 
+        // 设置初始选择日期为有交易数据的日期中的最新日期，如果没有则使用当前日期
+        List<LocalDate> availableDates = getAvailableTransactionDates();
+        if (!availableDates.isEmpty()) {
+            // 选择最新的日期
+            selectedDate = availableDates.get(availableDates.size() - 1);
+        } else {
+            // 如果没有交易数据，使用当前日期
+            selectedDate = LocalDate.now();
+        }
+        
         // 设置日期标签
         dateLabel.setText(selectedDate.format(DATE_FORMATTER));
 
@@ -65,27 +81,70 @@ public class AnalysisController implements Initializable {
 
         // 初始化图表
         updateChartData();
+        updateChartStyle();
+        setupPieChartListeners();
 
-        // 添加图表点击事件
-        pieChart.setOnMouseClicked(this::handlePieChartClick);
+        // 初始化饼图样式
+        pieChart.setLabelLineLength(20);
+        pieChart.setLegendVisible(false);
+        
+        // 注册为交易事件监听器
+        TransactionEventManager.getInstance().addTransactionEventListener(this);
+    }
+    
+    /**
+     * 清理资源，取消事件监听器注册
+     * 应在控制器不再使用时调用此方法
+     */
+    public void cleanup() {
+        // 取消注册事件监听器
+        TransactionEventManager.getInstance().removeTransactionEventListener(this);
     }
 
+    /**
+     * 获取所有交易的日期（不重复）
+     */
+    private List<LocalDate> getAvailableTransactionDates() {
+        return transactions.stream()
+                .map(t -> t.getDate().toLocalDate())
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+    }
+    
     /**
      * 处理日期选择
      */
     @FXML
     private void handleDateSelection() {
+        // 获取所有有交易数据的日期
+        List<LocalDate> availableDates = getAvailableTransactionDates();
+        
+        if (availableDates.isEmpty()) {
+            showAlert("No available transaction dates");
+            return;
+        }
+        
         // 创建日期选择器
         DatePicker datePicker = new DatePicker();
         datePicker.setValue(selectedDate);
         
+        // 设置日期选择器只显示有交易数据的日期
+        datePicker.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                setDisable(empty || !availableDates.contains(date));
+            }
+        });
+        
         // 创建对话框
         Dialog<LocalDate> dialog = new Dialog<>();
-        dialog.setTitle("选择日期");
-        dialog.setHeaderText("请选择一个日期");
+        dialog.setTitle("Select Date");
+        dialog.setHeaderText("Please select a date with transaction data");
         
         // 设置按钮
-        ButtonType selectButtonType = new ButtonType("选择", ButtonBar.ButtonData.OK_DONE);
+        ButtonType selectButtonType = new ButtonType("Select", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(selectButtonType, ButtonType.CANCEL);
         
         // 设置对话框内容
@@ -105,6 +164,8 @@ public class AnalysisController implements Initializable {
             selectedDate = date;
             dateLabel.setText(selectedDate.format(DATE_FORMATTER));
             updateChartData();
+        updateChartStyle();
+        setupPieChartListeners();
         });
     }
 
@@ -112,109 +173,99 @@ public class AnalysisController implements Initializable {
      * 处理饼图点击事件
      */
     private void handlePieChartClick(MouseEvent event) {
-        for (PieChart.Data data : pieChart.getData()) {
-            if (data.getNode().getBoundsInParent().contains(event.getX(), event.getY())) {
-                showAlert("已选择: " + data.getName() + " - 数值: " + data.getPieValue());
-                break;
-            }
-        }
+        // 改进后的点击处理逻辑
     }
 
-    /**
-     * 更新图表数据
-     */
+    private void setupPieChartListeners() {
+        pieChart.getData().forEach(data -> {
+            Node node = data.getNode();
+            node.setOnMouseClicked(e -> {
+                data.getNode().setEffect(new DropShadow());
+                showAlert("Selection: " + data.getName() + " - Amount: " + String.format("%.2f", data.getPieValue()));
+            });
+            node.setStyle("-fx-border-width: 1; -fx-border-color: white;");
+        });
+    }
+
+    private void updateChartStyle() {
+        pieChart.setLabelsVisible(true);
+        pieChart.setLabelLineLength(30);
+        pieChart.setLegendVisible(true);
+        pieChart.setLegendSide(javafx.geometry.Side.BOTTOM);
+        pieChart.setStyle("-fx-font-size: 12px; -fx-padding: 10 0 0 20;");
+        pieChart.setClockwise(false);
+        pieChart.setStartAngle(5);
+    }
+
     private void updateChartData() {
         String selectedModel = modelComboBox.getValue();
         boolean isIncome = incomeRadio.isSelected();
         
-        // 根据选择的模型和交易类型更新饼图数据
+        // Update pie chart data based on selected model and transaction type
         ObservableList<PieChart.Data> pieChartData = createPieChartData(selectedModel, isIncome);
         pieChart.setData(pieChartData);
-        
-        // 设置标题
-        pieChart.setTitle((isIncome ? "收入" : "支出") + "分布");
+        setupPieChartListeners();  // Re-bind listeners
+        updateChartStyle();
     }
 
     /**
-     * 创建饼图数据
+     * Create pie chart data
      */
     private ObservableList<PieChart.Data> createPieChartData(String model, boolean isIncome) {
         ObservableList<PieChart.Data> data = FXCollections.observableArrayList();
         
-        // 过滤出相应的交易类型（收入或支出）
+        // Filter transactions by type (income or expense)
         List<Transaction> filteredTransactions = transactions.stream()
-                .filter(t -> (isIncome && t.getAmount() > 0) || (!isIncome && t.getAmount() < 0))
+                .filter(t -> t.getCategory().equals(isIncome ? "Income" : "Expense"))
+                .filter(t -> t.getDate().toLocalDate().equals(selectedDate))
                 .collect(Collectors.toList());
         
-        // 根据模型生成数据
-        if (model.equals("时间")) {
-            // 按日期分组
-            Map<String, Double> groupedData = new HashMap<>();
-            for (Transaction t : filteredTransactions) {
-                String date = t.getDate().toLocalDate().format(DATE_FORMATTER);
-                groupedData.put(date, groupedData.getOrDefault(date, 0.0) + Math.abs(t.getAmount()));
-            }
-            
-            // 转换为饼图数据
-            for (Map.Entry<String, Double> entry : groupedData.entrySet()) {
-                data.add(new PieChart.Data(entry.getKey(), entry.getValue()));
-            }
-        } else if (model.equals("金额")) {
-            // 按金额范围分组
-            double[] ranges = {0, 100, 500, 1000, Double.MAX_VALUE};
-            String[] rangeNames = {"0-100", "100-500", "500-1000", "1000+"};
-            
-            Map<String, Double> groupedData = new HashMap<>();
-            for (int i = 0; i < rangeNames.length; i++) {
-                groupedData.put(rangeNames[i], 0.0);
-            }
-            
-            for (Transaction t : filteredTransactions) {
-                double amount = Math.abs(t.getAmount());
-                for (int i = 0; i < ranges.length - 1; i++) {
-                    if (amount >= ranges[i] && amount < ranges[i + 1]) {
-                        groupedData.put(rangeNames[i], groupedData.get(rangeNames[i]) + amount);
-                        break;
-                    }
-                }
-            }
-            
-            // 转换为饼图数据
-            for (Map.Entry<String, Double> entry : groupedData.entrySet()) {
-                if (entry.getValue() > 0) {
-                    data.add(new PieChart.Data(entry.getKey(), entry.getValue()));
-                }
-            }
-        } else if (model.equals("交易类型")) {
-            // 按交易类型分组
+        // Generate data based on transaction type
+        if (model.equals("Transaction Type")) {
+            // Group by transaction type
             Map<String, Double> groupedData = new HashMap<>();
             for (Transaction t : filteredTransactions) {
                 String type = t.getType();
                 groupedData.put(type, groupedData.getOrDefault(type, 0.0) + Math.abs(t.getAmount()));
             }
             
-            // 转换为饼图数据
+            // Convert to pie chart data
             for (Map.Entry<String, Double> entry : groupedData.entrySet()) {
                 data.add(new PieChart.Data(entry.getKey(), entry.getValue()));
             }
         }
         
-        // 如果没有数据，添加一个"无数据"项
+        // If no data available, add a "No Data" item
         if (data.isEmpty()) {
-            data.add(new PieChart.Data("无数据", 1));
+            data.add(new PieChart.Data("No Data", 1));
         }
         
         return data;
     }
 
     /**
-     * 显示警告对话框
+     * Show alert dialog
      */
     private void showAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("信息");
+        alert.setTitle("Information");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
     }
-} 
+    
+    /**
+     * Implementation of TransactionEventListener interface method
+     * Called when transaction data changes
+     */
+    @Override
+    public void onTransactionChanged(TransactionEvent event) {
+        // Reload transaction data
+        transactions = FXCollections.observableArrayList(transactionService.getAllTransactions());
+        
+        // Update chart
+        updateChartData();
+        updateChartStyle();
+        setupPieChartListeners();
+    }
+}

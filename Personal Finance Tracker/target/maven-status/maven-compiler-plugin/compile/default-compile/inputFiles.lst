@@ -1,9 +1,13 @@
 C:\Users\86166\Desktop\Personal Finance Tracker\src\main\java\com\finance\gui\UserInfoManager.java
+C:\Users\86166\Desktop\Personal Finance Tracker\src\main\java\com\finance\util\UserCredentialManager.java
+C:\Users\86166\Desktop\Personal Finance Tracker\src\main\java\com\finance\event\TransactionEventManager.java
 C:\Users\86166\Desktop\Personal Finance Tracker\src\main\java\com\finance\app\Launcher.java
+C:\Users\86166\Desktop\Personal Finance Tracker\src\main\java\com\finance\event\TransactionEvent.java
 C:\Users\86166\Desktop\Personal Finance Tracker\src\main\java\com\finance\view\LoginFrame.java
 C:\Users\86166\Desktop\Personal Finance Tracker\src\main\java\com\finance\controller\LoginController.java
 C:\Users\86166\Desktop\Personal Finance Tracker\src\main\java\com\finance\controller\IncomeExpenseController.java
 C:\Users\86166\Desktop\Personal Finance Tracker\src\main\java\com\finance\app\FinanceApplication.java
+C:\Users\86166\Desktop\Personal Finance Tracker\src\main\java\com\finance\event\TransactionEventListener.java
 C:\Users\86166\Desktop\Personal Finance Tracker\src\main\java\com\finance\service\TransactionService.java
 C:\Users\86166\Desktop\Personal Finance Tracker\src\main\java\com\finance\dao\TransactionDAO.java
 C:\Users\86166\Desktop\Personal Finance Tracker\src\main\java\com\finance\controller\AnalysisController.java

@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import com.finance.controller.AnalysisController;
+
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -16,6 +18,9 @@ import javafx.scene.layout.StackPane;
  * Main Interface Controller
  */
 public class MainController implements Initializable {
+    
+    // Store reference to the currently loaded controller
+    private Object currentController;
 
     @FXML
     private StackPane contentArea;
@@ -70,7 +75,19 @@ public class MainController implements Initializable {
      */
     private void loadView(String fxmlPath) {
         try {
-            Parent view = FXMLLoader.load(getClass().getResource(fxmlPath));
+            // Clean up current view controller resources (if needed)
+            cleanupCurrentController();
+            
+            // Load new view
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent view = loader.load();
+            
+            // Save reference to the current controller
+            Object controller = loader.getController();
+            if (controller != null) {
+                currentController = controller;
+            }
+            
             contentArea.getChildren().clear();
             contentArea.getChildren().add(view);
         } catch (IOException e) {
@@ -84,6 +101,9 @@ public class MainController implements Initializable {
      */
     private void showUnderDevelopmentMessage(String feature) {
         try {
+            // Clean up current view controller resources
+            cleanupCurrentController();
+            
             // Create a simple view with a message
             Parent view = FXMLLoader.load(getClass().getResource("/fxml/UnderDevelopmentView.fxml"));
             contentArea.getChildren().clear();
@@ -92,6 +112,18 @@ public class MainController implements Initializable {
             // If the view doesn't exist, just show an alert
             showAlert(feature + " feature is under development.");
         }
+    }
+    
+    /**
+     * Clean up resources of the current controller
+     */
+    private void cleanupCurrentController() {
+        if (currentController instanceof AnalysisController) {
+            // If current controller is AnalysisController, call its cleanup method
+            ((AnalysisController) currentController).cleanup();
+        }
+        // Clear current controller reference
+        currentController = null;
     }
     
     /**

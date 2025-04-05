@@ -29,6 +29,7 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.scene.layout.HBox;
+import javafx.scene.control.ComboBox;
 
 /**
  * Login Interface Controller
@@ -36,7 +37,7 @@ import javafx.scene.layout.HBox;
 public class LoginController implements Initializable {
 
     @FXML
-    private TextField usernameField;
+    private ComboBox<String> usernameField;
     
     @FXML
     private PasswordField passwordField;
@@ -54,6 +55,35 @@ public class LoginController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         // Create UserInfo directory if it doesn't exist
         createUserInfoDirectory();
+        
+        // Initialize username ComboBox with saved usernames
+        usernameField.getItems().addAll(com.finance.util.UserCredentialManager.getSavedUsernames());
+        usernameField.setEditable(true);
+        
+        // Add listener for username selection
+        usernameField.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                String savedPassword = com.finance.util.UserCredentialManager.getSavedPassword(newVal);
+                if (savedPassword != null) {
+                    passwordField.setText(savedPassword);
+                    rememberPasswordBox.setSelected(true);
+                }
+            }
+        });
+        
+        // Add listener for manual username input
+        usernameField.getEditor().textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && !newVal.equals(oldVal)) {
+                String savedPassword = com.finance.util.UserCredentialManager.getSavedPassword(newVal);
+                if (savedPassword != null) {
+                    passwordField.setText(savedPassword);
+                    rememberPasswordBox.setSelected(true);
+                } else {
+                    passwordField.clear();
+                    rememberPasswordBox.setSelected(false);
+                }
+            }
+        });
     }
     
     /**
@@ -61,19 +91,26 @@ public class LoginController implements Initializable {
      */
     @FXML
     private void handleLogin() {
-        String username = usernameField.getText();
+        String username = usernameField.getValue();
         String password = passwordField.getText();
         
-        if (username.isEmpty() || password.isEmpty()) {
-            showAlert(AlertType.ERROR, "错误", "用户名和密码不能为空");
+        if (username == null || username.isEmpty() || password.isEmpty()) {
+            showAlert(AlertType.ERROR, "Error", "Username and password cannot be empty");
             return;
         }
         
         if (LoginManager.validateLogin(username, password)) {
-            showAlert(AlertType.INFORMATION, "成功", "登录成功！");
+            // Save credentials if remember password is checked
+            if (rememberPasswordBox.isSelected()) {
+                com.finance.util.UserCredentialManager.saveCredentials(username, password);
+            } else {
+                com.finance.util.UserCredentialManager.removeCredentials(username);
+            }
+            
+            showAlert(AlertType.INFORMATION, "Success", "Login successful!");
             openMainView();
         } else {
-            showAlert(AlertType.ERROR, "错误", "用户名或密码错误");
+            showAlert(AlertType.ERROR, "Error", "Invalid username or password");
         }
     }
     
@@ -82,14 +119,14 @@ public class LoginController implements Initializable {
      */
     @FXML
     private void showRegisterDialog() {
-        // 创建自定义对话框
+        // Create custom dialog
         Stage dialogStage = new Stage();
-        dialogStage.setTitle("注册新用户");
+        dialogStage.setTitle("Register New User");
         dialogStage.initModality(javafx.stage.Modality.WINDOW_MODAL);
         dialogStage.initOwner(loginButton.getScene().getWindow());
         dialogStage.initStyle(StageStyle.UTILITY);
         
-        // 创建注册表单
+        // Create registration form
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
@@ -99,17 +136,17 @@ public class LoginController implements Initializable {
         PasswordField newPasswordField = new PasswordField();
         PasswordField confirmPasswordField = new PasswordField();
         
-        grid.add(new Label("用户名:"), 0, 0);
+        grid.add(new Label("Username:"), 0, 0);
         grid.add(newUsernameField, 1, 0);
-        grid.add(new Label("密码:"), 0, 1);
+        grid.add(new Label("Password:"), 0, 1);
         grid.add(newPasswordField, 1, 1);
-        grid.add(new Label("确认密码:"), 0, 2);
+        grid.add(new Label("Confirm Password:"), 0, 2);
         grid.add(confirmPasswordField, 1, 2);
-        grid.add(new Label("密码必须包含大写字母、小写字母、数字、下划线中至少两种"), 0, 3, 2, 1);
+        grid.add(new Label("Password must contain at least two types of: uppercase letters, lowercase letters, numbers, underscores"), 0, 3, 2, 1);
         
-        // 创建按钮
-        Button registerButton = new Button("注册");
-        Button cancelButton = new Button("取消");
+        // Create buttons
+        Button registerButton = new Button("Register");
+        Button cancelButton = new Button("Cancel");
         
         HBox buttonBox = new HBox(10);
         buttonBox.setAlignment(javafx.geometry.Pos.CENTER);
@@ -117,38 +154,38 @@ public class LoginController implements Initializable {
         
         grid.add(buttonBox, 0, 4, 2, 1);
         
-        // 设置注册按钮动作
+        // Set register button action
         registerButton.setOnAction(e -> {
             String username = newUsernameField.getText();
             String password = newPasswordField.getText();
             String confirmPassword = confirmPasswordField.getText();
             
-            // 验证输入
+            // Validate input
             if (username.isEmpty() || password.isEmpty()) {
-                showAlert(AlertType.ERROR, "错误", "用户名和密码不能为空");
-                return; // 不关闭对话框，返回到表单
+                showAlert(AlertType.ERROR, "Error", "Username and password cannot be empty");
+                return; // Return to form without closing dialog
             }
             
-            // 验证用户名只能包含字母、数字和下划线
+            // Validate username can only contain letters, numbers and underscores
             if (!username.matches("^[a-zA-Z0-9_]+$")) {
-                showAlert(AlertType.ERROR, "错误", "用户名只能包含字母、数字和下划线");
-                return; // 不关闭对话框，返回到表单
+                showAlert(AlertType.ERROR, "Error", "Username can only contain letters, numbers and underscores");
+                return; // Return to form without closing dialog
             }
             
-            // 验证用户名是否已存在
+            // Check if username already exists
             File userFile = new File("UserInfo" + File.separator + username + ".txt");
             if (userFile.exists()) {
-                showAlert(AlertType.ERROR, "错误", "用户名已存在，请使用其他用户名");
-                return; // 不关闭对话框，返回到表单
+                showAlert(AlertType.ERROR, "Error", "Username already exists, please use a different one");
+                return; // Return to form without closing dialog
             }
             
-            // 先验证两次输入的密码是否一致
+            // First validate if passwords match
             if (!password.equals(confirmPassword)) {
-                showAlert(AlertType.ERROR, "错误", "两次输入的密码不一致");
-                return; // 不关闭对话框，返回到表单
+                showAlert(AlertType.ERROR, "Error", "Passwords do not match");
+                return; // Return to form without closing dialog
             }
             
-            // 再验证密码是否至少包含两类字符
+            // Then validate if password contains at least two types of characters
             boolean hasUpperCase = password.matches(".*[A-Z].*");
             boolean hasLowerCase = password.matches(".*[a-z].*");
             boolean hasDigit = password.matches(".*\\d.*");
@@ -160,23 +197,23 @@ public class LoginController implements Initializable {
                                      (hasUnderscore ? 1 : 0);
             
             if (characterTypeCount < 2) {
-                showAlert(AlertType.ERROR, "错误", "密码必须至少包含大写字母、小写字母、数字、下划线中的两类字符");
-                return; // 不关闭对话框，返回到表单
+                showAlert(AlertType.ERROR, "Error", "Password must contain at least two types of: uppercase letters, lowercase letters, numbers, underscores");
+                return; // Return to form without closing dialog
             }
             
-            // 所有验证通过，保存用户信息
+            // All validations passed, save user information
             String hashedPassword = hashPassword(password);
             saveUserToFile(username, hashedPassword);
-            showAlert(AlertType.INFORMATION, "成功", "注册成功！");
+            showAlert(AlertType.INFORMATION, "Success", "Registration successful!");
             
-            // 关闭对话框
+            // Close dialog
             dialogStage.close();
         });
         
-        // 设置取消按钮动作
+        // Set cancel button action
         cancelButton.setOnAction(e -> dialogStage.close());
         
-        // 创建场景并显示
+        // Create scene and display
         Scene scene = new Scene(grid);
         dialogStage.setScene(scene);
         dialogStage.showAndWait();
@@ -203,7 +240,7 @@ public class LoginController implements Initializable {
             writer.println("Password: " + hashedPassword);
         } catch (IOException e) {
             System.err.println("Failed to save user information: " + e.getMessage());
-            showAlert(AlertType.ERROR, "错误", "无法保存用户信息");
+            showAlert(AlertType.ERROR, "Error", "Failed to save user information");
         }
     }
     

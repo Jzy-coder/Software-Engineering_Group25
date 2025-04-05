@@ -83,8 +83,14 @@ public class IncomeExpenseController implements Initializable {
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        transactionService = new TransactionService();
+        // 使用LoginManager中的TransactionService实例，确保用户数据隔离
+        transactionService = com.finance.gui.LoginManager.getTransactionService();
         transactionList = FXCollections.observableArrayList();
+        
+        // Set custom placeholder for empty table
+        Label placeholderLabel = new Label("There is no record of income and expense.");
+        placeholderLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #757575;");
+        transactionTable.setPlaceholder(placeholderLabel);
         
         // Initialize table columns
         categoryColumn.setCellValueFactory(new PropertyValueFactory<>("category"));

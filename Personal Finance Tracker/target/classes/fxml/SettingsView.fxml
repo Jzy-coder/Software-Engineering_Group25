@@ -7,24 +7,24 @@
 <BorderPane xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.SettingsController">
     <top>
         <VBox alignment="CENTER" spacing="20" style="-fx-padding: 20;">
-            <Label fx:id="welcomeLabel" text="您好，用户" style="-fx-font-size: 24; -fx-font-weight: bold;" />
+            <Label fx:id="welcomeLabel" text="Hello, User" style="-fx-font-size: 24; -fx-font-weight: bold;" />
         </VBox>
     </top>
     
     <center>
         <VBox alignment="CENTER" spacing="15" style="-fx-padding: 20;">
-            <Button text="修改用户名" onAction="#handleNameChange" prefWidth="200" prefHeight="40" />
-            <Button text="修改性别" onAction="#handleGenderChange" prefWidth="200" prefHeight="40" />
-            <Button text="修改地区" onAction="#handleAreaChange" prefWidth="200" prefHeight="40" />
-            <Button text="修改职业" onAction="#handleOccupationChange" prefWidth="200" prefHeight="40" />
-            <Button text="修改密码" onAction="#handlePasswordChange" prefWidth="200" prefHeight="40" />
+            <Button text="Change Username" onAction="#handleNameChange" prefWidth="200" prefHeight="40" />
+            <Button text="Change Gender" onAction="#handleGenderChange" prefWidth="200" prefHeight="40" />
+            <Button text="Change Region" onAction="#handleAreaChange" prefWidth="200" prefHeight="40" />
+            <Button text="Change Occupation" onAction="#handleOccupationChange" prefWidth="200" prefHeight="40" />
+            <Button text="Change Password" onAction="#handlePasswordChange" prefWidth="200" prefHeight="40" />
         </VBox>
     </center>
     
     <bottom>
         <HBox alignment="CENTER" spacing="20" style="-fx-padding: 20;">
-            <Button text="切换账户" onAction="#handleSwitchAccount" prefWidth="150" prefHeight="35" />
-            <Button text="退出登录" onAction="#handleLogout" prefWidth="150" prefHeight="35" />
+            <Button text="Switch Account" onAction="#handleSwitchAccount" prefWidth="150" prefHeight="35" />
+            <Button text="Logout" onAction="#handleLogout" prefWidth="150" prefHeight="35" />
         </HBox>
     </bottom>
-</BorderPane> 
+</BorderPane>

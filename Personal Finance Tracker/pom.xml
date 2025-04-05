@@ -157,6 +157,8 @@
                             <headerType>gui</headerType>
                             <jar>${project.build.directory}/${project.artifactId}-${project.version}-shaded.jar</jar>
                             <outfile>${project.build.directory}/FinanceManager.exe</outfile>
+                            <!-- Temporarily remove icon configuration to allow successful packaging -->
+                            <!-- <icon>src/main/resources/default-icon.ico</icon> -->
                             <downloadUrl>https://adoptium.net/</downloadUrl>
                             <classPath>
                                 <mainClass>com.finance.app.Launcher</mainClass>
