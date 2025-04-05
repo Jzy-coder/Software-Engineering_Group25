@@ -27,10 +27,35 @@ public class SettingsController implements Initializable {
 
     @FXML
     private Label welcomeLabel;
+    
+    @FXML
+    private Label usernameLabel;
+    
+    @FXML
+    private Label genderLabel;
+    
+    @FXML
+    private Label regionLabel;
+    
+    @FXML
+    private Label occupationLabel;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        welcomeLabel.setText("Hello, " + LoginManager.getCurrentUsername());
+        String currentUsername = LoginManager.getCurrentUsername();
+        welcomeLabel.setText("Hello, " + currentUsername);
+        
+        // 设置用户信息标签
+        usernameLabel.setText(currentUsername);
+        
+        // 从用户信息管理器获取其他信息
+        String gender = UserInfoManager.getGender();
+        String region = UserInfoManager.getArea();
+        String occupation = UserInfoManager.getOccupation();
+        
+        genderLabel.setText(gender != null ? gender : "");
+        regionLabel.setText(region != null ? region : "");
+        occupationLabel.setText(occupation != null ? occupation : "");
     }
 
     /**
@@ -131,6 +156,8 @@ public class SettingsController implements Initializable {
                 
                 // Update welcome label
                 welcomeLabel.setText("Hello, " + newUsername);
+                // 更新界面上的用户名标签
+                usernameLabel.setText(newUsername);
                 
                 showAlert(Alert.AlertType.INFORMATION, "Success", "Username changed successfully");
             } catch (Exception e) {
@@ -241,6 +268,8 @@ public class SettingsController implements Initializable {
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(gender -> {
             UserInfoManager.setGender(gender);
+            // 更新界面上的性别标签
+            genderLabel.setText(gender);
             showAlert(Alert.AlertType.INFORMATION, "Success", "Gender changed successfully");
         });
     }
@@ -261,6 +290,8 @@ public class SettingsController implements Initializable {
         result.ifPresent(area -> {
             if (!area.trim().isEmpty()) {
                 UserInfoManager.setArea(area);
+                // 更新界面上的地区标签
+                regionLabel.setText(area);
                 showAlert(Alert.AlertType.INFORMATION, "Success", "Area changed successfully");
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error", "Area cannot be empty");
@@ -284,6 +315,8 @@ public class SettingsController implements Initializable {
         result.ifPresent(occupation -> {
             if (!occupation.trim().isEmpty()) {
                 UserInfoManager.setOccupation(occupation);
+                // 更新界面上的职业标签
+                occupationLabel.setText(occupation);
                 showAlert(Alert.AlertType.INFORMATION, "Success", "Occupation changed successfully");
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error", "Occupation cannot be empty");
