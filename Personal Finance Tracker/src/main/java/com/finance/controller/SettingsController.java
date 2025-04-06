@@ -30,20 +30,7 @@ public class SettingsController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        String currentUsername = LoginManager.getCurrentUsername();
-        welcomeLabel.setText("Hello, " + currentUsername);
-        
-        // 设置用户信息标签
-        usernameLabel.setText(currentUsername);
-        
-        // 从用户信息管理器获取其他信息
-        String gender = UserInfoManager.getGender();
-        String region = UserInfoManager.getArea();
-        String occupation = UserInfoManager.getOccupation();
-        
-        genderLabel.setText(gender != null ? gender : "");
-        regionLabel.setText(region != null ? region : "");
-        occupationLabel.setText(occupation != null ? occupation : "");
+         welcomeLabel.setText("Hello, " + LoginManager.getCurrentUsername());
     }
 
     /**
