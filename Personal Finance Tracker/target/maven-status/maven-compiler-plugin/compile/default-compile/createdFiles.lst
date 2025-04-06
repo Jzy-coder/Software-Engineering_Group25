@@ -3,7 +3,6 @@ com\finance\model\Transaction.class
 com\finance\controller\LoginController.class
 com\finance\event\TransactionEvent$EventType.class
 com\finance\controller\SettingsController.class
-com\finance\controller\IncomeExpenseController$4.class
 com\finance\view\LoginFrame$2.class
 com\finance\event\TransactionEventManager.class
 com\finance\controller\AnalysisController.class
