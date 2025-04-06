@@ -194,10 +194,10 @@ public class IncomeExpenseController implements Initializable {
      * Setup edit button column
      */
     private void setupEditColumn() {
-        Callback<TableColumn<Transaction, Void>, TableCell<Transaction, Void>> cellFactory = _ -> new TableCell<>() {
+        Callback<TableColumn<Transaction, Void>, TableCell<Transaction, Void>> cellFactory = column -> new TableCell<>() {
             private final Button editButton = new Button("Edit");
             {
-                editButton.setOnAction((_) -> {
+                editButton.setOnAction((event) -> {
                     Transaction transaction = getTableView().getItems().get(getIndex());
                     handleEditTransaction(transaction);
                 });
@@ -221,10 +221,10 @@ public class IncomeExpenseController implements Initializable {
      * Setup delete button column
      */
     private void setupDeleteColumn() {
-        Callback<TableColumn<Transaction, Void>, TableCell<Transaction, Void>> cellFactory = _ -> new TableCell<>() {
+        Callback<TableColumn<Transaction, Void>, TableCell<Transaction, Void>> cellFactory = column -> new TableCell<>() {
             private final Button deleteButton = new Button("Delete");
             {
-                deleteButton.setOnAction((_) -> {
+                deleteButton.setOnAction((event) -> {
                     Transaction transaction = getTableView().getItems().get(getIndex());
                     handleDeleteTransaction(transaction);
                 });
@@ -267,7 +267,7 @@ public class IncomeExpenseController implements Initializable {
         addButton.setText("Update Transaction");
         
         // Set onAction to update instead of add
-        addButton.setOnAction(_ -> {
+        addButton.setOnAction(event -> {
             try {
                 // Get updated values
                 String category = categoryComboBox.getValue();
@@ -342,6 +342,6 @@ public class IncomeExpenseController implements Initializable {
         
         // Reset button text and action
         addButton.setText("Add New Transaction");
-        addButton.setOnAction((_) -> handleAddTransaction());
+        addButton.setOnAction((event) -> handleAddTransaction());
     }
 }
