@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import javafx.scene.layout.VBox;
 
 public class AnalysisController implements Initializable, TransactionEventListener {
 
@@ -119,54 +120,123 @@ public class AnalysisController implements Initializable, TransactionEventListen
     private void handleDateSelection() {
         // 获取所有有交易数据的日期
         List<LocalDate> availableDates = getAvailableTransactionDates();
-        
+    
         if (availableDates.isEmpty()) {
             showAlert("No available transaction dates");
             return;
         }
-        
-        // 创建日期选择器
-        DatePicker datePicker = new DatePicker();
-        datePicker.setValue(selectedDate);
-        
+    
+        // 创建开始日期和截止日期选择器
+        DatePicker startDatePicker = new DatePicker();
+        startDatePicker.setValue(selectedDate);
+        DatePicker endDatePicker = new DatePicker();
+        endDatePicker.setValue(selectedDate);
+    
         // 设置日期选择器只显示有交易数据的日期
-        datePicker.setDayCellFactory(picker -> new DateCell() {
+        startDatePicker.setDayCellFactory(picker -> new DateCell() {
             @Override
             public void updateItem(LocalDate date, boolean empty) {
                 super.updateItem(date, empty);
                 setDisable(empty || !availableDates.contains(date));
             }
         });
-        
+        endDatePicker.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                setDisable(empty || !availableDates.contains(date));
+            }
+        });
+    
         // 创建对话框
-        Dialog<LocalDate> dialog = new Dialog<>();
-        dialog.setTitle("Select Date");
-        dialog.setHeaderText("Please select a date with transaction data");
-        
+        Dialog<Map<String, LocalDate>> dialog = new Dialog<>();
+        dialog.setTitle("Select Date Range");
+        dialog.setHeaderText("Please select a start and end date with transaction data");
+    
         // 设置按钮
         ButtonType selectButtonType = new ButtonType("Select", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(selectButtonType, ButtonType.CANCEL);
-        
+    
         // 设置对话框内容
-        dialog.getDialogPane().setContent(datePicker);
-        
+        VBox vbox = new VBox(10);
+        vbox.getChildren().addAll(new Label("Start Date:"), startDatePicker, new Label("End Date:"), endDatePicker);
+        dialog.getDialogPane().setContent(vbox);
+    
         // 转换结果
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == selectButtonType) {
-                return datePicker.getValue();
+                LocalDate startDate = startDatePicker.getValue();
+                LocalDate endDate = endDatePicker.getValue();
+                if (startDate != null && endDate != null) {
+                    Map<String, LocalDate> result = new HashMap<>();
+                    result.put("startDate", startDate);
+                    result.put("endDate", endDate);
+                    return result;
+                }
             }
             return null;
         });
-        
+    
         // 显示对话框并处理结果
-        Optional<LocalDate> result = dialog.showAndWait();
-        result.ifPresent(date -> {
-            selectedDate = date;
-            dateLabel.setText(selectedDate.format(DATE_FORMATTER));
-            updateChartData();
-        updateChartStyle();
-        setupPieChartListeners();
+        Optional<Map<String, LocalDate>> result = dialog.showAndWait();
+        result.ifPresent(dateRange -> {
+            LocalDate startDate = dateRange.get("startDate");
+            LocalDate endDate = dateRange.get("endDate");
+            // 更新日期标签
+            dateLabel.setText(startDate.format(DATE_FORMATTER) + " - " + endDate.format(DATE_FORMATTER));
+            // 更新图表数据
+            updateChartData(startDate, endDate);
+            updateChartStyle();
+            setupPieChartListeners();
         });
+    }
+
+    // 修改 updateChartData 方法以接受日期范围
+    private void updateChartData(LocalDate startDate, LocalDate endDate) {
+        String selectedModel = modelComboBox.getValue();
+        boolean isIncome = incomeRadio.isSelected();
+    
+        // Update pie chart data based on selected model and transaction type
+        ObservableList<PieChart.Data> pieChartData = createPieChartData(selectedModel, isIncome, startDate, endDate);
+        pieChart.setData(pieChartData);
+        setupPieChartListeners();  // Re-bind listeners
+        updateChartStyle();
+    }
+
+    // 修改 createPieChartData 方法以接受日期范围
+    private ObservableList<PieChart.Data> createPieChartData(String model, boolean isIncome, LocalDate startDate, LocalDate endDate) {
+        ObservableList<PieChart.Data> data = FXCollections.observableArrayList();
+    
+        // Filter transactions by type (income or expense) and date range
+        List<Transaction> filteredTransactions = transactions.stream()
+               .filter(t -> t.getCategory().equals(isIncome ? "Income" : "Expense"))
+               .filter(t -> {
+                    LocalDate transactionDate = t.getDate().toLocalDate();
+                    return !transactionDate.isBefore(startDate) && !transactionDate.isAfter(endDate);
+                })
+               .collect(Collectors.toList());
+    
+        // Generate data based on transaction type
+        if (model.equals("Transaction Type")) {
+            // Group by transaction type
+            Map<String, Double> groupedData = new HashMap<>();
+            for (Transaction t : filteredTransactions) {
+                String type = t.getType();
+                groupedData.put(type, groupedData.getOrDefault(type, 0.0) + Math.abs(t.getAmount()));
+            }
+    
+            // Convert to pie chart data
+            for (Map.Entry<String, Double> entry : groupedData.entrySet()) {
+                data.add(new PieChart.Data(entry.getKey(), entry.getValue()));
+            }
+        }
+    
+        // If no data available, add a "No Data" item
+        if (data.isEmpty()) {
+            data.add(new PieChart.Data("No Data", 1));
+        }
+    
+        return data;
     }
 
     /**
