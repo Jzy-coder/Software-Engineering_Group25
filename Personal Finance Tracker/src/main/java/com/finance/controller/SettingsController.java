@@ -131,8 +131,7 @@ public class SettingsController implements Initializable {
                 
                 // Update welcome label
                 welcomeLabel.setText("Hello, " + newUsername);
-                // 更新界面上的用户名标签
-                usernameLabel.setText(newUsername);
+              
                 
                 showAlert(Alert.AlertType.INFORMATION, "Success", "Username changed successfully");
             } catch (Exception e) {
