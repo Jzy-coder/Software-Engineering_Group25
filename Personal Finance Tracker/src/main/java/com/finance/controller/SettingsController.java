@@ -27,18 +27,6 @@ public class SettingsController implements Initializable {
 
     @FXML
     private Label welcomeLabel;
-    
-    @FXML
-    private Label usernameLabel;
-    
-    @FXML
-    private Label genderLabel;
-    
-    @FXML
-    private Label regionLabel;
-    
-    @FXML
-    private Label occupationLabel;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
