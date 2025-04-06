@@ -1,0 +1,82 @@
+[
+  {
+    "id": 2,
+    "category": "Expense",
+    "type": "Food",
+    "amount": 20.0,
+    "description": "",
+    "date": "2025-04-04 00:00:00"
+  },
+  {
+    "id": 3,
+    "category": "Income",
+    "type": "Salary",
+    "amount": 1000.0,
+    "description": "",
+    "date": "2025-04-06 00:00:00"
+  },
+  {
+    "id": 4,
+    "category": "Expense",
+    "type": "Food",
+    "amount": 200.0,
+    "description": "",
+    "date": "2025-04-06 00:00:00"
+  },
+  {
+    "id": 5,
+    "category": "Expense",
+    "type": "Food",
+    "amount": 200.0,
+    "description": "",
+    "date": "2025-04-03 00:00:00"
+  },
+  {
+    "id": 6,
+    "category": "Income",
+    "type": "Bonus",
+    "amount": 2000.0,
+    "description": "",
+    "date": "2025-04-03 00:00:00"
+  },
+  {
+    "id": 7,
+    "category": "Expense",
+    "type": "Shopping",
+    "amount": 300.0,
+    "description": "",
+    "date": "2025-04-03 00:00:00"
+  },
+  {
+    "id": 8,
+    "category": "Expense",
+    "type": "Housing",
+    "amount": 200.0,
+    "description": "",
+    "date": "2025-04-04 00:00:00"
+  },
+  {
+    "id": 9,
+    "category": "Income",
+    "type": "Salary",
+    "amount": 200.0,
+    "description": "",
+    "date": "2025-03-13 00:00:00"
+  },
+  {
+    "id": 10,
+    "category": "Expense",
+    "type": "Shopping",
+    "amount": 300.0,
+    "description": "",
+    "date": "2025-03-13 00:00:00"
+  },
+  {
+    "id": 11,
+    "category": "Income",
+    "type": "Bonus",
+    "amount": 500.0,
+    "description": "",
+    "date": "2025-03-13 00:00:00"
+  }
+]

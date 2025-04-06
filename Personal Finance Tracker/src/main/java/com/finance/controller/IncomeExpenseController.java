@@ -99,6 +99,7 @@ public class IncomeExpenseController implements Initializable {
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        
         // 使用LoginManager中的TransactionService实例，确保用户数据隔离
         transactionService = com.finance.gui.LoginManager.getTransactionService();
         transactionList = FXCollections.observableArrayList();
@@ -198,7 +199,7 @@ public class IncomeExpenseController implements Initializable {
                 return;
             }
             
-            Transaction transaction = new Transaction(category, type, amount, description, LocalDateTime.now());
+            Transaction transaction = new Transaction(category, type, amount, description, transactionDate);
             transactionService.addTransaction(transaction);
             
             // Clear input fields
