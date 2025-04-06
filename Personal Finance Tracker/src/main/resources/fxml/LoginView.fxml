@@ -19,7 +19,7 @@
                 </columnConstraints>
                 
                 <Label text="Username:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
-                <TextField fx:id="usernameField" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+                <ComboBox fx:id="usernameField" GridPane.rowIndex="0" GridPane.columnIndex="1" editable="true" maxWidth="Infinity" />
                 
                 <Label text="Password:" GridPane.rowIndex="1" GridPane.columnIndex="0" />
                 <PasswordField fx:id="passwordField" GridPane.rowIndex="1" GridPane.columnIndex="1" />

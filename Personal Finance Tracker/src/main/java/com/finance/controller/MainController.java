@@ -19,7 +19,7 @@ import javafx.scene.layout.StackPane;
  */
 public class MainController implements Initializable {
     
-    // 保存当前加载的控制器引用
+    // Store reference to the currently loaded controller
     private Object currentController;
 
     @FXML
@@ -75,14 +75,14 @@ public class MainController implements Initializable {
      */
     private void loadView(String fxmlPath) {
         try {
-            // 清理当前视图的控制器资源（如果需要）
+            // Clean up current view controller resources (if needed)
             cleanupCurrentController();
             
-            // 加载新视图
+            // Load new view
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent view = loader.load();
             
-            // 保存当前加载的控制器引用
+            // Save reference to the current controller
             Object controller = loader.getController();
             if (controller != null) {
                 currentController = controller;
@@ -101,7 +101,7 @@ public class MainController implements Initializable {
      */
     private void showUnderDevelopmentMessage(String feature) {
         try {
-            // 清理当前视图的控制器资源
+            // Clean up current view controller resources
             cleanupCurrentController();
             
             // Create a simple view with a message
@@ -115,14 +115,14 @@ public class MainController implements Initializable {
     }
     
     /**
-     * 清理当前控制器的资源
+     * Clean up resources of the current controller
      */
     private void cleanupCurrentController() {
         if (currentController instanceof AnalysisController) {
-            // 如果当前控制器是AnalysisController，调用其cleanup方法
+            // If current controller is AnalysisController, call its cleanup method
             ((AnalysisController) currentController).cleanup();
         }
-        // 清除当前控制器引用
+        // Clear current controller reference
         currentController = null;
     }
     

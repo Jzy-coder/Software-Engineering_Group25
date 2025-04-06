@@ -3,28 +3,28 @@ package com.finance.event;
 import java.util.EventObject;
 
 /**
- * 交易数据变化事件
- * 用于通知系统中的其他组件交易数据已经发生变化
+ * Transaction Data Change Event
+ * Used to notify other components in the system when transaction data has changed
  */
 public class TransactionEvent extends EventObject {
     
     private final EventType eventType;
     
     /**
-     * 事件类型枚举
+     * Event Type Enumeration
      */
-    public enum EventType {
-        ADDED,      // 添加了新交易
-        UPDATED,    // 更新了交易
-        DELETED,    // 删除了交易
-        LOADED      // 加载了交易数据
+public enum EventType {
+        ADDED,      // New transaction added
+        UPDATED,    // Transaction updated
+        DELETED,    // Transaction deleted
+        LOADED      // Transaction data loaded
     }
     
     /**
-     * 创建一个新的交易事件
+     * Create a new transaction event
      * 
-     * @param source 事件源对象
-     * @param eventType 事件类型
+     * @param source Event source object
+     * @param eventType Event type
      */
     public TransactionEvent(Object source, EventType eventType) {
         super(source);
@@ -32,9 +32,9 @@ public class TransactionEvent extends EventObject {
     }
     
     /**
-     * 获取事件类型
+     * Get the event type
      * 
-     * @return 事件类型
+     * @return Event type
      */
     public EventType getEventType() {
         return eventType;

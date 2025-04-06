@@ -19,11 +19,33 @@ public class TransactionService {
     }
     
     /**
+     * Clear transaction cache
+     */
+    public void clearCache() {
+        // No implementation needed as we're directly reading from file each time
+        // Just trigger a reload event
+        TransactionEventManager.getInstance().fireTransactionEvent(
+            new TransactionEvent(this, TransactionEvent.EventType.LOADED));
+    }
+    
+    /**
+     * Switch current user
+     * @param username 用户名
+     * @param isRename 是否为用户重命名场景
+     */
+    public void switchUser(String username, boolean isRename) {
+        transactionDAO.updateCurrentUser(username, isRename);
+        // Trigger data load event
+        TransactionEventManager.getInstance().fireTransactionEvent(
+            new TransactionEvent(this, TransactionEvent.EventType.LOADED));
+    }
+    
+    /**
      * Get all transaction records
      */
     public List<Transaction> getAllTransactions() {
         List<Transaction> transactions = transactionDAO.findAll();
-        // 触发数据加载事件
+        // Trigger data load event
         TransactionEventManager.getInstance().fireTransactionEvent(
             new TransactionEvent(this, TransactionEvent.EventType.LOADED));
         return transactions;
@@ -34,7 +56,7 @@ public class TransactionService {
      */
     public void addTransaction(Transaction transaction) {
         transactionDAO.save(transaction);
-        // 触发交易添加事件
+        // Trigger transaction add event
         TransactionEventManager.getInstance().fireTransactionEvent(
             new TransactionEvent(this, TransactionEvent.EventType.ADDED));
     }
@@ -44,7 +66,7 @@ public class TransactionService {
      */
     public void deleteTransaction(Long id) {
         transactionDAO.delete(id);
-        // 触发交易删除事件
+        // Trigger transaction delete event
         TransactionEventManager.getInstance().fireTransactionEvent(
             new TransactionEvent(this, TransactionEvent.EventType.DELETED));
     }
@@ -54,7 +76,7 @@ public class TransactionService {
      */
     public void updateTransaction(Transaction transaction) {
         transactionDAO.update(transaction);
-        // 触发交易更新事件
+        // Trigger transaction update event
         TransactionEventManager.getInstance().fireTransactionEvent(
             new TransactionEvent(this, TransactionEvent.EventType.UPDATED));
     }

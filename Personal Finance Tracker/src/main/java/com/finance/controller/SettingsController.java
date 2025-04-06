@@ -27,24 +27,49 @@ public class SettingsController implements Initializable {
 
     @FXML
     private Label welcomeLabel;
+    
+    @FXML
+    private Label usernameLabel;
+    
+    @FXML
+    private Label genderLabel;
+    
+    @FXML
+    private Label regionLabel;
+    
+    @FXML
+    private Label occupationLabel;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        welcomeLabel.setText("您好，" + LoginManager.getCurrentUsername());
+        String currentUsername = LoginManager.getCurrentUsername();
+        welcomeLabel.setText("Hello, " + currentUsername);
+        
+        // 设置用户信息标签
+        usernameLabel.setText(currentUsername);
+        
+        // 从用户信息管理器获取其他信息
+        String gender = UserInfoManager.getGender();
+        String region = UserInfoManager.getArea();
+        String occupation = UserInfoManager.getOccupation();
+        
+        genderLabel.setText(gender != null ? gender : "");
+        regionLabel.setText(region != null ? region : "");
+        occupationLabel.setText(occupation != null ? occupation : "");
     }
 
     /**
-     * 处理用户名修改
+     * Handle username change
      */
     @FXML
     private void handleNameChange() {
-        // 创建一个文本输入对话框
+        // Create a text input dialog
         TextInputDialog dialog = new TextInputDialog(LoginManager.getCurrentUsername());
-        dialog.setTitle("修改用户名");
-        dialog.setHeaderText("请输入新的用户名");
-        dialog.setContentText("用户名:");
+        dialog.setTitle("Change Username");
+        dialog.setHeaderText("Please enter new username");
+        dialog.setContentText("Username:");
 
-        // 获取用户输入
+        // Get user input
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(newUsername -> {
             if (validateUsername(newUsername)) {
@@ -54,27 +79,27 @@ public class SettingsController implements Initializable {
     }
 
     /**
-     * 验证用户名
+     * Validate username
      */
     private boolean validateUsername(String username) {
         if (username.isEmpty()) {
-            showAlert(Alert.AlertType.ERROR, "错误", "用户名不能为空");
+            showAlert(Alert.AlertType.ERROR, "Error", "Username cannot be empty");
             return false;
         }
         if (username.length() > 20) {
-            showAlert(Alert.AlertType.ERROR, "错误", "用户名不能超过20个字符");
+            showAlert(Alert.AlertType.ERROR, "Error", "Username cannot exceed 20 characters");
             return false;
         }
-        // 验证用户名只能包含字母、数字和下划线
+        // Validate username can only contain letters, numbers and underscores
         if (!username.matches("^[a-zA-Z0-9_]+$")) {
-            showAlert(Alert.AlertType.ERROR, "错误", "用户名只能包含字母、数字和下划线");
+            showAlert(Alert.AlertType.ERROR, "Error", "Username can only contain letters, numbers and underscores");
             return false;
         }
         
-        // 检查新用户名是否已存在
+        // Check if new username already exists
         File userFile = new File("UserInfo" + File.separator + username + ".txt");
         if (userFile.exists() && !username.equals(LoginManager.getCurrentUsername())) {
-            showAlert(Alert.AlertType.ERROR, "错误", "用户名已存在，请使用其他用户名");
+            showAlert(Alert.AlertType.ERROR, "Error", "Username already exists, please use a different one");
             return false;
         }
         
@@ -82,26 +107,26 @@ public class SettingsController implements Initializable {
     }
 
     /**
-     * 更新用户名
+     * Update username
      */
     private void updateUsername(String newUsername) {
         String oldUsername = LoginManager.getCurrentUsername();
         
         if (!oldUsername.equals(newUsername)) {
             try {
-                // 旧用户文件
+                // Old user file
                 File oldUserFile = new File("UserInfo" + File.separator + oldUsername + ".txt");
-                // 新用户文件
+                // New user file
                 File newUserFile = new File("UserInfo" + File.separator + newUsername + ".txt");
                 
-                // 确保UserInfo目录存在
+                // Ensure UserInfo directory exists
                 File userInfoDir = new File("UserInfo");
                 if (!userInfoDir.exists()) {
                     userInfoDir.mkdirs();
                 }
                 
                 if (oldUserFile.exists()) {
-                    // 读取旧文件内容
+                    // Read old file content
                     java.util.List<String> lines = new java.util.ArrayList<>();
                     try (BufferedReader reader = new BufferedReader(new FileReader(oldUserFile))) {
                         String line;
@@ -113,50 +138,52 @@ public class SettingsController implements Initializable {
                         }
                     }
                     
-                    // 写入新文件
+                    // Write to new file
                     try (PrintWriter writer = new PrintWriter(new FileWriter(newUserFile))) {
                         for (String line : lines) {
                             writer.println(line);
                         }
                     }
                     
-                    // 如果新文件创建成功，删除旧文件
+                    // If new file is created successfully, delete the old file
                     if (newUserFile.exists()) {
                         oldUserFile.delete();
                     }
                 }
                 
-                // 更新当前用户名
+                // Update current username
                 LoginManager.setCurrentUsername(newUsername);
                 
-                // 更新欢迎标签
-                welcomeLabel.setText("您好，" + newUsername);
+                // Update welcome label
+                welcomeLabel.setText("Hello, " + newUsername);
+                // 更新界面上的用户名标签
+                usernameLabel.setText(newUsername);
                 
-                showAlert(Alert.AlertType.INFORMATION, "成功", "用户名修改成功");
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Username changed successfully");
             } catch (Exception e) {
                 e.printStackTrace();
-                showAlert(Alert.AlertType.ERROR, "错误", "修改用户名时发生错误: " + e.getMessage());
+                showAlert(Alert.AlertType.ERROR, "Error", "Error occurred while changing username: " + e.getMessage());
             }
         } else {
-            showAlert(Alert.AlertType.INFORMATION, "提示", "新用户名与当前用户名相同，未进行修改");
+            showAlert(Alert.AlertType.INFORMATION, "Notice", "New username is same as current one, no changes made");
         }
     }
 
     /**
-     * 处理密码修改
+     * Handle password change
      */
     @FXML
     private void handlePasswordChange() {
-        // 创建对话框
+        // Create dialog
         Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("修改密码");
-        dialog.setHeaderText("请输入新密码");
+        dialog.setTitle("Change Password");
+        dialog.setHeaderText("Please enter new password");
         
-        // 设置按钮
-        ButtonType confirmButtonType = new ButtonType("确认", ButtonBar.ButtonData.OK_DONE);
+        // Set buttons
+        ButtonType confirmButtonType = new ButtonType("Confirm", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(confirmButtonType, ButtonType.CANCEL);
         
-        // 创建对话框内容
+        // Create dialog content
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
@@ -165,15 +192,15 @@ public class SettingsController implements Initializable {
         PasswordField newPasswordField = new PasswordField();
         PasswordField confirmPasswordField = new PasswordField();
         
-        grid.add(new Label("新密码:"), 0, 0);
+        grid.add(new Label("New Password:"), 0, 0);
         grid.add(newPasswordField, 1, 0);
-        grid.add(new Label("确认密码:"), 0, 1);
+        grid.add(new Label("Confirm Password:"), 0, 1);
         grid.add(confirmPasswordField, 1, 1);
-        grid.add(new Label("密码要求: 包含大写字母、小写字母、数字、下划线中至少两类"), 0, 2, 2, 1);
+        grid.add(new Label("Password must contain at least two types of: uppercase letters, lowercase letters, numbers, underscores"), 0, 2, 2, 1);
         
         dialog.getDialogPane().setContent(grid);
         
-        // 显示对话框并处理结果
+        // Show dialog and handle result
         Optional<ButtonType> result = dialog.showAndWait();
         if (result.isPresent() && result.get() == confirmButtonType) {
             String newPassword = newPasswordField.getText();
@@ -181,27 +208,27 @@ public class SettingsController implements Initializable {
             
             if (validatePassword(newPassword, confirmPassword)) {
                 LoginManager.updatePassword(newPassword);
-                showAlert(Alert.AlertType.INFORMATION, "成功", "密码修改成功");
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Password changed successfully");
             }
         }
     }
 
     /**
-     * 验证密码
+     * Validate password
      */
     private boolean validatePassword(String password, String confirmPassword) {
         if (password.isEmpty()) {
-            showAlert(Alert.AlertType.ERROR, "错误", "密码不能为空");
+            showAlert(Alert.AlertType.ERROR, "Error", "Password cannot be empty");
             return false;
         }
         
-        // 先验证两次输入的密码是否一致
+        // First validate if passwords match
         if (!password.equals(confirmPassword)) {
-            showAlert(Alert.AlertType.ERROR, "错误", "两次输入的密码不一致");
+            showAlert(Alert.AlertType.ERROR, "Error", "Passwords do not match");
             return false;
         }
         
-        // 再验证密码是否至少包含两类字符
+        // Then validate if password contains at least two types of characters
         boolean hasUpperCase = password.matches(".*[A-Z].*");
         boolean hasLowerCase = password.matches(".*[a-z].*");
         boolean hasDigit = password.matches(".*\\d.*");
@@ -213,7 +240,7 @@ public class SettingsController implements Initializable {
                                 (hasUnderscore ? 1 : 0);
         
         if (characterTypeCount < 2) {
-            showAlert(Alert.AlertType.ERROR, "错误", "密码必须至少包含大写字母、小写字母、数字、下划线中的两类字符");
+            showAlert(Alert.AlertType.ERROR, "Error", "Password must contain at least two types of: uppercase letters, lowercase letters, numbers, underscores");
             return false;
         }
         
@@ -221,94 +248,100 @@ public class SettingsController implements Initializable {
     }
 
     /**
-     * 处理性别修改
+     * Handle gender change
      */
     @FXML
     private void handleGenderChange() {
-        // 创建对话框
-        ChoiceDialog<String> dialog = new ChoiceDialog<>("男", "男", "女", "其他");
-        dialog.setTitle("修改性别");
-        dialog.setHeaderText("请选择您的性别");
-        dialog.setContentText("性别:");
+        // Create dialog
+        ChoiceDialog<String> dialog = new ChoiceDialog<>("Male", "Male", "Female", "Other");
+        dialog.setTitle("Change Gender");
+        dialog.setHeaderText("Please select your gender");
+        dialog.setContentText("Gender:");
         
-        // 设置默认选择
+        // Set default selection
         String currentGender = UserInfoManager.getGender();
         if (!currentGender.isEmpty()) {
             dialog.setSelectedItem(currentGender);
         }
         
-        // 获取用户选择
+        // Get user selection
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(gender -> {
             UserInfoManager.setGender(gender);
-            showAlert(Alert.AlertType.INFORMATION, "成功", "性别修改成功");
+            // 更新界面上的性别标签
+            genderLabel.setText(gender);
+            showAlert(Alert.AlertType.INFORMATION, "Success", "Gender changed successfully");
         });
     }
 
     /**
-     * 处理地区修改
+     * Handle area change
      */
     @FXML
     private void handleAreaChange() {
-        // 创建文本输入对话框
+        // Create text input dialog
         TextInputDialog dialog = new TextInputDialog(UserInfoManager.getArea());
-        dialog.setTitle("修改地区");
-        dialog.setHeaderText("请输入您所在的地区");
-        dialog.setContentText("地区:");
+        dialog.setTitle("Change Area");
+        dialog.setHeaderText("Please enter your area");
+        dialog.setContentText("Area:");
         
-        // 获取用户输入
+        // Get user input
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(area -> {
             if (!area.trim().isEmpty()) {
                 UserInfoManager.setArea(area);
-                showAlert(Alert.AlertType.INFORMATION, "成功", "地区修改成功");
+                // 更新界面上的地区标签
+                regionLabel.setText(area);
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Area changed successfully");
             } else {
-                showAlert(Alert.AlertType.ERROR, "错误", "地区不能为空");
+                showAlert(Alert.AlertType.ERROR, "Error", "Area cannot be empty");
             }
         });
     }
 
     /**
-     * 处理职业修改
+     * Handle occupation change
      */
     @FXML
     private void handleOccupationChange() {
-        // 创建文本输入对话框
+        // Create text input dialog
         TextInputDialog dialog = new TextInputDialog(UserInfoManager.getOccupation());
-        dialog.setTitle("修改职业");
-        dialog.setHeaderText("请输入您的职业");
-        dialog.setContentText("职业:");
+        dialog.setTitle("Change Occupation");
+        dialog.setHeaderText("Please enter your occupation");
+        dialog.setContentText("Occupation:");
         
-        // 获取用户输入
+        // Get user input
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(occupation -> {
             if (!occupation.trim().isEmpty()) {
                 UserInfoManager.setOccupation(occupation);
-                showAlert(Alert.AlertType.INFORMATION, "成功", "职业修改成功");
+                // 更新界面上的职业标签
+                occupationLabel.setText(occupation);
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Occupation changed successfully");
             } else {
-                showAlert(Alert.AlertType.ERROR, "错误", "职业不能为空");
+                showAlert(Alert.AlertType.ERROR, "Error", "Occupation cannot be empty");
             }
         });
     }
 
     /**
-     * 处理切换账户
+     * Handle account switching
      */
     @FXML
     private void handleSwitchAccount() {
         try {
-            // 加载登录视图
+            // Load login view
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/LoginView.fxml"));
             Parent root = loader.load();
             
-            // 获取当前窗口
+            // Get current window
             Stage stage = (Stage) welcomeLabel.getScene().getWindow();
             
-            // 设置新场景
+            // Set new scene
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/css/application.css").toExternalForm());
             
-            // 设置窗口属性
+            // Set window properties
             stage.setTitle("Personal Finance Assistant - Login");
             stage.setScene(scene);
             stage.setWidth(600);
@@ -317,12 +350,12 @@ public class SettingsController implements Initializable {
             stage.centerOnScreen();
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "错误", "无法加载登录页面: " + e.getMessage());
+            showAlert(Alert.AlertType.ERROR, "Error", "Failed to load login page: " + e.getMessage());
         }
     }
 
     /**
-     * 处理退出登录
+     * Handle logout
      */
     @FXML
     private void handleLogout() {
@@ -330,7 +363,7 @@ public class SettingsController implements Initializable {
     }
 
     /**
-     * 显示警告对话框
+     * Show alert dialog
      */
     private void showAlert(Alert.AlertType alertType, String title, String message) {
         Alert alert = new Alert(alertType);

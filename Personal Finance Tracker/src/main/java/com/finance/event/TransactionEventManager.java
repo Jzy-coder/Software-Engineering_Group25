@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 交易事件管理器
- * 负责管理交易事件的监听器注册和事件分发
+ * Transaction Event Manager
+ * Responsible for managing transaction event listener registration and event dispatching
  */
 public class TransactionEventManager {
     
@@ -13,24 +13,24 @@ public class TransactionEventManager {
     private final List<TransactionEventListener> listeners = new ArrayList<>();
     
     /**
-     * 私有构造函数，防止外部实例化
+     * Private constructor to prevent external instantiation
      */
     private TransactionEventManager() {
     }
     
     /**
-     * 获取事件管理器的单例实例
+     * Get the singleton instance of the event manager
      * 
-     * @return 事件管理器实例
+     * @return Event manager instance
      */
     public static TransactionEventManager getInstance() {
         return INSTANCE;
     }
     
     /**
-     * 添加事件监听器
+     * Add event listener
      * 
-     * @param listener 要添加的监听器
+     * @param listener Listener to be added
      */
     public void addTransactionEventListener(TransactionEventListener listener) {
         if (listener != null && !listeners.contains(listener)) {
@@ -39,18 +39,18 @@ public class TransactionEventManager {
     }
     
     /**
-     * 移除事件监听器
+     * Remove event listener
      * 
-     * @param listener 要移除的监听器
+     * @param listener Listener to be removed
      */
     public void removeTransactionEventListener(TransactionEventListener listener) {
         listeners.remove(listener);
     }
     
     /**
-     * 触发交易事件，通知所有监听器
+     * Fire transaction event, notify all listeners
      * 
-     * @param event 要触发的事件
+     * @param event Event to be fired
      */
     public void fireTransactionEvent(TransactionEvent event) {
         for (TransactionEventListener listener : new ArrayList<>(listeners)) {
