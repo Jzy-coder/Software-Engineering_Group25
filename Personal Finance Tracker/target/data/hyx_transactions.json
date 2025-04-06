@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "category": "Expense",
+    "type": "Shopping",
+    "amount": 200.0,
+    "description": "",
+    "date": "2025-04-06 16:35:33"
+  },
+  {
+    "id": 2,
+    "category": "Income",
+    "type": "Bonus",
+    "amount": 200.0,
+    "description": "",
+    "date": "2025-04-06 16:35:40"
+  }
+]
