@@ -19,22 +19,32 @@
                             <ColumnConstraints hgrow="SOMETIMES" minWidth="200" prefWidth="200" />
                         </columnConstraints>
                         <rowConstraints>
+                             <!-- 新增一行用于 DatePicker -->
+                            <RowConstraints minHeight="30" prefHeight="30" vgrow="SOMETIMES" />
                             <RowConstraints minHeight="30" prefHeight="30" vgrow="SOMETIMES" />
                             <RowConstraints minHeight="30" prefHeight="30" vgrow="SOMETIMES" />
                             <RowConstraints minHeight="30" prefHeight="30" vgrow="SOMETIMES" />
                             <RowConstraints minHeight="60" prefHeight="60" vgrow="SOMETIMES" />
                             <RowConstraints minHeight="30" prefHeight="30" vgrow="SOMETIMES" />
                         </rowConstraints>
-                        <Label text="Category:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
-                        <ComboBox fx:id="categoryComboBox" GridPane.rowIndex="0" GridPane.columnIndex="1" />
-                        <Label text="Type:" GridPane.rowIndex="1" GridPane.columnIndex="0" />
-                        <ComboBox fx:id="typeComboBox" GridPane.rowIndex="1" GridPane.columnIndex="1" />
-                        <Label text="Amount:" GridPane.rowIndex="2" GridPane.columnIndex="0" />
-                        <TextField fx:id="amountField" GridPane.rowIndex="2" GridPane.columnIndex="1" />
-                        <Label text="Description:" GridPane.rowIndex="3" GridPane.columnIndex="0" />
-                        <TextArea fx:id="descriptionArea" GridPane.rowIndex="3" GridPane.columnIndex="1" />
+                         <Label text="Date:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                        <DatePicker fx:id="datePicker" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+
+                        <Label text="Category:" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+                        <ComboBox fx:id="categoryComboBox" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+
+                        <Label text="Type:" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+                        <ComboBox fx:id="typeComboBox" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+
+                        <Label text="Amount:" GridPane.rowIndex="3" GridPane.columnIndex="0" />
+                        <TextField fx:id="amountField" GridPane.rowIndex="3" GridPane.columnIndex="1" />
+
+                        <Label text="Description:" GridPane.rowIndex="4" GridPane.columnIndex="0" />
+                        <TextArea fx:id="descriptionArea" GridPane.rowIndex="4" GridPane.columnIndex="1" />
+
                         <Button fx:id="addButton" text="Add New Transaction" onAction="#handleAddTransaction" 
-                                GridPane.rowIndex="4" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
+                                GridPane.rowIndex="5" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
+
                     </GridPane>
                 </VBox>
                 
@@ -70,6 +80,31 @@
                     <Label fx:id="balanceLabel" text="¥0.00" style="-fx-font-size: 16; -fx-font-weight: bold;" />
                 </VBox>
             </HBox>
+            
+            <!-- Period Summary Section -->
+            <VBox spacing="10" style="-fx-padding: 10; -fx-border-color: #cccccc; -fx-border-radius: 5;">
+                <HBox spacing="20" alignment="CENTER_LEFT">
+                    <Label text="Period From:" />
+                    <DatePicker fx:id="startDatePicker" />
+                    <Label text="To:" />
+                    <DatePicker fx:id="endDatePicker" />
+                </HBox>
+                
+                <HBox spacing="20">
+                    <VBox spacing="5" style="-fx-padding: 5;" HBox.hgrow="ALWAYS">
+                        <Label text="Period Income:" />
+                        <Label fx:id="periodIncomeLabel" text="¥0.00" style="-fx-font-size: 16; -fx-text-fill: green;" />
+                    </VBox>
+                    <VBox spacing="5" style="-fx-padding: 5;" HBox.hgrow="ALWAYS">
+                        <Label text="Period Expense:" />
+                        <Label fx:id="periodExpenseLabel" text="¥0.00" style="-fx-font-size: 16; -fx-text-fill: red;" />
+                    </VBox>
+                    <VBox spacing="5" style="-fx-padding: 5;" HBox.hgrow="ALWAYS">
+                        <Label text="Period Balance:" />
+                        <Label fx:id="periodBalanceLabel" text="¥0.00" style="-fx-font-size: 16; -fx-font-weight: bold;" />
+                    </VBox>
+                </HBox>
+            </VBox>
         </VBox>
     </center>
 </BorderPane>
