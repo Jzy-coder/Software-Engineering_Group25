@@ -5,24 +5,39 @@ import java.util.ArrayList;
 import java.util.List;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import com.finance.service.TransactionService;
 
 /**
- * 管理用户登录状态的工具类
+ * Login state management utility class
  */
 public class LoginManager {
     private static String currentUsername = "Default User";
     private static String currentPassword = "";
     
     /**
-     * 验证用户登录信息
-     * @param username 用户名
-     * @param password 密码
-     * @return 是否验证成功
+     * Validate user login information
+     * @param username username
+     * @param password password
+     * @return whether validation is successful
      */
+    private static volatile TransactionService transactionService = null;
+    
+    public static TransactionService getTransactionService() {
+        if (transactionService == null) {
+            synchronized (LoginManager.class) {
+                if (transactionService == null) {
+                    transactionService = new TransactionService();
+                    transactionService.switchUser(currentUsername, false);
+                }
+            }
+        }
+        return transactionService;
+    }
+
     public static boolean validateLogin(String username, String password) {
         try {
-            // 统一使用target/UserInfo目录保存用户信息
-            File userFile = new File(System.getProperty("user.dir") + File.separator + "target" + File.separator + "UserInfo" + File.separator + username + ".txt");
+            // Use UserInfo directory to store user information
+            File userFile = new File(System.getProperty("user.dir") + File.separator + "UserInfo" + File.separator + username + ".txt");
             
             String hashedPassword = hashPassword(password);
             if (hashedPassword == null) {
@@ -41,8 +56,12 @@ public class LoginManager {
                     }
                     
                     if (storedPassword != null && storedPassword.equals(hashedPassword)) {
+                        // Clear cache before switching user
+                        getTransactionService().clearCache();              
                         currentUsername = username;
                         currentPassword = password;
+                        // Switch to current user's transaction data
+                        getTransactionService().switchUser(username, false);
                         return true;
                     }
                 }
@@ -54,19 +73,19 @@ public class LoginManager {
     }
     
     /**
-     * 获取当前登录用户的用户名
-     * @return 当前用户名
+     * Get current logged-in username
+     * @return current username
      */
     public static String getCurrentUsername() {
         return currentUsername;
     }
     
     /**
-     * 设置当前登录用户的用户名
-     * @param username 用户名
+     * Set current logged-in username
+     * @param username username
      */
     public static void setCurrentUsername(String username) {
-        // 如果用户名相同，不进行任何操作
+        // If username is the same, do nothing
         if (currentUsername.equals(username)) {
             return;
         }
@@ -74,28 +93,22 @@ public class LoginManager {
         String oldUsername = currentUsername;
         
         try {
-            // 获取旧用户文件路径
-            File oldUserFile = new File(System.getProperty("user.dir") + File.separator + "target" + File.separator + "UserInfo" + File.separator + oldUsername + ".txt");
-            File oldUserFileInCurrentDir = new File(System.getProperty("user.dir") + File.separator + "UserInfo" + File.separator + oldUsername + ".txt");
+            // Get old user file path
+            File oldUserFile = new File("UserInfo" + File.separator + oldUsername + ".txt");
             
-            // 获取新用户文件路径
-            File newUserFile = new File(System.getProperty("user.dir") + File.separator + "target" + File.separator + "UserInfo" + File.separator + username + ".txt");
-            File newUserFileInCurrentDir = new File(System.getProperty("user.dir") + File.separator + "UserInfo" + File.separator + username + ".txt");
+            // Get new user file path
+            File newUserFile = new File("UserInfo" + File.separator + username + ".txt");
             
-            // 确保UserInfo目录存在
-            File targetUserInfoDir = new File(System.getProperty("user.dir") + File.separator + "target" + File.separator + "UserInfo");
-            File currentUserInfoDir = new File(System.getProperty("user.dir") + File.separator + "UserInfo");
-            if (!targetUserInfoDir.exists()) {
-                targetUserInfoDir.mkdirs();
-            }
-            if (!currentUserInfoDir.exists()) {
-                currentUserInfoDir.mkdirs();
+            // Ensure UserInfo directory exists
+            File userInfoDir = new File("UserInfo");
+            if (!userInfoDir.exists()) {
+                userInfoDir.mkdirs();
             }
             
-            // 处理target目录下的用户文件
+            // Process user file
             if (oldUserFile.exists()) {
-                // 读取旧文件内容
-                List<String> lines = new ArrayList<>();
+                // Read old file content
+                java.util.List<String> lines = new java.util.ArrayList<>();
                 try (BufferedReader reader = new BufferedReader(new FileReader(oldUserFile))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
@@ -106,56 +119,33 @@ public class LoginManager {
                     }
                 }
                 
-                // 写入新文件
+                // Write to new file
                 try (PrintWriter writer = new PrintWriter(new FileWriter(newUserFile))) {
                     for (String line : lines) {
                         writer.println(line);
                     }
                 }
                 
-                // 如果新文件创建成功，则删除旧文件
+                // If new file is created successfully, delete the old file
                 if (newUserFile.exists()) {
                     oldUserFile.delete();
                 }
             }
             
-            // 处理当前目录下的用户文件
-            if (oldUserFileInCurrentDir.exists()) {
-                // 读取旧文件内容
-                List<String> lines = new ArrayList<>();
-                try (BufferedReader reader = new BufferedReader(new FileReader(oldUserFileInCurrentDir))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        if (line.startsWith("Username: ")) {
-                            line = "Username: " + username;
-                        }
-                        lines.add(line);
-                    }
-                }
-                
-                // 写入新文件
-                try (PrintWriter writer = new PrintWriter(new FileWriter(newUserFileInCurrentDir))) {
-                    for (String line : lines) {
-                        writer.println(line);
-                    }
-                }
-                
-                // 如果新文件创建成功，则删除旧文件
-                if (newUserFileInCurrentDir.exists()) {
-                    oldUserFileInCurrentDir.delete();
-                }
-            }
-            
-            // 更新当前用户名
+            // Clear cache before switching user
+            getTransactionService().clearCache();
+            // Update current username
             currentUsername = username;
+            // Switch to current user's transaction data
+            getTransactionService().switchUser(username, true);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
     
     /**
-     * 更新用户密码
-     * @param newPassword 新密码
+     * Update user password
+     * @param newPassword new password
      */
     public static void updatePassword(String newPassword) {
         try {
@@ -164,23 +154,18 @@ public class LoginManager {
                 return;
             }
             
-            // 统一使用target/UserInfo目录保存用户信息
-            File userFile = new File(System.getProperty("user.dir") + File.separator + "target" + File.separator + "UserInfo" + File.separator + currentUsername + ".txt");
-            File userFileInCurrentDir = new File(System.getProperty("user.dir") + File.separator + "UserInfo" + File.separator + currentUsername + ".txt");
+            // Use UserInfo directory to store user information
+            File userFile = new File(System.getProperty("user.dir") + File.separator + "UserInfo" + File.separator + currentUsername + ".txt");
             
-            // 确保UserInfo目录存在
-            File targetUserInfoDir = new File(System.getProperty("user.dir") + File.separator + "target" + File.separator + "UserInfo");
-            File currentUserInfoDir = new File(System.getProperty("user.dir") + File.separator + "UserInfo");
-            if (!targetUserInfoDir.exists()) {
-                targetUserInfoDir.mkdirs();
-            }
-            if (!currentUserInfoDir.exists()) {
-                currentUserInfoDir.mkdirs();
+            // Ensure UserInfo directory exists
+            File userInfoDir = new File(System.getProperty("user.dir") + File.separator + "UserInfo");
+            if (!userInfoDir.exists()) {
+                userInfoDir.mkdirs();
             }
             
-            // 更新target目录下的用户文件
+            // Update user file
             if (userFile.exists()) {
-                // 读取文件内容
+                // Read file content
                 List<String> lines = new ArrayList<>();
                 try (BufferedReader reader = new BufferedReader(new FileReader(userFile))) {
                     String line;
@@ -192,7 +177,7 @@ public class LoginManager {
                     }
                 }
                 
-                // 直接写回原文件
+                // Write back to original file
                 try (PrintWriter writer = new PrintWriter(new FileWriter(userFile))) {
                     for (String line : lines) {
                         writer.println(line);
@@ -200,39 +185,19 @@ public class LoginManager {
                 }
             }
             
-            // 更新当前目录下的用户文件
-            if (userFileInCurrentDir.exists()) {
-                // 读取文件内容
-                List<String> lines = new ArrayList<>();
-                try (BufferedReader reader = new BufferedReader(new FileReader(userFileInCurrentDir))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        if (line.startsWith("Password: ")) {
-                            line = "Password: " + hashedPassword;
-                        }
-                        lines.add(line);
-                    }
-                }
-                
-                // 直接写回原文件
-                try (PrintWriter writer = new PrintWriter(new FileWriter(userFileInCurrentDir))) {
-                    for (String line : lines) {
-                        writer.println(line);
-                    }
-                }
-            }
-            
-            // 更新当前密码
+            // Update current password
             currentPassword = newPassword;
+            
+            // Remove saved credentials for this user
+            com.finance.util.UserCredentialManager.removeCredentials(currentUsername);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
     
-
     /**
-     * 保存密码到配置文件
-     * @param password 要保存的密码
+     * Save password to configuration file
+     * @param password password to save
      */
     private static String hashPassword(String password) {
         try {

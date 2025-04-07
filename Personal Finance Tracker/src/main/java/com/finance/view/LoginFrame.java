@@ -1,23 +1,51 @@
 package com.finance.view;
 
-import javax.swing.*;
-import javax.swing.plaf.basic.BasicComboBoxUI;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.BufferedImage;
-import java.io.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Properties;
-import java.net.URL;
+
 import javax.imageio.ImageIO;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.plaf.basic.BasicComboBoxUI;
+
 import com.finance.gui.MainWindow;
 
 public class LoginFrame extends JFrame {
-    private JTextField usernameField;
     private JComboBox<String> usernameComboBox;
     private JPasswordField passwordField;
-    private JCheckBox rememberPasswordBox;
+    private final JCheckBox rememberPasswordBox;
     private Properties userProps = new Properties();
     private File configFile = new File(System.getProperty("user.home") + File.separator + ".finance_tracker_config");
 
@@ -29,7 +57,8 @@ public class LoginFrame extends JFrame {
                 // Initialize by clearing the password field
                 passwordField.setText("");
             } catch (IOException e) {
-                e.printStackTrace();
+                String errorMsg = "Failed to load configuration file: " + e.getMessage();
+                System.err.println(errorMsg);
                 JOptionPane.showMessageDialog(this, "Failed to load configuration file", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
@@ -55,7 +84,8 @@ public class LoginFrame extends JFrame {
         try (FileOutputStream out = new FileOutputStream(configFile)) {
             userProps.store(out, "User Configuration");
         } catch (IOException e) {
-            e.printStackTrace();
+            String errorMsg = "Failed to save configuration file: " + e.getMessage();
+            System.err.println(errorMsg);
             JOptionPane.showMessageDialog(this, "Failed to save configuration file", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -65,65 +95,15 @@ public class LoginFrame extends JFrame {
         setSize(600, 450);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        setResizable(false);
+        setMaximumSize(new Dimension(600, 450));
+        setMinimumSize(new Dimension(600, 450));
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(15, 15, 15, 15);
 
-        // Add avatar panel
-        JPanel avatarPanel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                try {
-                    URL avatarUrl = getClass().getClassLoader().getResource("config/UserImage.png");
-                    if (avatarUrl != null) {
-                        BufferedImage originalImage = ImageIO.read(avatarUrl);
-                        if (originalImage != null) {
-                            // Create a circular clipping area
-                            int size = Math.min(getWidth(), getHeight());
-                            BufferedImage circularImage = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-                            Graphics2D g2 = circularImage.createGraphics();
-                            
-                            // Set high quality rendering
-                            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                            g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-                            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-                            
-                            g2.fillOval(0, 0, size, size);
-                            g2.setComposite(AlphaComposite.SrcIn);
-                            
-                            // Use high quality scaling
-                            Image scaledImage = originalImage.getScaledInstance(size, size, Image.SCALE_SMOOTH);
-                            g2.drawImage(scaledImage, 0, 0, null);
-                            g2.dispose();
-                            
-                            // Use high quality rendering to draw to panel
-                            Graphics2D panelG2 = (Graphics2D) g;
-                            panelG2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                            panelG2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-                            panelG2.drawImage(circularImage, 0, 0, null);
-                        }
-                    } else {
-                        System.err.println("Failed to load avatar image: Resource file not found");
-                    }
-                } catch (Exception e) {
-                    System.err.println("Error loading avatar image: " + e.getMessage());
-                    e.printStackTrace();
-                }
-            }
-            
-            @Override
-            public Dimension getPreferredSize() {
-                return new Dimension(80, 80);
-            }
-        };
-        avatarPanel.setOpaque(false);
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.CENTER;
-        mainPanel.add(avatarPanel, gbc);
+
 
         // Add title
         JLabel titleLabel = new JLabel("Personal Finance Tracker");
@@ -179,7 +159,7 @@ public class LoginFrame extends JFrame {
         // Add mouse click event to show dropdown list when clicked
         usernameComboBox.getEditor().getEditorComponent().addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void mouseClicked(MouseEvent event) {
                 usernameComboBox.showPopup();
             }
         });
@@ -203,8 +183,11 @@ public class LoginFrame extends JFrame {
 
         // Listen for username text changes
         ((JTextField) usernameComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
             public void insertUpdate(javax.swing.event.DocumentEvent e) { updatePassword(); }
+            @Override
             public void removeUpdate(javax.swing.event.DocumentEvent e) { updatePassword(); }
+            @Override
             public void changedUpdate(javax.swing.event.DocumentEvent e) { updatePassword(); }
             
             private void updatePassword() {
@@ -264,10 +247,10 @@ public class LoginFrame extends JFrame {
 
         if (validateLogin(username, password)) {
             saveUserInfo(username, password);
-            // 设置当前登录用户名
-            com.finance.gui.LoginManager.setCurrentUsername(username);
             JOptionPane.showMessageDialog(this, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
             MainWindow mainWindow = new MainWindow();
+            mainWindow.setSize(1400, 900);
+            mainWindow.setResizable(false);
             mainWindow.setVisible(true);
             this.dispose();
         } else {
@@ -276,14 +259,9 @@ public class LoginFrame extends JFrame {
     }
 
     private boolean validateLogin(String username, String password) {
-        // 优先检查target目录下的用户文件，因为这是最新的文件位置
-        File userFile = new File(System.getProperty("user.dir") + File.separator + "target" + File.separator + "UserInfo" + File.separator + username + ".txt");
+        File userFile = new File("UserInfo" + File.separator + username + ".txt");
         if (!userFile.exists()) {
-            // 如果在target目录下没有找到，尝试在当前目录下查找
-            userFile = new File(System.getProperty("user.dir") + File.separator + "UserInfo" + File.separator + username + ".txt");
-            if (!userFile.exists()) {
-                return false;
-            }
+            return false;
         }
         try (BufferedReader reader = new BufferedReader(new FileReader(userFile))) {
             String line;
@@ -304,7 +282,8 @@ public class LoginFrame extends JFrame {
             // Otherwise, hash the input password before comparison
             return storedPassword.equals(hashPassword(password));
         } catch (IOException e) {
-            e.printStackTrace();
+            String errorMsg = "Error validating login: " + e.getMessage();
+            System.err.println(errorMsg);
             return false;
         }
     }
@@ -318,31 +297,13 @@ public class LoginFrame extends JFrame {
 
     private void saveUserToFile(String username, String hashedPassword) {
         createUserInfoDirectory();
-        // 在当前目录和target目录下都保存用户文件
         File userFile = new File("UserInfo" + File.separator + username + ".txt");
-        File targetUserFile = new File(System.getProperty("user.dir") + File.separator + "target" + File.separator + "UserInfo" + File.separator + username + ".txt");
-        
-        // 确保target目录下的UserInfo文件夹存在
-        File targetUserInfoDir = new File(System.getProperty("user.dir") + File.separator + "target" + File.separator + "UserInfo");
-        if (!targetUserInfoDir.exists()) {
-            targetUserInfoDir.mkdirs();
-        }
-
-        // 保存到两个位置
-        try {
-            // 保存到当前目录
-            try (PrintWriter writer = new PrintWriter(new FileWriter(userFile))) {
-                writer.println("Username: " + username);
-                writer.println("Password: " + hashedPassword);
-            }
-            
-            // 保存到target目录
-            try (PrintWriter writer = new PrintWriter(new FileWriter(targetUserFile))) {
-                writer.println("Username: " + username);
-                writer.println("Password: " + hashedPassword);
-            }
+        try (PrintWriter writer = new PrintWriter(new FileWriter(userFile))) {
+            writer.println("Username: " + username);
+            writer.println("Password: " + hashedPassword);
         } catch (IOException e) {
-            e.printStackTrace();
+            String errorMsg = "Failed to save user information: " + e.getMessage();
+            System.err.println(errorMsg);
             JOptionPane.showMessageDialog(this, "Failed to save user information", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -352,31 +313,12 @@ public class LoginFrame extends JFrame {
         int userIndex = -1;
         for (String key : userProps.stringPropertyNames()) {
             if (key.endsWith(".username") && userProps.getProperty(key).equals(username)) {
-                try {
-                    userIndex = Integer.parseInt(key.split("\\.")[0]);
-                    break;
-                } catch (NumberFormatException e) {
-                    // 如果key的前缀不是数字，则跳过
-                    continue;
-                }
+                userIndex = Integer.parseInt(key.split("\\.")[0]);
+                break;
             }
         }
         if (userIndex == -1) {
-            // 找一个安全的索引值，避免使用已有的非数字索引
-            int maxIndex = 0;
-            for (String key : userProps.stringPropertyNames()) {
-                if (key.contains(".")) {
-                    try {
-                        int idx = Integer.parseInt(key.split("\\.")[0]);
-                        if (idx > maxIndex) {
-                            maxIndex = idx;
-                        }
-                    } catch (NumberFormatException e) {
-                        // 忽略非数字索引
-                    }
-                }
-            }
-            userIndex = maxIndex + 1;
+            userIndex = userProps.size() / 3;
         }
         
         userProps.setProperty(userIndex + ".username", username);
@@ -393,16 +335,11 @@ public class LoginFrame extends JFrame {
     private String getSavedPassword(String username) {
         for (String key : userProps.stringPropertyNames()) {
             if (key.endsWith(".username") && userProps.getProperty(key).equals(username)) {
-                try {
-                    String baseKey = key.substring(0, key.length() - ".username".length());
-                    String originalPassword = userProps.getProperty(baseKey + ".original_password");
-                    if (originalPassword != null) {
-                        rememberPasswordBox.setSelected(true);
-                        return originalPassword;
-                    }
-                } catch (Exception e) {
-                    // 忽略任何异常，继续检查其他可能的键
-                    continue;
+                String baseKey = key.substring(0, key.length() - ".username".length());
+                String originalPassword = userProps.getProperty(baseKey + ".original_password");
+                if (originalPassword != null) {
+                    rememberPasswordBox.setSelected(true);
+                    return originalPassword;
                 }
             }
         }
@@ -450,29 +387,7 @@ public class LoginFrame extends JFrame {
             String confirmPassword = new String(confirmPasswordField.getPassword());
 
             if (username.isEmpty() || password.isEmpty()) {
-                JOptionPane.showMessageDialog(dialog, "用户名和密码不能为空", "错误", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // 验证用户名只能包含字母、数字和下划线
-            if (!username.matches("^[a-zA-Z0-9_]+$")) {
-                JOptionPane.showMessageDialog(dialog, "用户名只能包含字母、数字和下划线", "错误", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // 验证密码是否至少包含两类字符
-            boolean hasUpperCase = password.matches(".*[A-Z].*");
-            boolean hasLowerCase = password.matches(".*[a-z].*");
-            boolean hasDigit = password.matches(".*\\d.*");
-            boolean hasUnderscore = password.matches(".*_.*");
-            
-            int characterTypeCount = (hasUpperCase ? 1 : 0) + 
-                                    (hasLowerCase ? 1 : 0) + 
-                                    (hasDigit ? 1 : 0) + 
-                                    (hasUnderscore ? 1 : 0);
-            
-            if (characterTypeCount < 2) {
-                JOptionPane.showMessageDialog(dialog, "密码必须至少包含大写字母、小写字母、数字、下划线中的两类字符", "错误", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Username and password cannot be empty", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -504,7 +419,8 @@ public class LoginFrame extends JFrame {
             }
             return hexString.toString();
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            String errorMsg = "Error hashing password: " + e.getMessage();
+            System.err.println(errorMsg);
             return null;
         }
     }
@@ -513,8 +429,9 @@ public class LoginFrame extends JFrame {
         SwingUtilities.invokeLater(() -> {
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+                String errorMsg = "Error setting look and feel: " + e.getMessage();
+                System.err.println(errorMsg);
             }
             new LoginFrame().setVisible(true);
         });
