@@ -16,13 +16,6 @@
                     </toggleGroup>
                 </RadioButton>
                 <RadioButton fx:id="expenseRadio" text="Expense" toggleGroup="$typeGroup" />
-                <Separator orientation="VERTICAL" />
-                <RadioButton fx:id="singleDateRadio" text="Single Date" selected="true">
-                    <toggleGroup>
-                        <ToggleGroup fx:id="dateSelectionGroup" />
-                    </toggleGroup>
-                </RadioButton>
-                <RadioButton fx:id="dateRangeRadio" text="Date Range" toggleGroup="$dateSelectionGroup" />
                 <Button fx:id="dateButton" text="Select Date" onAction="#handleDateSelection" />
                 <Label fx:id="dateLabel" style="-fx-font-size: 14; -fx-font-weight: bold;" />
             </HBox>

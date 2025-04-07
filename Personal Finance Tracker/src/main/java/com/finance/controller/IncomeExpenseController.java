@@ -47,7 +47,6 @@ public class IncomeExpenseController implements Initializable {
     // ▼▼▼▼▼▼▼▼▼▼ 新增代码 ▼▼▼▼▼▼▼▼▼▼
     @FXML
     private DatePicker datePicker;
-    // ▲▲▲▲▲▲▲▲▲▲ 新增结束 ▲▲▲▲▲▲▲▲▲▲
     
     @FXML
     private TableView<Transaction> transactionTable;
@@ -96,6 +95,21 @@ public class IncomeExpenseController implements Initializable {
     
     @FXML
     private Label balanceLabel;
+    
+    @FXML
+    private DatePicker startDatePicker;
+    
+    @FXML
+    private DatePicker endDatePicker;
+    
+    @FXML
+    private Label periodIncomeLabel;
+    
+    @FXML
+    private Label periodExpenseLabel;
+    
+    @FXML
+    private Label periodBalanceLabel;
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -162,11 +176,30 @@ public class IncomeExpenseController implements Initializable {
            }
        );
        categoryComboBox.getSelectionModel().selectFirst();
-      
-        
-        // Load data
-        loadTransactions();
-        updateSummary();
+       
+       // 初始化时间段选择器
+       startDatePicker.setValue(LocalDate.now().minusMonths(1));
+       endDatePicker.setValue(LocalDate.now());
+       
+       // 限制可选日期范围，不允许选择未来日期
+       Callback<DatePicker, DateCell> dayCellFactory = picker -> new DateCell() {
+           @Override
+           public void updateItem(LocalDate date, boolean empty) {
+               super.updateItem(date, empty);
+               setDisable(date.isAfter(LocalDate.now()));
+           }
+       };
+       startDatePicker.setDayCellFactory(dayCellFactory);
+       endDatePicker.setDayCellFactory(dayCellFactory);
+       
+       // 添加时间段选择监听器
+       startDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> updatePeriodSummary());
+       endDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> updatePeriodSummary());
+       
+       // Load data
+       loadTransactions();
+       updateSummary();
+       updatePeriodSummary();
     }
     
     /**
@@ -208,9 +241,10 @@ public class IncomeExpenseController implements Initializable {
             amountField.clear();
             descriptionArea.clear();
             
-            // Refresh table
+            // Refresh table and update all summaries
             loadTransactions();
             updateSummary();
+            updatePeriodSummary();
             
         } catch (NumberFormatException e) {
             showAlert("Amount must be a valid number");
@@ -233,6 +267,26 @@ public class IncomeExpenseController implements Initializable {
     }
     
     /**
+     * Update period summary information
+     */
+    private void updatePeriodSummary() {
+        if (startDatePicker.getValue() != null && endDatePicker.getValue() != null) {
+            LocalDateTime startDate = startDatePicker.getValue().atStartOfDay();
+            LocalDateTime endDate = endDatePicker.getValue().atTime(23, 59, 59);
+            
+            if (!startDate.isAfter(endDate)) {
+                double periodIncome = transactionService.calculateTotalByCategoryAndDateRange("Income", startDate, endDate);
+                double periodExpense = transactionService.calculateTotalByCategoryAndDateRange("Expense", startDate, endDate);
+                double periodBalance = periodIncome - periodExpense;
+                
+                periodIncomeLabel.setText(String.format("¥%.2f", periodIncome));
+                periodExpenseLabel.setText(String.format("¥%.2f", periodExpense));
+                periodBalanceLabel.setText(String.format("¥%.2f", periodBalance));
+            }
+        }
+    }
+    
+    /**
      * Show alert dialog
      */
     private void showAlert(String message) {
@@ -243,21 +297,19 @@ public class IncomeExpenseController implements Initializable {
         alert.showAndWait();
     }
     
-    /**
-     * Setup edit button column
-     */
     private void setupEditColumn() {
-        Callback<TableColumn<Transaction, Void>, TableCell<Transaction, Void>> cellFactory = column -> new TableCell<>() {
+        editColumn.setCellFactory(column -> new TableCell<Transaction, Void>() {
             private final Button editButton = new Button("Edit");
+            
             {
-                editButton.setOnAction((event) -> {
+                editButton.setOnAction(event -> {
                     Transaction transaction = getTableView().getItems().get(getIndex());
                     handleEditTransaction(transaction);
                 });
             }
             
             @Override
-            public void updateItem(Void item, boolean empty) {
+            protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty) {
                     setGraphic(null);
@@ -265,26 +317,22 @@ public class IncomeExpenseController implements Initializable {
                     setGraphic(editButton);
                 }
             }
-        };
-        
-        editColumn.setCellFactory(cellFactory);
+        });
     }
     
-    /**
-     * Setup delete button column
-     */
     private void setupDeleteColumn() {
-        Callback<TableColumn<Transaction, Void>, TableCell<Transaction, Void>> cellFactory = column -> new TableCell<>() {
+        deleteColumn.setCellFactory(column -> new TableCell<Transaction, Void>() {
             private final Button deleteButton = new Button("Delete");
+            
             {
-                deleteButton.setOnAction((event) -> {
+                deleteButton.setOnAction(event -> {
                     Transaction transaction = getTableView().getItems().get(getIndex());
                     handleDeleteTransaction(transaction);
                 });
             }
             
             @Override
-            public void updateItem(Void item, boolean empty) {
+            protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty) {
                     setGraphic(null);
@@ -292,9 +340,7 @@ public class IncomeExpenseController implements Initializable {
                     setGraphic(deleteButton);
                 }
             }
-        };
-        
-        deleteColumn.setCellFactory(cellFactory);
+        });
     }
     
     /**

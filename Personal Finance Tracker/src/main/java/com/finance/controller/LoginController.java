@@ -294,7 +294,7 @@ public class LoginController implements Initializable {
             // Set the scene to the stage
             stage.setTitle("Personal Finance Assistant");
             stage.setScene(scene);
-            stage.setWidth(1152);
+            stage.setWidth(1024);
             stage.setHeight(768);
             stage.setResizable(false);
             stage.show();
