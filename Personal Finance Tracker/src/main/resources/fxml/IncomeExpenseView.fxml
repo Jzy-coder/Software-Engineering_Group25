@@ -89,6 +89,7 @@
                     <Label text="To:" />
                     <DatePicker fx:id="endDatePicker" />
                 </HBox>
+
             </VBox>
             
             <!-- Period Balance Section -->
