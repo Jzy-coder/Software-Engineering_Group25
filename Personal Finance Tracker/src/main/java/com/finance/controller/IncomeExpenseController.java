@@ -152,12 +152,13 @@ public class IncomeExpenseController implements Initializable {
       // 设置默认日期为今天
       datePicker.setValue(LocalDate.now());
 
-      // 限制可选日期范围，不允许选择未来日期
+      // 限制可选日期范围为过去一个月内
       datePicker.setDayCellFactory(picker -> new DateCell() {
           @Override
           public void updateItem(LocalDate date, boolean empty) {
               super.updateItem(date, empty);
-              setDisable(date.isAfter(LocalDate.now()));
+              LocalDate minDate = LocalDate.now().minusMonths(1);
+              setDisable(date.isBefore(minDate) || date.isAfter(LocalDate.now()));
           }
       });
 
