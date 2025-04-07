@@ -240,9 +240,10 @@ public class IncomeExpenseController implements Initializable {
             amountField.clear();
             descriptionArea.clear();
             
-            // Refresh table
+            // Refresh table and update all summaries
             loadTransactions();
             updateSummary();
+            updatePeriodSummary();
             
         } catch (NumberFormatException e) {
             showAlert("Amount must be a valid number");
