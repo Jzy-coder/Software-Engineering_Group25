@@ -11,6 +11,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ResourceBundle;
 
+import com.finance.gui.LoginManager;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -27,6 +28,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.scene.layout.HBox;
+import javafx.scene.control.ComboBox;
 
 /**
  * Login Interface Controller
@@ -34,7 +37,7 @@ import javafx.stage.StageStyle;
 public class LoginController implements Initializable {
 
     @FXML
-    private TextField usernameField;
+    private ComboBox<String> usernameField;
     
     @FXML
     private PasswordField passwordField;
@@ -52,6 +55,35 @@ public class LoginController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         // Create UserInfo directory if it doesn't exist
         createUserInfoDirectory();
+        
+        // Initialize username ComboBox with saved usernames
+        usernameField.getItems().addAll(com.finance.util.UserCredentialManager.getSavedUsernames());
+        usernameField.setEditable(true);
+        
+        // Add listener for username selection
+        usernameField.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                String savedPassword = com.finance.util.UserCredentialManager.getSavedPassword(newVal);
+                if (savedPassword != null) {
+                    passwordField.setText(savedPassword);
+                    rememberPasswordBox.setSelected(true);
+                }
+            }
+        });
+        
+        // Add listener for manual username input
+        usernameField.getEditor().textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && !newVal.equals(oldVal)) {
+                String savedPassword = com.finance.util.UserCredentialManager.getSavedPassword(newVal);
+                if (savedPassword != null) {
+                    passwordField.setText(savedPassword);
+                    rememberPasswordBox.setSelected(true);
+                } else {
+                    passwordField.clear();
+                    rememberPasswordBox.setSelected(false);
+                }
+            }
+        });
     }
     
     /**
@@ -59,19 +91,26 @@ public class LoginController implements Initializable {
      */
     @FXML
     private void handleLogin() {
-        String username = usernameField.getText();
+        String username = usernameField.getValue();
         String password = passwordField.getText();
         
-        if (username.isEmpty() || password.isEmpty()) {
+        if (username == null || username.isEmpty() || password.isEmpty()) {
             showAlert(AlertType.ERROR, "Error", "Username and password cannot be empty");
             return;
         }
         
-        if (validateLogin(username, password)) {
+        if (LoginManager.validateLogin(username, password)) {
+            // Save credentials if remember password is checked
+            if (rememberPasswordBox.isSelected()) {
+                com.finance.util.UserCredentialManager.saveCredentials(username, password);
+            } else {
+                com.finance.util.UserCredentialManager.removeCredentials(username);
+            }
+            
             showAlert(AlertType.INFORMATION, "Success", "Login successful!");
             openMainView();
         } else {
-            showAlert(AlertType.ERROR, "Error", "Invalid username or password!");
+            showAlert(AlertType.ERROR, "Error", "Invalid username or password");
         }
     }
     
@@ -80,15 +119,18 @@ public class LoginController implements Initializable {
      */
     @FXML
     private void showRegisterDialog() {
-        Dialog<Void> dialog = new Dialog<>();
-        dialog.setTitle("Register New User");
-        dialog.initStyle(StageStyle.UTILITY);
+        // Create custom dialog
+        Stage dialogStage = new Stage();
+        dialogStage.setTitle("Register New User");
+        dialogStage.initModality(javafx.stage.Modality.WINDOW_MODAL);
+        dialogStage.initOwner(loginButton.getScene().getWindow());
+        dialogStage.initStyle(StageStyle.UTILITY);
         
-        // Create the registration form
+        // Create registration form
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
-        grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
+        grid.setPadding(new javafx.geometry.Insets(20, 20, 20, 20));
         
         TextField newUsernameField = new TextField();
         PasswordField newPasswordField = new PasswordField();
@@ -100,69 +142,81 @@ public class LoginController implements Initializable {
         grid.add(newPasswordField, 1, 1);
         grid.add(new Label("Confirm Password:"), 0, 2);
         grid.add(confirmPasswordField, 1, 2);
+        grid.add(new Label("Password must contain at least two types of: uppercase letters, lowercase letters, numbers, underscores"), 0, 3, 2, 1);
         
-        dialog.getDialogPane().setContent(grid);
+        // Create buttons
+        Button registerButton = new Button("Register");
+        Button cancelButton = new Button("Cancel");
         
-        // Add buttons to the dialog
-        dialog.getDialogPane().getButtonTypes().addAll(javafx.scene.control.ButtonType.OK, javafx.scene.control.ButtonType.CANCEL);
+        HBox buttonBox = new HBox(10);
+        buttonBox.setAlignment(javafx.geometry.Pos.CENTER);
+        buttonBox.getChildren().addAll(registerButton, cancelButton);
         
-        // Handle the registration when OK is clicked
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == javafx.scene.control.ButtonType.OK) {
-                String username = newUsernameField.getText();
-                String password = newPasswordField.getText();
-                String confirmPassword = confirmPasswordField.getText();
-                
-                if (username.isEmpty() || password.isEmpty()) {
-                    showAlert(AlertType.ERROR, "Error", "Username and password cannot be empty");
-                    return null;
-                }
-                
-                if (!password.equals(confirmPassword)) {
-                    showAlert(AlertType.ERROR, "Error", "Passwords do not match");
-                    return null;
-                }
-                
-                String hashedPassword = hashPassword(password);
-                saveUserToFile(username, hashedPassword);
-                showAlert(AlertType.INFORMATION, "Success", "Registration successful!");
+        grid.add(buttonBox, 0, 4, 2, 1);
+        
+        // Set register button action
+        registerButton.setOnAction(e -> {
+            String username = newUsernameField.getText();
+            String password = newPasswordField.getText();
+            String confirmPassword = confirmPasswordField.getText();
+            
+            // Validate input
+            if (username.isEmpty() || password.isEmpty()) {
+                showAlert(AlertType.ERROR, "Error", "Username and password cannot be empty");
+                return; // Return to form without closing dialog
             }
-            return null;
+            
+            // Validate username can only contain letters, numbers and underscores
+            if (!username.matches("^[a-zA-Z0-9_]+$")) {
+                showAlert(AlertType.ERROR, "Error", "Username can only contain letters, numbers and underscores");
+                return; // Return to form without closing dialog
+            }
+            
+            // Check if username already exists
+            File userFile = new File("UserInfo" + File.separator + username + ".txt");
+            if (userFile.exists()) {
+                showAlert(AlertType.ERROR, "Error", "Username already exists, please use a different one");
+                return; // Return to form without closing dialog
+            }
+            
+            // First validate if passwords match
+            if (!password.equals(confirmPassword)) {
+                showAlert(AlertType.ERROR, "Error", "Passwords do not match");
+                return; // Return to form without closing dialog
+            }
+            
+            // Then validate if password contains at least two types of characters
+            boolean hasUpperCase = password.matches(".*[A-Z].*");
+            boolean hasLowerCase = password.matches(".*[a-z].*");
+            boolean hasDigit = password.matches(".*\\d.*");
+            boolean hasUnderscore = password.matches(".*_.*");
+            
+            int characterTypeCount = (hasUpperCase ? 1 : 0) + 
+                                     (hasLowerCase ? 1 : 0) + 
+                                     (hasDigit ? 1 : 0) + 
+                                     (hasUnderscore ? 1 : 0);
+            
+            if (characterTypeCount < 2) {
+                showAlert(AlertType.ERROR, "Error", "Password must contain at least two types of: uppercase letters, lowercase letters, numbers, underscores");
+                return; // Return to form without closing dialog
+            }
+            
+            // All validations passed, save user information
+            String hashedPassword = hashPassword(password);
+            saveUserToFile(username, hashedPassword);
+            showAlert(AlertType.INFORMATION, "Success", "Registration successful!");
+            
+            // Close dialog
+            dialogStage.close();
         });
         
-        dialog.showAndWait();
-    }
-    
-    /**
-     * Validate login credentials
-     */
-    private boolean validateLogin(String username, String password) {
-        File userFile = new File("UserInfo" + File.separator + username + ".txt");
-        if (!userFile.exists()) {
-            return false;
-        }
-        try (BufferedReader reader = new BufferedReader(new FileReader(userFile))) {
-            String line;
-            String storedPassword = null;
-            while ((line = reader.readLine()) != null) {
-                if (line.startsWith("Password: ")) {
-                    storedPassword = line.substring("Password: ".length());
-                    break;
-                }
-            }
-            if (storedPassword == null) {
-                return false;
-            }
-            // If the input password is already a hash value, compare directly
-            if (password.length() == 64 && password.matches("[a-fA-F0-9]+")) {
-                return storedPassword.equals(password);
-            }
-            // Otherwise, hash the input password before comparison
-            return storedPassword.equals(hashPassword(password));
-        } catch (IOException e) {
-            System.err.println("Error validating login: " + e.getMessage());
-            return false;
-        }
+        // Set cancel button action
+        cancelButton.setOnAction(e -> dialogStage.close());
+        
+        // Create scene and display
+        Scene scene = new Scene(grid);
+        dialogStage.setScene(scene);
+        dialogStage.showAndWait();
     }
     
     /**
@@ -240,6 +294,9 @@ public class LoginController implements Initializable {
             // Set the scene to the stage
             stage.setTitle("Personal Finance Assistant");
             stage.setScene(scene);
+            stage.setWidth(1152);
+            stage.setHeight(768);
+            stage.setResizable(false);
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();

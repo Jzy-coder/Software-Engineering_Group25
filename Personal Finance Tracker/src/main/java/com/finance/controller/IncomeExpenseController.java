@@ -1,6 +1,7 @@
 package com.finance.controller;
 
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
@@ -16,6 +17,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DateCell;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -24,14 +27,27 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Callback;
+import javafx.beans.value.ObservableValue; 
 
 /**
  * Income/Expense Interface Controller
  */
 public class IncomeExpenseController implements Initializable {
 
+    // ▼▼▼▼▼▼▼▼▼ 新增代码：定义分类选项 ▼▼▼▼▼▼▼▼▼
+    private final ObservableList<String> incomeTypes = 
+        FXCollections.observableArrayList("Salary", "Bonus", "Others");
+    private final ObservableList<String> expenseTypes = 
+        FXCollections.observableArrayList("Food", "Shopping", "Transportation", "Housing", "Entertainment", "Others");
+    // ▲▲▲▲▲▲▲▲▲ 新增结束 ▲▲▲▲▲▲▲▲▲
+
     private TransactionService transactionService;
     private ObservableList<Transaction> transactionList;
+
+    // ▼▼▼▼▼▼▼▼▼▼ 新增代码 ▼▼▼▼▼▼▼▼▼▼
+    @FXML
+    private DatePicker datePicker;
+    // ▲▲▲▲▲▲▲▲▲▲ 新增结束 ▲▲▲▲▲▲▲▲▲▲
     
     @FXML
     private TableView<Transaction> transactionTable;
@@ -83,8 +99,15 @@ public class IncomeExpenseController implements Initializable {
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        transactionService = new TransactionService();
+        
+        // 使用LoginManager中的TransactionService实例，确保用户数据隔离
+        transactionService = com.finance.gui.LoginManager.getTransactionService();
         transactionList = FXCollections.observableArrayList();
+        
+        // Set custom placeholder for empty table
+        Label placeholderLabel = new Label("There is no record of income and expense.");
+        placeholderLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #757575;");
+        transactionTable.setPlaceholder(placeholderLabel);
         
         // Initialize table columns
         categoryColumn.setCellValueFactory(new PropertyValueFactory<>("category"));
@@ -95,7 +118,7 @@ public class IncomeExpenseController implements Initializable {
         
         // Format date column
         dateColumn.setCellFactory(column -> new TableCell<Transaction, LocalDateTime>() {
-            private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             
             @Override
             protected void updateItem(LocalDateTime item, boolean empty) {
@@ -112,9 +135,34 @@ public class IncomeExpenseController implements Initializable {
         setupEditColumn();
         setupDeleteColumn();
         
-        // Initialize dropdown boxes
-        categoryComboBox.setItems(FXCollections.observableArrayList("Income", "Expense"));
-        typeComboBox.setItems(FXCollections.observableArrayList("Salary", "Bonus", "Food", "Shopping", "Transportation", "Housing", "Entertainment", "Others"));
+      // 设置默认日期为今天
+      datePicker.setValue(LocalDate.now());
+
+      // 限制可选日期范围为过去一个月内
+      datePicker.setDayCellFactory(picker -> new DateCell() {
+          @Override
+          public void updateItem(LocalDate date, boolean empty) {
+              super.updateItem(date, empty);
+              LocalDate minDate = LocalDate.now().minusMonths(1);
+              setDisable(date.isBefore(minDate) || date.isAfter(LocalDate.now()));
+          }
+      });
+
+       // 添加下拉框联动 
+       categoryComboBox.setItems(FXCollections.observableArrayList("Income", "Expense"));
+      
+       categoryComboBox.getSelectionModel().selectedItemProperty().addListener(
+           (ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
+               if ("Income".equals(newValue)) {
+                   typeComboBox.setItems(incomeTypes);
+               } else if ("Expense".equals(newValue)) {
+                   typeComboBox.setItems(expenseTypes);
+               }
+               typeComboBox.getSelectionModel().selectFirst();
+           }
+       );
+       categoryComboBox.getSelectionModel().selectFirst();
+      
         
         // Load data
         loadTransactions();
@@ -136,6 +184,11 @@ public class IncomeExpenseController implements Initializable {
     @FXML
     private void handleAddTransaction() {
         try {
+            
+             // 获取用户选择的日期
+             LocalDate selectedDate = datePicker.getValue();
+             LocalDateTime transactionDate = selectedDate.atStartOfDay(); // 转换为当天零点时间
+
             String category = categoryComboBox.getValue();
             String type = typeComboBox.getValue();
             double amount = Double.parseDouble(amountField.getText());
@@ -146,7 +199,7 @@ public class IncomeExpenseController implements Initializable {
                 return;
             }
             
-            Transaction transaction = new Transaction(category, type, amount, description, LocalDateTime.now());
+            Transaction transaction = new Transaction(category, type, amount, description, transactionDate);
             transactionService.addTransaction(transaction);
             
             // Clear input fields

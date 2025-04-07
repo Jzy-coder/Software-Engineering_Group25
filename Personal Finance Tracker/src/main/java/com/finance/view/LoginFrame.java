@@ -1,30 +1,23 @@
 package com.finance.view;
 
-import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Image;
 import java.awt.Insets;
-import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Properties;
@@ -102,65 +95,15 @@ public class LoginFrame extends JFrame {
         setSize(600, 450);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        setResizable(false);
+        setMaximumSize(new Dimension(600, 450));
+        setMinimumSize(new Dimension(600, 450));
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(15, 15, 15, 15);
 
-        // Add avatar panel
-        JPanel avatarPanel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                try {
-                    URL avatarUrl = getClass().getClassLoader().getResource("config/UserImage.png");
-                    if (avatarUrl != null) {
-                        BufferedImage originalImage = ImageIO.read(avatarUrl);
-                        if (originalImage != null) {
-                            // Create a circular clipping area
-                            int size = Math.min(getWidth(), getHeight());
-                            BufferedImage circularImage = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-                            Graphics2D g2 = circularImage.createGraphics();
-                            
-                            // Set high quality rendering
-                            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                            g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-                            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-                            
-                            g2.fillOval(0, 0, size, size);
-                            g2.setComposite(AlphaComposite.SrcIn);
-                            
-                            // Use high quality scaling
-                            Image scaledImage = originalImage.getScaledInstance(size, size, Image.SCALE_SMOOTH);
-                            g2.drawImage(scaledImage, 0, 0, null);
-                            g2.dispose();
-                            
-                            // Use high quality rendering to draw to panel
-                            Graphics2D panelG2 = (Graphics2D) g;
-                            panelG2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                            panelG2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-                            panelG2.drawImage(circularImage, 0, 0, null);
-                        }
-                    } else {
-                        System.err.println("Failed to load avatar image: Resource file not found");
-                    }
-                } catch (IOException | IllegalArgumentException e) {
-                    String errorMsg = "Error loading avatar image: " + e.getMessage();
-                    System.err.println(errorMsg);
-                }
-            }
-            
-            @Override
-            public Dimension getPreferredSize() {
-                return new Dimension(80, 80);
-            }
-        };
-        avatarPanel.setOpaque(false);
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.CENTER;
-        mainPanel.add(avatarPanel, gbc);
+
 
         // Add title
         JLabel titleLabel = new JLabel("Personal Finance Tracker");
@@ -306,6 +249,8 @@ public class LoginFrame extends JFrame {
             saveUserInfo(username, password);
             JOptionPane.showMessageDialog(this, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
             MainWindow mainWindow = new MainWindow();
+            mainWindow.setSize(1400, 900);
+            mainWindow.setResizable(false);
             mainWindow.setVisible(true);
             this.dispose();
         } else {

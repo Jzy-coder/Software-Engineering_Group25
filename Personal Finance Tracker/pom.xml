@@ -33,6 +33,20 @@
             <version>${javafx.version}</version>
         </dependency>
         
+        <!-- JCalendar依赖 -->
+        <dependency>
+            <groupId>com.toedter</groupId>
+            <artifactId>jcalendar</artifactId>
+            <version>1.4</version>
+        </dependency>
+        
+        <!-- JFreeChart依赖 -->
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.5.4</version>
+        </dependency>
+        
         <!-- JSON处理 -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -97,6 +111,8 @@
                                         <exclude>META-INF/*.SF</exclude>
                                         <exclude>META-INF/*.DSA</exclude>
                                         <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>data/**</exclude>
+                                        <exclude>UserInfo/**</exclude>
                                     </excludes>
                                 </filter>
                             </filters>
@@ -129,6 +145,29 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>${project.basedir}/data</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>${project.basedir}/UserInfo</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>com.akathist.maven.plugins.launch4j</groupId>
                 <artifactId>launch4j-maven-plugin</artifactId>
                 <version>${launch4j.version}</version>
@@ -143,6 +182,8 @@
                             <headerType>gui</headerType>
                             <jar>${project.build.directory}/${project.artifactId}-${project.version}-shaded.jar</jar>
                             <outfile>${project.build.directory}/FinanceManager.exe</outfile>
+                            <!-- Temporarily remove icon configuration to allow successful packaging -->
+                            <!-- <icon>src/main/resources/default-icon.ico</icon> -->
                             <downloadUrl>https://adoptium.net/</downloadUrl>
                             <classPath>
                                 <mainClass>com.finance.app.Launcher</mainClass>

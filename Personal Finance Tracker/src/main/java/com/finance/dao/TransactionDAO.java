@@ -25,17 +25,18 @@ import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
 
 /**
- * 交易记录数据访问对象，负责数据的持久化操作
+ * Transaction Data Access Object, responsible for data persistence operations
  */
 public class TransactionDAO {
     private static final String DATA_DIR = "data";
-    private static final String FILE_NAME = "transactions.json";
+    private static final String FILE_NAME_TEMPLATE = "%s_transactions.json";
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final Gson gson;
-    private final File dataFile;
+    private File dataFile;
+    private String currentUsername;
     
     /**
-     * LocalDateTime的自定义TypeAdapter，解决Java模块系统限制问题
+     * Custom TypeAdapter for LocalDateTime to resolve Java module system limitations
      */
     private static class LocalDateTimeAdapter implements JsonSerializer<LocalDateTime>, JsonDeserializer<LocalDateTime> {
         
@@ -51,23 +52,35 @@ public class TransactionDAO {
     }
     
     public TransactionDAO() {
-        // 创建LocalDateTime的自定义TypeAdapter
+        // Create custom TypeAdapter for LocalDateTime
         gson = new GsonBuilder()
                 .setPrettyPrinting()
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
                 .create();
         
-        // 确保数据目录存在
+        // Ensure data directory exists
         File dir = new File(DATA_DIR);
         if (!dir.exists()) {
             dir.mkdirs();
         }
         
-        dataFile = new File(dir, FILE_NAME);
+        // Get current logged-in user
+        this.currentUsername = com.finance.gui.LoginManager.getCurrentUsername();
+        initializeDataFile();
+    }
+    
+    /**
+     * Initialize user's data file
+     */
+    private void initializeDataFile() {
+        // Create corresponding data file using username
+        String fileName = String.format(FILE_NAME_TEMPLATE, currentUsername);
+        dataFile = new File(DATA_DIR, fileName);
+        
         if (!dataFile.exists()) {
             try {
                 dataFile.createNewFile();
-                // 初始化空的交易列表
+                // Initialize empty transaction list
                 saveToFile(new ArrayList<>());
             } catch (IOException e) {
                 System.err.println("Error creating transaction data file: " + e.getMessage());
@@ -76,11 +89,57 @@ public class TransactionDAO {
     }
     
     /**
-     * 查找所有交易记录
+     * Update current user and switch data file
+     */
+    public void updateCurrentUser(String username, boolean isRename) {
+        String oldUsername = this.currentUsername;
+        this.currentUsername = username;
+
+        if (isRename && oldUsername != null && !oldUsername.equals(username)) {
+            // 用户名重命名场景：重命名数据文件
+            String oldFileName = String.format(FILE_NAME_TEMPLATE, oldUsername);
+            File oldFile = new File(DATA_DIR, oldFileName);
+            
+            if (oldFile.exists()) {
+                String newFileName = String.format(FILE_NAME_TEMPLATE, username);
+                File newFile = new File(DATA_DIR, newFileName);
+                
+                if (oldFile.renameTo(newFile)) {
+                    dataFile = newFile;
+                } else {
+                    System.err.println("文件名更新失败，保持原有文件");
+                    this.currentUsername = oldUsername; // 回滚用户名
+                }
+            }
+        } else {
+            // 账户切换场景：直接加载新用户文件
+            initializeDataFile();
+        }
+    }
+    
+    /**
+     * 复制文件
+     */
+    private void copyFile(File source, File dest) throws IOException {
+        try (FileReader fr = new FileReader(source);
+             FileWriter fw = new FileWriter(dest)) {
+            char[] buffer = new char[1024];
+            int length;
+            while ((length = fr.read(buffer)) > 0) {
+                fw.write(buffer, 0, length);
+            }
+        }
+    }
+    
+    
+    /**
+     * Find all transactions
      */
     public List<Transaction> findAll() {
         try (Reader reader = new FileReader(dataFile)) {
-            Type type = new TypeToken<List<Transaction>>(){}.getType();
+            Type type = new TypeToken<List<Transaction>>() {
+                private static final long serialVersionUID = 1L;
+            }.getType();
             return gson.fromJson(reader, type);
         } catch (IOException e) {
             System.err.println("Error reading transactions from file: " + e.getMessage());
@@ -89,11 +148,11 @@ public class TransactionDAO {
     }
     
     /**
-     * 保存新交易记录
+     * Save new transaction
      */
     public void save(Transaction transaction) {
         List<Transaction> transactions = findAll();
-        // 生成新的ID
+        // Generate new ID
         long maxId = transactions.stream()
                 .mapToLong(Transaction::getId)
                 .max()
@@ -105,7 +164,7 @@ public class TransactionDAO {
     }
     
     /**
-     * 更新交易记录
+     * Update transaction
      */
     public void update(Transaction transaction) {
         List<Transaction> transactions = findAll();
@@ -119,7 +178,7 @@ public class TransactionDAO {
     }
     
     /**
-     * 删除交易记录
+     * Delete transaction
      */
     public void delete(Long id) {
         List<Transaction> transactions = findAll();
@@ -128,7 +187,7 @@ public class TransactionDAO {
     }
     
     /**
-     * 将交易记录列表保存到文件
+     * Save transaction list to file
      */
     private void saveToFile(List<Transaction> transactions) {
         try (Writer writer = new FileWriter(dataFile)) {
