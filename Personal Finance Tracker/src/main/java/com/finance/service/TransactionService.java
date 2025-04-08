@@ -4,7 +4,6 @@ import com.finance.dao.TransactionDAO;
 import com.finance.event.TransactionEvent;
 import com.finance.event.TransactionEventManager;
 import com.finance.model.Transaction;
-import java.time.LocalDateTime;
 
 import java.util.List;
 
@@ -99,16 +98,5 @@ public class TransactionService {
         double income = calculateTotalByCategory("Income");
         double expense = calculateTotalByCategory("Expense");
         return income - expense;
-    }
-    
-    /**
-     * Calculate total amount by category and date range
-     */
-    public double calculateTotalByCategoryAndDateRange(String category, LocalDateTime startDate, LocalDateTime endDate) {
-        return transactionDAO.findAll().stream()
-                .filter(t -> t.getCategory().equals(category))
-                .filter(t -> !t.getDate().isBefore(startDate) && !t.getDate().isAfter(endDate))
-                .mapToDouble(Transaction::getAmount)
-                .sum();
     }
 }

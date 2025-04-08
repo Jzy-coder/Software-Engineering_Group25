@@ -5,6 +5,7 @@ import com.finance.event.TransactionEventListener;
 import com.finance.event.TransactionEventManager;
 import com.finance.model.Transaction;
 import com.finance.service.TransactionService;
+import com.finance.component.DateRangeSelector;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -47,9 +48,20 @@ public class AnalysisController implements Initializable, TransactionEventListen
     @FXML
     private ToggleGroup typeGroup;
 
+    @FXML
+    private ToggleGroup dateSelectionGroup;
+
+    @FXML
+    private RadioButton singleDateRadio;
+
+    @FXML
+    private RadioButton dateRangeRadio;
+
     private TransactionService transactionService;
     private ObservableList<Transaction> transactions;
     private LocalDate selectedDate;
+    private LocalDate rangeStartDate;
+    private LocalDate rangeEndDate;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Override
@@ -67,17 +79,26 @@ public class AnalysisController implements Initializable, TransactionEventListen
         if (!availableDates.isEmpty()) {
             // 选择最新的日期
             selectedDate = availableDates.get(availableDates.size() - 1);
+            rangeStartDate = availableDates.get(0);
+            rangeEndDate = availableDates.get(availableDates.size() - 1);
         } else {
             // 如果没有交易数据，使用当前日期
             selectedDate = LocalDate.now();
+            rangeStartDate = LocalDate.now();
+            rangeEndDate = LocalDate.now();
         }
         
         // 设置日期标签
-        dateLabel.setText(selectedDate.format(DATE_FORMATTER));
+        updateDateLabel();
 
         // 添加监听器
         modelComboBox.valueProperty().addListener((obs, oldVal, newVal) -> updateChartData());
         typeGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> updateChartData());
+        dateSelectionGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
+            dateButton.setText(singleDateRadio.isSelected() ? "Select Date" : "Select Date Range");
+            updateDateLabel();
+            updateChartData();
+        });
 
         // 初始化图表
         updateChartData();
@@ -121,52 +142,67 @@ public class AnalysisController implements Initializable, TransactionEventListen
         List<LocalDate> availableDates = getAvailableTransactionDates();
         
         if (availableDates.isEmpty()) {
-            showAlert("No available transaction dates");
+            showAlert("没有可用的交易数据日期");
             return;
         }
-        
-        // 创建日期选择器
-        DatePicker datePicker = new DatePicker();
-        datePicker.setValue(selectedDate);
-        
-        // 设置日期选择器只显示有交易数据的日期
-        datePicker.setDayCellFactory(picker -> new DateCell() {
-            @Override
-            public void updateItem(LocalDate date, boolean empty) {
-                super.updateItem(date, empty);
-                setDisable(empty || !availableDates.contains(date));
-            }
-        });
-        
-        // 创建对话框
-        Dialog<LocalDate> dialog = new Dialog<>();
-        dialog.setTitle("Select Date");
-        dialog.setHeaderText("Please select a date with transaction data");
-        
-        // 设置按钮
-        ButtonType selectButtonType = new ButtonType("Select", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(selectButtonType, ButtonType.CANCEL);
-        
-        // 设置对话框内容
-        dialog.getDialogPane().setContent(datePicker);
-        
-        // 转换结果
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == selectButtonType) {
-                return datePicker.getValue();
-            }
-            return null;
-        });
-        
-        // 显示对话框并处理结果
-        Optional<LocalDate> result = dialog.showAndWait();
-        result.ifPresent(date -> {
-            selectedDate = date;
-            dateLabel.setText(selectedDate.format(DATE_FORMATTER));
-            updateChartData();
-        updateChartStyle();
-        setupPieChartListeners();
-        });
+
+        if (singleDateRadio.isSelected()) {
+            // 创建日期选择器
+            DatePicker datePicker = new DatePicker();
+            datePicker.setValue(selectedDate);
+            
+            // 设置日期选择器只显示有交易数据的日期
+            datePicker.setDayCellFactory(picker -> new DateCell() {
+                @Override
+                public void updateItem(LocalDate date, boolean empty) {
+                    super.updateItem(date, empty);
+                    setDisable(empty || !availableDates.contains(date));
+                }
+            });
+            
+            // 创建对话框
+            Dialog<LocalDate> dialog = new Dialog<>();
+            dialog.setTitle("选择日期");
+            dialog.setHeaderText("请选择一个有交易数据的日期");
+            
+            // 设置按钮
+            ButtonType selectButtonType = new ButtonType("选择", ButtonBar.ButtonData.OK_DONE);
+            dialog.getDialogPane().getButtonTypes().addAll(selectButtonType, ButtonType.CANCEL);
+            
+            // 设置对话框内容
+            dialog.getDialogPane().setContent(datePicker);
+            
+            // 转换结果
+            dialog.setResultConverter(dialogButton -> {
+                if (dialogButton == selectButtonType) {
+                    return datePicker.getValue();
+                }
+                return null;
+            });
+            
+            // 显示对话框并处理结果
+            Optional<LocalDate> result = dialog.showAndWait();
+            result.ifPresent(date -> {
+                selectedDate = date;
+                updateDateLabel();
+                updateChartData();
+                updateChartStyle();
+                setupPieChartListeners();
+            });
+        } else {
+            // 显示日期范围选择器
+            Optional<DateRangeSelector.DateRange> result = DateRangeSelector.show(
+                availableDates, rangeStartDate, rangeEndDate);
+            
+            result.ifPresent(dateRange -> {
+                rangeStartDate = dateRange.getStartDate();
+                rangeEndDate = dateRange.getEndDate();
+                updateDateLabel();
+                updateChartData();
+                updateChartStyle();
+                setupPieChartListeners();
+            });
+        }
     }
 
     /**
@@ -208,16 +244,37 @@ public class AnalysisController implements Initializable, TransactionEventListen
         updateChartStyle();
     }
 
+    private void updateDateLabel() {
+        if (singleDateRadio.isSelected()) {
+            if (selectedDate != null) {
+                dateLabel.setText(selectedDate.format(DATE_FORMATTER));
+            }
+        } else {
+            if (rangeStartDate != null && rangeEndDate != null) {
+                dateLabel.setText(rangeStartDate.format(DATE_FORMATTER) + " to " + 
+                                 rangeEndDate.format(DATE_FORMATTER));
+            }
+        }
+    }
+
     /**
      * Create pie chart data
      */
     private ObservableList<PieChart.Data> createPieChartData(String model, boolean isIncome) {
         ObservableList<PieChart.Data> data = FXCollections.observableArrayList();
         
-        // Filter transactions by type (income or expense)
+        // Filter transactions by type (income or expense) and date
         List<Transaction> filteredTransactions = transactions.stream()
                 .filter(t -> t.getCategory().equals(isIncome ? "Income" : "Expense"))
-                .filter(t -> t.getDate().toLocalDate().equals(selectedDate))
+                .filter(t -> {
+                    LocalDate transactionDate = t.getDate().toLocalDate();
+                    if (singleDateRadio.isSelected()) {
+                        return transactionDate.equals(selectedDate);
+                    } else {
+                        return !transactionDate.isBefore(rangeStartDate) && 
+                               !transactionDate.isAfter(rangeEndDate);
+                    }
+                })
                 .collect(Collectors.toList());
         
         // Generate data based on transaction type
