@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+
+<BorderPane xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.InvestmentController">
+    <top>
+        <VBox spacing="10" style="-fx-padding: 10;">
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="View Type:" style="-fx-font-size: 14;"/>
+                <ComboBox fx:id="viewTypeComboBox" prefWidth="150">
+                    <items>
+                        <FXCollections fx:factory="observableArrayList">
+                            <String fx:value="Tendency" />
+                            <String fx:value="Comparison" />
+                            <String fx:value="Both" />
+                        </FXCollections>
+                    </items>
+                </ComboBox>
+            </HBox>
+        </VBox>
+    </top>
+    
+    <center>
+        <StackPane fx:id="contentPane">
+            <VBox fx:id="bothView" spacing="10" visible="false">
+                <VBox fx:id="tendencyView" VBox.vgrow="ALWAYS" style="-fx-background-color: white;" />
+                <VBox fx:id="comparisonView" VBox.vgrow="ALWAYS" style="-fx-background-color: white;" />
+            </VBox>
+            <VBox fx:id="singleTendencyView" visible="false" style="-fx-background-color: white;" />
+            <VBox fx:id="singleComparisonView" visible="false" style="-fx-background-color: white;" />
+        </StackPane>
+    </center>
+</BorderPane>
