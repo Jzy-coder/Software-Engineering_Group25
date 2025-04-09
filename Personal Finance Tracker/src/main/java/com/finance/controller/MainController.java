@@ -43,7 +43,7 @@ public class MainController implements Initializable {
      */
     @FXML
     private void showBudgetView() {
-        showUnderDevelopmentMessage("Budget");
+        loadView("/fxml/BudgetView.fxml");
     }
     
     /**

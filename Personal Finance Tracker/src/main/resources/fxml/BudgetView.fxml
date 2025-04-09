@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.BudgetController">
+    <center>
+        <VBox spacing="10" style="-fx-padding: 10;">
+            <Label text="Budget Management" style="-fx-font-size: 18; -fx-font-weight: bold;" />
+            
+            <HBox spacing="20">
+                <!-- Left side - Budget Plans List -->
+                <VBox spacing="10" minWidth="300" HBox.hgrow="ALWAYS">
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="Budget Plans" style="-fx-font-size: 14; -fx-font-weight: bold;" />
+                        <Button fx:id="addPlanButton" text="Click to Add" onAction="#handleAddPlan" 
+                                style="-fx-background-color: #4CAF50; -fx-text-fill: white;" />
+                    </HBox>
+                    
+                    <TableView fx:id="budgetTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="planNameColumn" text="Plan Name" prefWidth="150" />
+                            <TableColumn fx:id="budgetAmountColumn" text="Budget Amount" prefWidth="120" />
+                            <TableColumn fx:id="startDateColumn" text="Start Date" prefWidth="100" />
+                            <TableColumn fx:id="endDateColumn" text="End Date" prefWidth="100" />
+                            <TableColumn fx:id="categoryColumn" text="Category" prefWidth="100" />
+                            <TableColumn fx:id="deleteColumn" text="Delete" prefWidth="60" />
+                        </columns>
+                    </TableView>
+                </VBox>
+            </HBox>
+            
+            <!-- Summary Section -->
+            <HBox spacing="20" style="-fx-padding: 10; -fx-border-color: #cccccc; -fx-border-radius: 5;">
+                <VBox spacing="5" style="-fx-padding: 5;" HBox.hgrow="ALWAYS">
+                    <Label text="Total Budget:" />
+                    <Label fx:id="totalBudgetLabel" text="¥0.00" style="-fx-font-size: 16; -fx-font-weight: bold;" />
+                </VBox>
+                <VBox spacing="5" style="-fx-padding: 5;" HBox.hgrow="ALWAYS">
+                    <Label text="Remaining Budget:" />
+                    <Label fx:id="remainingBudgetLabel" text="¥0.00" style="-fx-font-size: 16; -fx-text-fill: green;" />
+                </VBox>
+                <VBox spacing="5" style="-fx-padding: 5;" HBox.hgrow="ALWAYS">
+                    <Label text="Used Budget:" />
+                    <Label fx:id="usedBudgetLabel" text="¥0.00" style="-fx-font-size: 16; -fx-text-fill: red;" />
+                </VBox>
+            </HBox>
+        </VBox>
+    </center>
+</BorderPane>
