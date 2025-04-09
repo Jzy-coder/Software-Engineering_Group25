@@ -5,6 +5,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.collections.FXCollections?>
 <?import java.lang.String?>
+<?import javafx.scene.chart.*?>
 
 <BorderPane xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.InvestmentController">
     <top>
@@ -27,10 +28,80 @@
     <center>
         <StackPane fx:id="contentPane">
             <VBox fx:id="bothView" spacing="10" visible="false">
-                <VBox fx:id="tendencyView" VBox.vgrow="ALWAYS" style="-fx-background-color: white;" />
+                <VBox fx:id="tendencyView" VBox.vgrow="ALWAYS" style="-fx-background-color: white;" maxHeight="400">
+                    <VBox spacing="10" style="-fx-padding: 10;">
+                        <HBox spacing="20" alignment="CENTER_LEFT">
+                            <Label text="Time Period:" style="-fx-font-size: 14;"/>
+                            <ComboBox fx:id="timePeriodComboBox" prefWidth="200">
+                                <items>
+                                    <FXCollections fx:factory="observableArrayList">
+                                        <String fx:value="The recent week" />
+                                        <String fx:value="The recent 15 days" />
+                                        <String fx:value="The recent month" />
+                                        <String fx:value="The recent three months" />
+                                        <String fx:value="The recent half-year" />
+                                        <String fx:value="The recent year" />
+                                    </FXCollections>
+                                </items>
+                            </ComboBox>
+                            <HBox spacing="10">
+                                <RadioButton fx:id="incomeRadio" text="Income" selected="true">
+                                    <toggleGroup>
+                                        <ToggleGroup fx:id="dataTypeToggle" />
+                                    </toggleGroup>
+                                </RadioButton>
+                                <RadioButton fx:id="expenseRadio" text="Expense" toggleGroup="$dataTypeToggle" />
+                                <RadioButton fx:id="balanceRadio" text="Balance" toggleGroup="$dataTypeToggle" />
+                            </HBox>
+                        </HBox>
+                    </VBox>
+                    <LineChart fx:id="tendencyLineChart" VBox.vgrow="ALWAYS">
+                        <xAxis>
+                            <CategoryAxis label="Date" />
+                        </xAxis>
+                        <yAxis>
+                            <NumberAxis label="Amount" />
+                        </yAxis>
+                    </LineChart>
+                </VBox>
                 <VBox fx:id="comparisonView" VBox.vgrow="ALWAYS" style="-fx-background-color: white;" />
             </VBox>
-            <VBox fx:id="singleTendencyView" visible="false" style="-fx-background-color: white;" />
+            <VBox fx:id="singleTendencyView" visible="false" style="-fx-background-color: white;">
+                <VBox spacing="10" style="-fx-padding: 10;">
+                    <HBox spacing="20" alignment="CENTER_LEFT">
+                        <Label text="Time Period:" style="-fx-font-size: 14;"/>
+                        <ComboBox fx:id="singleTimePeriodComboBox" prefWidth="200">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="The recent week" />
+                                    <String fx:value="The recent 15 days" />
+                                    <String fx:value="The recent month" />
+                                    <String fx:value="The recent three months" />
+                                    <String fx:value="The recent half-year" />
+                                    <String fx:value="The recent year" />
+                                </FXCollections>
+                            </items>
+                        </ComboBox>
+                        <HBox spacing="10">
+                            <RadioButton fx:id="singleIncomeRadio" text="Income" selected="true">
+                                <toggleGroup>
+                                    <ToggleGroup fx:id="singleDataTypeToggle" />
+                                </toggleGroup>
+                            </RadioButton>
+                            <RadioButton fx:id="singleExpenseRadio" text="Expense" toggleGroup="$singleDataTypeToggle" />
+                            <RadioButton fx:id="singleBalanceRadio" text="Balance" toggleGroup="$singleDataTypeToggle" />
+                        </HBox>
+                    </HBox>
+                </VBox>
+                <LineChart fx:id="singleTendencyLineChart" VBox.vgrow="ALWAYS">
+                    <xAxis>
+                        <CategoryAxis label="Date" />
+                    </xAxis>
+                    <yAxis>
+                        <NumberAxis label="Amount" />
+                    </yAxis>
+                </LineChart>
+            </VBox>
             <VBox fx:id="singleComparisonView" visible="false" style="-fx-background-color: white;" />
         </StackPane>
     </center>
