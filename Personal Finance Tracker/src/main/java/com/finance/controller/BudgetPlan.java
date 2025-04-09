@@ -8,6 +8,8 @@ public class BudgetPlan {
     private LocalDate startDate;
     private LocalDate endDate;
     private String category;
+    private double progress;
+    private double doneAmount;
 
     public BudgetPlan(String planName, double budgetAmount, LocalDate startDate, LocalDate endDate, String category) {
         this.planName = planName;
@@ -15,6 +17,8 @@ public class BudgetPlan {
         this.startDate = startDate;
         this.endDate = endDate;
         this.category = category;
+        this.progress = 0.0; // 初始进度为0
+        this.doneAmount = 0.0; // 初始已完成金额为0
     }
 
     // Getters and Setters
@@ -56,6 +60,22 @@ public class BudgetPlan {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public double getProgress() {
+        return progress;
+    }
+
+    public void setProgress(double progress) {
+        this.progress = progress;
+    }
+
+    public double getDoneAmount() {
+        return doneAmount;
+    }
+
+    public void setDoneAmount(double doneAmount) {
+        this.doneAmount = doneAmount;
     }
 
 
