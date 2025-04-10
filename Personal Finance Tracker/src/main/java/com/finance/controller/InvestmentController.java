@@ -1,14 +1,19 @@
 package com.finance.controller;
 
+import java.time.LocalDate;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.StackPane;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
+import javafx.scene.chart.PieChart;
 
 public class InvestmentController {
     @FXML
@@ -44,11 +49,69 @@ public class InvestmentController {
     @FXML
     private ComboBox<String> singleCategoryComboBox;
 
+    // Comparison View Controls - Left Side
+    @FXML
+    private DatePicker leftStartDate;
+    @FXML
+    private DatePicker leftEndDate;
+    @FXML
+    private RadioButton leftIncomeRadio;
+    @FXML
+    private RadioButton leftExpenseRadio;
+    @FXML
+    private ListView<String> leftCategoryList;
+    @FXML
+    private PieChart leftPieChart;
+
+    // Comparison View Controls - Right Side
+    @FXML
+    private DatePicker rightStartDate;
+    @FXML
+    private DatePicker rightEndDate;
+    @FXML
+    private RadioButton rightIncomeRadio;
+    @FXML
+    private RadioButton rightExpenseRadio;
+    @FXML
+    private ListView<String> rightCategoryList;
+    @FXML
+    private PieChart rightPieChart;
+
+    // Single Comparison View Controls - Left Side
+    @FXML
+    private DatePicker singleLeftStartDate;
+    @FXML
+    private DatePicker singleLeftEndDate;
+    @FXML
+    private RadioButton singleLeftIncomeRadio;
+    @FXML
+    private RadioButton singleLeftExpenseRadio;
+    @FXML
+    private ListView<String> singleLeftCategoryList;
+    @FXML
+    private PieChart singleLeftPieChart;
+
+    // Single Comparison View Controls - Right Side
+    @FXML
+    private DatePicker singleRightStartDate;
+    @FXML
+    private DatePicker singleRightEndDate;
+    @FXML
+    private RadioButton singleRightIncomeRadio;
+    @FXML
+    private RadioButton singleRightExpenseRadio;
+    @FXML
+    private ListView<String> singleRightCategoryList;
+    @FXML
+    private PieChart singleRightPieChart;
+
     private final ObservableList<String> incomeCategories = FXCollections.observableArrayList("All", "Salary", "Bonus", "Others");
     private final ObservableList<String> expenseCategories = FXCollections.observableArrayList("All", "Food", "Shopping", "Transportation", "Housing", "Entertainment", "Others");
 
     @FXML
     private void initialize() {
+        // 初始化比较视图的控件
+        initializeComparisonControls();
         viewTypeComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 updateView(newValue);
@@ -97,6 +160,53 @@ public class InvestmentController {
         // 初始化时不添加监听器，避免重复触发
         comboBox.setItems(FXCollections.observableArrayList("All"));
         comboBox.getSelectionModel().selectFirst();
+    }
+
+    private void initializeComparisonControls() {
+        // 初始化类别列表
+        initializeCategoryList(leftCategoryList, leftIncomeRadio, leftExpenseRadio);
+        initializeCategoryList(rightCategoryList, rightIncomeRadio, rightExpenseRadio);
+        initializeCategoryList(singleLeftCategoryList, singleLeftIncomeRadio, singleLeftExpenseRadio);
+        initializeCategoryList(singleRightCategoryList, singleRightIncomeRadio, singleRightExpenseRadio);
+
+        // 设置日期选择器的默认值
+        setupDatePickers();
+    }
+
+    private void initializeCategoryList(ListView<String> listView, RadioButton incomeRadio, RadioButton expenseRadio) {
+        // 设置多选模式
+        listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+        // 添加收入/支出单选按钮的监听器
+        incomeRadio.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                listView.setItems(FXCollections.observableArrayList(incomeCategories));
+            }
+        });
+
+        expenseRadio.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                listView.setItems(FXCollections.observableArrayList(expenseCategories));
+            }
+        });
+
+        // 设置初始类别列表
+        listView.setItems(FXCollections.observableArrayList(incomeCategories));
+    }
+
+    private void setupDatePickers() {
+        // 设置默认日期范围（例如：最近一个月）
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate = endDate.minusMonths(1);
+
+        leftStartDate.setValue(startDate);
+        leftEndDate.setValue(endDate);
+        rightStartDate.setValue(startDate);
+        rightEndDate.setValue(endDate);
+        singleLeftStartDate.setValue(startDate);
+        singleLeftEndDate.setValue(endDate);
+        singleRightStartDate.setValue(startDate);
+        singleRightEndDate.setValue(endDate);
     }
 
     private void setupRadioButtonListeners() {
