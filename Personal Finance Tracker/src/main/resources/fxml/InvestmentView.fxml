@@ -28,7 +28,7 @@
     <center>
         <StackPane fx:id="contentPane">
             <VBox fx:id="bothView" spacing="10" visible="false">
-                <VBox fx:id="tendencyView" VBox.vgrow="ALWAYS" style="-fx-background-color: white;" maxHeight="400">
+                <VBox fx:id="tendencyView" VBox.vgrow="ALWAYS" style="-fx-background-color: white;" maxHeight="350">
                     <VBox spacing="10" style="-fx-padding: 10;">
                         <HBox spacing="20" alignment="CENTER_LEFT">
                             <Label text="Time Period:" style="-fx-font-size: 14;"/>
@@ -52,6 +52,13 @@
                                 </RadioButton>
                                 <RadioButton fx:id="expenseRadio" text="Expense" toggleGroup="$dataTypeToggle" />
                                 <RadioButton fx:id="balanceRadio" text="Balance" toggleGroup="$dataTypeToggle" />
+                                <ComboBox fx:id="categoryComboBox" prefWidth="150" disable="false">
+                                    <items>
+                                        <FXCollections fx:factory="observableArrayList">
+                                            <String fx:value="All" />
+                                        </FXCollections>
+                                    </items>
+                                </ComboBox>
                             </HBox>
                         </HBox>
                     </VBox>
@@ -90,6 +97,13 @@
                             </RadioButton>
                             <RadioButton fx:id="singleExpenseRadio" text="Expense" toggleGroup="$singleDataTypeToggle" />
                             <RadioButton fx:id="singleBalanceRadio" text="Balance" toggleGroup="$singleDataTypeToggle" />
+                            <ComboBox fx:id="singleCategoryComboBox" prefWidth="150" disable="false">
+                                <items>
+                                    <FXCollections fx:factory="observableArrayList">
+                                        <String fx:value="All" />
+                                    </FXCollections>
+                                </items>
+                            </ComboBox>
                         </HBox>
                     </HBox>
                 </VBox>
