@@ -71,7 +71,48 @@
                         </yAxis>
                     </LineChart>
                 </VBox>
-                <VBox fx:id="comparisonView" VBox.vgrow="ALWAYS" style="-fx-background-color: white;" />
+                <VBox fx:id="comparisonView" VBox.vgrow="ALWAYS" style="-fx-background-color: white;" spacing="10">
+                    <VBox spacing="10" style="-fx-padding: 10;">
+                        <HBox spacing="20" alignment="CENTER">
+                            <VBox spacing="10" alignment="CENTER" HBox.hgrow="ALWAYS">
+                                <Label text="Left Chart" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
+                                <HBox spacing="10" alignment="CENTER">
+                                    <DatePicker fx:id="leftStartDate" promptText="Start Date" />
+                                    <DatePicker fx:id="leftEndDate" promptText="End Date" />
+                                </HBox>
+                                <HBox spacing="10" alignment="CENTER">
+                                    <RadioButton fx:id="leftIncomeRadio" text="Income" selected="true">
+                                        <toggleGroup>
+                                            <ToggleGroup fx:id="leftDataTypeToggle" />
+                                        </toggleGroup>
+                                    </RadioButton>
+                                    <RadioButton fx:id="leftExpenseRadio" text="Expense" toggleGroup="$leftDataTypeToggle" />
+                                </HBox>
+                                <ListView fx:id="leftCategoryList" prefHeight="100" />
+                            </VBox>
+                            <VBox spacing="10" alignment="CENTER" HBox.hgrow="ALWAYS">
+                                <Label text="Right Chart" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
+                                <HBox spacing="10" alignment="CENTER">
+                                    <DatePicker fx:id="rightStartDate" promptText="Start Date" />
+                                    <DatePicker fx:id="rightEndDate" promptText="End Date" />
+                                </HBox>
+                                <HBox spacing="10" alignment="CENTER">
+                                    <RadioButton fx:id="rightIncomeRadio" text="Income" selected="true">
+                                        <toggleGroup>
+                                            <ToggleGroup fx:id="rightDataTypeToggle" />
+                                        </toggleGroup>
+                                    </RadioButton>
+                                    <RadioButton fx:id="rightExpenseRadio" text="Expense" toggleGroup="$rightDataTypeToggle" />
+                                </HBox>
+                                <ListView fx:id="rightCategoryList" prefHeight="100" />
+                            </VBox>
+                        </HBox>
+                    </VBox>
+                    <HBox spacing="20" alignment="CENTER" VBox.vgrow="ALWAYS">
+                        <PieChart fx:id="leftPieChart" title="Left Period Analysis" HBox.hgrow="ALWAYS" />
+                        <PieChart fx:id="rightPieChart" title="Right Period Analysis" HBox.hgrow="ALWAYS" />
+                    </HBox>
+                </VBox>
             </VBox>
             <VBox fx:id="singleTendencyView" visible="false" style="-fx-background-color: white;">
                 <VBox spacing="10" style="-fx-padding: 10;">
@@ -116,7 +157,48 @@
                     </yAxis>
                 </LineChart>
             </VBox>
-            <VBox fx:id="singleComparisonView" visible="false" style="-fx-background-color: white;" />
+            <VBox fx:id="singleComparisonView" visible="false" style="-fx-background-color: white;" spacing="10">
+                <VBox spacing="10" style="-fx-padding: 10;">
+                    <HBox spacing="20" alignment="CENTER">
+                        <VBox spacing="10" alignment="CENTER" HBox.hgrow="ALWAYS">
+                            <Label text="Left Chart" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
+                            <HBox spacing="10" alignment="CENTER">
+                                <DatePicker fx:id="singleLeftStartDate" promptText="Start Date" />
+                                <DatePicker fx:id="singleLeftEndDate" promptText="End Date" />
+                            </HBox>
+                            <HBox spacing="10" alignment="CENTER">
+                                <RadioButton fx:id="singleLeftIncomeRadio" text="Income" selected="true">
+                                    <toggleGroup>
+                                        <ToggleGroup fx:id="singleLeftDataTypeToggle" />
+                                    </toggleGroup>
+                                </RadioButton>
+                                <RadioButton fx:id="singleLeftExpenseRadio" text="Expense" toggleGroup="$singleLeftDataTypeToggle" />
+                            </HBox>
+                            <ListView fx:id="singleLeftCategoryList" prefHeight="100" />
+                        </VBox>
+                        <VBox spacing="10" alignment="CENTER" HBox.hgrow="ALWAYS">
+                            <Label text="Right Chart" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
+                            <HBox spacing="10" alignment="CENTER">
+                                <DatePicker fx:id="singleRightStartDate" promptText="Start Date" />
+                                <DatePicker fx:id="singleRightEndDate" promptText="End Date" />
+                            </HBox>
+                            <HBox spacing="10" alignment="CENTER">
+                                <RadioButton fx:id="singleRightIncomeRadio" text="Income" selected="true">
+                                    <toggleGroup>
+                                        <ToggleGroup fx:id="singleRightDataTypeToggle" />
+                                    </toggleGroup>
+                                </RadioButton>
+                                <RadioButton fx:id="singleRightExpenseRadio" text="Expense" toggleGroup="$singleRightDataTypeToggle" />
+                            </HBox>
+                            <ListView fx:id="singleRightCategoryList" prefHeight="100" />
+                        </VBox>
+                    </HBox>
+                </VBox>
+                <HBox spacing="20" alignment="CENTER" VBox.vgrow="ALWAYS">
+                    <PieChart fx:id="singleLeftPieChart" title="Left Period Analysis" HBox.hgrow="ALWAYS" />
+                    <PieChart fx:id="singleRightPieChart" title="Right Period Analysis" HBox.hgrow="ALWAYS" />
+                </HBox>
+            </VBox>
         </StackPane>
     </center>
 </BorderPane>
