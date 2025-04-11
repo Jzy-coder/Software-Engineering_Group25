@@ -30,25 +30,13 @@ public class InvestmentController {
     private ComboBox<String> viewTypeComboBox;
     @FXML
     private StackPane contentPane;
-    @FXML
-    private VBox bothView;
-    @FXML
-    private VBox tendencyView;
-    @FXML
-    private VBox comparisonView;
+    // Both view and its components have been removed
     @FXML
     private VBox singleTendencyView;
     @FXML
     private VBox singleComparisonView;
 
-    @FXML
-    private RadioButton incomeRadio;
-    @FXML
-    private RadioButton expenseRadio;
-    @FXML
-    private RadioButton balanceRadio;
-    @FXML
-    private ComboBox<String> categoryComboBox;
+    // Both view radio buttons and category combo box have been removed
 
     @FXML
     private RadioButton singleIncomeRadio;
@@ -118,14 +106,12 @@ public class InvestmentController {
     private final ObservableList<String> incomeCategories = FXCollections.observableArrayList("All", "Salary", "Bonus", "Others");
     private final ObservableList<String> expenseCategories = FXCollections.observableArrayList("All", "Food", "Shopping", "Transportation", "Housing", "Entertainment", "Others");
 
-    @FXML
-    private LineChart<String, Number> tendencyLineChart;
+    // Both view line chart has been removed
 
     @FXML
     private LineChart<String, Number> singleTendencyLineChart;
 
-    @FXML
-    private ComboBox<String> timePeriodComboBox;
+    // Both view time period combo box has been removed
 
     @FXML
     private ComboBox<String> singleTimePeriodComboBox;
@@ -149,12 +135,9 @@ public class InvestmentController {
         setupRadioButtonListeners();
 
         // 设置默认选中的单选按钮
-        incomeRadio.setSelected(true);
         singleIncomeRadio.setSelected(true);
 
         // 初始化类别选择框并设置默认项
-        categoryComboBox.setItems(incomeCategories);
-        categoryComboBox.getSelectionModel().selectFirst();
         singleCategoryComboBox.setItems(incomeCategories);
         singleCategoryComboBox.getSelectionModel().selectFirst();
 
@@ -170,13 +153,10 @@ public class InvestmentController {
             "The recent half-year",
             "The recent year"
         );
-        timePeriodComboBox.setItems(timePeriods);
         singleTimePeriodComboBox.setItems(timePeriods);
-        timePeriodComboBox.getSelectionModel().selectFirst();
         singleTimePeriodComboBox.getSelectionModel().selectFirst();
 
         // 添加监听器
-        setupTendencyViewListeners();
         setupSingleTendencyViewListeners();
         
         // 在所有组件初始化完成后，使用JavaFX的Platform.runLater确保UI线程正确处理图表更新
@@ -185,16 +165,12 @@ public class InvestmentController {
             updateTendencyChart(singleTendencyLineChart, singleTimePeriodComboBox.getValue(),
                 singleIncomeRadio.isSelected(), singleExpenseRadio.isSelected(), singleBalanceRadio.isSelected(),
                 singleCategoryComboBox.getValue());
-            updateTendencyChart(tendencyLineChart, timePeriodComboBox.getValue(),
-                incomeRadio.isSelected(), expenseRadio.isSelected(), balanceRadio.isSelected(),
-                categoryComboBox.getValue());
         });
     }
     
 
     private void updateView(String viewType) {
         // 首先隐藏所有视图
-        bothView.setVisible(false);
         singleTendencyView.setVisible(false);
         singleComparisonView.setVisible(false);
 
@@ -209,61 +185,10 @@ public class InvestmentController {
             case "Comparison":
                 singleComparisonView.setVisible(true);
                 break;
-            case "Both":
-                bothView.setVisible(true);
-                updateTendencyChart(tendencyLineChart, timePeriodComboBox.getValue(),
-                    incomeRadio.isSelected(), expenseRadio.isSelected(), balanceRadio.isSelected(),
-                    categoryComboBox.getValue());
-                break;
         }
     }
 
-    private void setupTendencyViewListeners() {
-        // 添加时间段选择监听器
-        timePeriodComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
-                updateTendencyChart(tendencyLineChart, newValue, incomeRadio.isSelected(),
-                    expenseRadio.isSelected(), balanceRadio.isSelected(), categoryComboBox.getValue());
-            }
-        });
-
-        // 添加类型选择监听器
-        incomeRadio.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                categoryComboBox.setItems(incomeCategories);
-                categoryComboBox.getSelectionModel().selectFirst();
-                updateTendencyChart(tendencyLineChart, timePeriodComboBox.getValue(), true,
-                    false, false, categoryComboBox.getValue());
-            }
-        });
-
-        expenseRadio.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                categoryComboBox.setItems(expenseCategories);
-                categoryComboBox.getSelectionModel().selectFirst();
-                updateTendencyChart(tendencyLineChart, timePeriodComboBox.getValue(), false,
-                    true, false, categoryComboBox.getValue());
-            }
-        });
-
-        balanceRadio.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                categoryComboBox.setDisable(true);
-                updateTendencyChart(tendencyLineChart, timePeriodComboBox.getValue(), false,
-                    false, true, null);
-            } else {
-                categoryComboBox.setDisable(false);
-            }
-        });
-
-        // 添加类别选择监听器
-        categoryComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null && !balanceRadio.isSelected()) {
-                updateTendencyChart(tendencyLineChart, timePeriodComboBox.getValue(),
-                    incomeRadio.isSelected(), expenseRadio.isSelected(), false, newValue);
-            }
-        });
-    }
+    // setupTendencyViewListeners method has been removed as it was related to Both view
 
     private void setupSingleTendencyViewListeners() {
         // 添加时间段选择监听器
@@ -565,27 +490,6 @@ public class InvestmentController {
     }
 
     private void setupRadioButtonListeners() {
-        // 设置主视图的单选按钮监听器
-        ChangeListener<Boolean> mainRadioListener = (observable, oldValue, newValue) -> {
-            if (newValue) {
-                ObservableList<String> items = FXCollections.observableArrayList();
-                if (incomeRadio.isSelected()) {
-                    categoryComboBox.setDisable(false);
-                    items.setAll(incomeCategories);
-                } else if (expenseRadio.isSelected()) {
-                    categoryComboBox.setDisable(false);
-                    items.setAll(expenseCategories);
-                } else if (balanceRadio.isSelected()) {
-                    categoryComboBox.setDisable(true);
-                    items.clear();
-                }
-                categoryComboBox.setItems(items);
-                if (!items.isEmpty()) {
-                    categoryComboBox.getSelectionModel().selectFirst();
-                }
-            }
-        };
-
         // 设置单独视图的单选按钮监听器
         ChangeListener<Boolean> singleRadioListener = (observable, oldValue, newValue) -> {
             if (newValue) {
@@ -608,10 +512,6 @@ public class InvestmentController {
         };
 
         // 添加监听器到单选按钮
-        incomeRadio.selectedProperty().addListener(mainRadioListener);
-        expenseRadio.selectedProperty().addListener(mainRadioListener);
-        balanceRadio.selectedProperty().addListener(mainRadioListener);
-
         singleIncomeRadio.selectedProperty().addListener(singleRadioListener);
         singleExpenseRadio.selectedProperty().addListener(singleRadioListener);
         singleBalanceRadio.selectedProperty().addListener(singleRadioListener);
