@@ -1,6 +1,14 @@
 package com.finance.controller;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import com.finance.model.Transaction;
+import com.finance.service.TransactionService;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
@@ -14,6 +22,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.chart.PieChart;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.XYChart;
 
 public class InvestmentController {
     @FXML
@@ -109,6 +119,20 @@ public class InvestmentController {
     private final ObservableList<String> expenseCategories = FXCollections.observableArrayList("All", "Food", "Shopping", "Transportation", "Housing", "Entertainment", "Others");
 
     @FXML
+    private LineChart<String, Number> tendencyLineChart;
+
+    @FXML
+    private LineChart<String, Number> singleTendencyLineChart;
+
+    @FXML
+    private ComboBox<String> timePeriodComboBox;
+
+    @FXML
+    private ComboBox<String> singleTimePeriodComboBox;
+
+    private TransactionService transactionService;
+
+    @FXML
     private void initialize() {
         // 初始化比较视图的控件
         initializeComparisonControls();
@@ -133,6 +157,38 @@ public class InvestmentController {
         categoryComboBox.getSelectionModel().selectFirst();
         singleCategoryComboBox.setItems(incomeCategories);
         singleCategoryComboBox.getSelectionModel().selectFirst();
+
+        // 初始化TransactionService
+        transactionService = com.finance.gui.LoginManager.getTransactionService();
+
+        // 设置时间段选项
+        ObservableList<String> timePeriods = FXCollections.observableArrayList(
+            "The recent week",
+            "The recent 15 days",
+            "The recent month",
+            "The recent three months",
+            "The recent half-year",
+            "The recent year"
+        );
+        timePeriodComboBox.setItems(timePeriods);
+        singleTimePeriodComboBox.setItems(timePeriods);
+        timePeriodComboBox.getSelectionModel().selectFirst();
+        singleTimePeriodComboBox.getSelectionModel().selectFirst();
+
+        // 添加监听器
+        setupTendencyViewListeners();
+        setupSingleTendencyViewListeners();
+        
+        // 在所有组件初始化完成后，使用JavaFX的Platform.runLater确保UI线程正确处理图表更新
+        javafx.application.Platform.runLater(() -> {
+            // 更新图表数据
+            updateTendencyChart(singleTendencyLineChart, singleTimePeriodComboBox.getValue(),
+                singleIncomeRadio.isSelected(), singleExpenseRadio.isSelected(), singleBalanceRadio.isSelected(),
+                singleCategoryComboBox.getValue());
+            updateTendencyChart(tendencyLineChart, timePeriodComboBox.getValue(),
+                incomeRadio.isSelected(), expenseRadio.isSelected(), balanceRadio.isSelected(),
+                categoryComboBox.getValue());
+        });
     }
     
 
@@ -146,20 +202,260 @@ public class InvestmentController {
         switch (viewType) {
             case "Tendency":
                 singleTendencyView.setVisible(true);
+                updateTendencyChart(singleTendencyLineChart, singleTimePeriodComboBox.getValue(),
+                    singleIncomeRadio.isSelected(), singleExpenseRadio.isSelected(), singleBalanceRadio.isSelected(),
+                    singleCategoryComboBox.getValue());
                 break;
             case "Comparison":
                 singleComparisonView.setVisible(true);
                 break;
             case "Both":
                 bothView.setVisible(true);
+                updateTendencyChart(tendencyLineChart, timePeriodComboBox.getValue(),
+                    incomeRadio.isSelected(), expenseRadio.isSelected(), balanceRadio.isSelected(),
+                    categoryComboBox.getValue());
                 break;
         }
     }
 
-    private void setupCategoryComboBox(ComboBox<String> comboBox) {
-        // 初始化时不添加监听器，避免重复触发
-        comboBox.setItems(FXCollections.observableArrayList("All"));
-        comboBox.getSelectionModel().selectFirst();
+    private void setupTendencyViewListeners() {
+        // 添加时间段选择监听器
+        timePeriodComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                updateTendencyChart(tendencyLineChart, newValue, incomeRadio.isSelected(),
+                    expenseRadio.isSelected(), balanceRadio.isSelected(), categoryComboBox.getValue());
+            }
+        });
+
+        // 添加类型选择监听器
+        incomeRadio.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                categoryComboBox.setItems(incomeCategories);
+                categoryComboBox.getSelectionModel().selectFirst();
+                updateTendencyChart(tendencyLineChart, timePeriodComboBox.getValue(), true,
+                    false, false, categoryComboBox.getValue());
+            }
+        });
+
+        expenseRadio.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                categoryComboBox.setItems(expenseCategories);
+                categoryComboBox.getSelectionModel().selectFirst();
+                updateTendencyChart(tendencyLineChart, timePeriodComboBox.getValue(), false,
+                    true, false, categoryComboBox.getValue());
+            }
+        });
+
+        balanceRadio.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                categoryComboBox.setDisable(true);
+                updateTendencyChart(tendencyLineChart, timePeriodComboBox.getValue(), false,
+                    false, true, null);
+            } else {
+                categoryComboBox.setDisable(false);
+            }
+        });
+
+        // 添加类别选择监听器
+        categoryComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null && !balanceRadio.isSelected()) {
+                updateTendencyChart(tendencyLineChart, timePeriodComboBox.getValue(),
+                    incomeRadio.isSelected(), expenseRadio.isSelected(), false, newValue);
+            }
+        });
+    }
+
+    private void setupSingleTendencyViewListeners() {
+        // 添加时间段选择监听器
+        singleTimePeriodComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                updateTendencyChart(singleTendencyLineChart, newValue, singleIncomeRadio.isSelected(),
+                    singleExpenseRadio.isSelected(), singleBalanceRadio.isSelected(), singleCategoryComboBox.getValue());
+            }
+        });
+
+        // 添加类型选择监听器
+        singleIncomeRadio.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                singleCategoryComboBox.setItems(incomeCategories);
+                singleCategoryComboBox.getSelectionModel().selectFirst();
+                updateTendencyChart(singleTendencyLineChart, singleTimePeriodComboBox.getValue(), true,
+                    false, false, singleCategoryComboBox.getValue());
+            }
+        });
+
+        singleExpenseRadio.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                singleCategoryComboBox.setItems(expenseCategories);
+                singleCategoryComboBox.getSelectionModel().selectFirst();
+                updateTendencyChart(singleTendencyLineChart, singleTimePeriodComboBox.getValue(), false,
+                    true, false, singleCategoryComboBox.getValue());
+            }
+        });
+
+        singleBalanceRadio.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                singleCategoryComboBox.setDisable(true);
+                updateTendencyChart(singleTendencyLineChart, singleTimePeriodComboBox.getValue(), false,
+                    false, true, null);
+            } else {
+                singleCategoryComboBox.setDisable(false);
+            }
+        });
+
+        // 添加类别选择监听器
+        singleCategoryComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null && !singleBalanceRadio.isSelected()) {
+                updateTendencyChart(singleTendencyLineChart, singleTimePeriodComboBox.getValue(),
+                    singleIncomeRadio.isSelected(), singleExpenseRadio.isSelected(), false, newValue);
+            }
+        });
+    }
+
+    private void updateTendencyChart(LineChart<String, Number> chart, String timePeriod, boolean isIncome,
+            boolean isExpense, boolean isBalance, String category) {
+        // 禁用动画以避免渲染问题
+        chart.setAnimated(false);
+
+        // 获取日期范围
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate = getStartDate(endDate, timePeriod);
+
+        // 预先设置图表样式
+        chart.setCreateSymbols(true); // 显示数据点
+        chart.setLegendVisible(true);
+        chart.getXAxis().setLabel("Date");
+        chart.getYAxis().setLabel("Amount");
+        
+        // 根据时间段设置标签旋转角度
+        if (timePeriod.equals("The recent three months") || timePeriod.equals("The recent half-year")) {
+            chart.getXAxis().setTickLabelRotation(-90);
+        } else {
+            int daysBetween = (int) ChronoUnit.DAYS.between(startDate, endDate);
+            chart.getXAxis().setTickLabelRotation(daysBetween > 15 ? -45 : 0);
+        }
+
+        // 清除现有数据
+        chart.getData().clear();
+
+        // 获取交易数据
+        List<Transaction> transactions = transactionService.getAllTransactions();
+
+        // 创建数据系列
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        series.setName(getSeriesName(isIncome, isExpense, isBalance, category));
+
+        // 根据时间段选择不同的数据聚合方式
+        if (timePeriod.equals("The recent week") || timePeriod.equals("The recent 15 days") || timePeriod.equals("The recent month")) {
+            // 按日显示数据
+            Map<LocalDate, Double> dailyAmounts = transactions.stream()
+                .filter(t -> filterTransaction(t, startDate, endDate, isIncome, isExpense, category))
+                .collect(Collectors.groupingBy(
+                    t -> t.getDate().toLocalDate(),
+                    Collectors.summingDouble(t -> isBalance ? (t.getCategory().equals("Income") ? t.getAmount() : -t.getAmount()) : t.getAmount())
+                ));
+
+            for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+                double amount = dailyAmounts.getOrDefault(date, 0.0);
+                series.getData().add(new XYChart.Data<>(date.toString(), amount));
+            }
+        } else if (timePeriod.equals("The recent three months") || timePeriod.equals("The recent half-year")) {
+            // 按周聚合数据
+            LocalDate currentDate = startDate;
+            while (!currentDate.isAfter(endDate)) {
+                LocalDate weekEndDate = currentDate.plusDays(6);
+                if (weekEndDate.isAfter(endDate)) {
+                    weekEndDate = endDate;
+                }
+
+                final LocalDate weekStart = currentDate;
+                final LocalDate weekEnd = weekEndDate;
+
+                double weeklyAmount = transactions.stream()
+                    .filter(t -> filterTransaction(t, weekStart, weekEnd, isIncome, isExpense, category))
+                    .mapToDouble(t -> isBalance ? (t.getCategory().equals("Income") ? t.getAmount() : -t.getAmount()) : t.getAmount())
+                    .sum();
+
+                String weekLabel = weekStart.toString() + "\n" + weekEnd.toString();
+                series.getData().add(new XYChart.Data<>(weekLabel, weeklyAmount));
+
+                currentDate = weekEndDate.plusDays(1);
+            }
+        } else if (timePeriod.equals("The recent year")) {
+            // 按月聚合数据
+            Map<String, Double> monthlyAmounts = transactions.stream()
+                .filter(t -> filterTransaction(t, startDate, endDate, isIncome, isExpense, category))
+                .collect(Collectors.groupingBy(
+                    t -> t.getDate().toLocalDate().getYear() + "-" + String.format("%02d", t.getDate().toLocalDate().getMonthValue()),
+                    Collectors.summingDouble(t -> isBalance ? (t.getCategory().equals("Income") ? t.getAmount() : -t.getAmount()) : t.getAmount())
+                ));
+
+            LocalDate currentDate = startDate;
+            while (!currentDate.isAfter(endDate)) {
+                String monthKey = currentDate.getYear() + "-" + String.format("%02d", currentDate.getMonthValue());
+                double amount = monthlyAmounts.getOrDefault(monthKey, 0.0);
+                series.getData().add(new XYChart.Data<>(monthKey, amount));
+                currentDate = currentDate.plusMonths(1);
+            }
+        }
+
+        // 添加数据系列到图表
+        chart.getData().add(series);
+        
+        // 强制布局更新
+        chart.layout();
+        
+        // 重新启用动画
+        chart.setAnimated(true);
+    }
+
+    private LocalDate getStartDate(LocalDate endDate, String timePeriod) {
+        switch (timePeriod) {
+            case "The recent week":
+                return endDate.minusWeeks(1);
+            case "The recent 15 days":
+                return endDate.minusDays(15);
+            case "The recent month":
+                return endDate.minusMonths(1);
+            case "The recent three months":
+                return endDate.minusMonths(3);
+            case "The recent half-year":
+                return endDate.minusMonths(6);
+            case "The recent year":
+                return endDate.minusYears(1);
+            default:
+                return endDate.minusWeeks(1);
+        }
+    }
+
+    private String getSeriesName(boolean isIncome, boolean isExpense, boolean isBalance, String category) {
+        if (isBalance) {
+            return "Balance";
+        } else if (isIncome) {
+            return category.equals("All") ? "Total Income" : "Income - " + category;
+        } else if (isExpense) {
+            return category.equals("All") ? "Total Expense" : "Expense - " + category;
+        }
+        return "";
+    }
+
+    private boolean filterTransaction(Transaction transaction, LocalDate startDate, LocalDate endDate,
+            boolean isIncome, boolean isExpense, String category) {
+        LocalDate transactionDate = transaction.getDate().toLocalDate();
+        boolean dateInRange = !transactionDate.isBefore(startDate) && !transactionDate.isAfter(endDate);
+
+        if (!dateInRange) {
+            return false;
+        }
+
+        if (isIncome || isExpense) {
+            boolean categoryMatch = transaction.getCategory().equals(isIncome ? "Income" : "Expense");
+            boolean typeMatch = category.equals("All") || transaction.getType().equals(category);
+            return categoryMatch && typeMatch;
+        }
+
+        // 如果既不是收入也不是支出，说明是余额模式，返回true以包含所有交易
+        return true;
     }
 
     private void initializeComparisonControls() {
