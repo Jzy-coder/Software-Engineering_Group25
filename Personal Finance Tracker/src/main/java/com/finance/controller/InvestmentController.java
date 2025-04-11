@@ -314,7 +314,10 @@ public class InvestmentController {
 
     private void updateTendencyChart(LineChart<String, Number> chart, String timePeriod, boolean isIncome,
             boolean isExpense, boolean isBalance, String category) {
-        // 禁用动画以避免渲染问题
+        // 清除现有数据
+        chart.getData().clear();
+        
+        // 先禁用动画，以便在数据准备好后再启用
         chart.setAnimated(false);
 
         // 获取日期范围
@@ -326,6 +329,7 @@ public class InvestmentController {
         chart.setLegendVisible(true);
         chart.getXAxis().setLabel("Date");
         chart.getYAxis().setLabel("Amount");
+        chart.setStyle("-fx-font-size: 12px; -fx-padding: 10 0 0 20;");
         
         // 根据时间段设置标签旋转角度
         if (timePeriod.equals("The recent three months") || timePeriod.equals("The recent half-year")) {
@@ -334,9 +338,6 @@ public class InvestmentController {
             int daysBetween = (int) ChronoUnit.DAYS.between(startDate, endDate);
             chart.getXAxis().setTickLabelRotation(daysBetween > 15 ? -45 : 0);
         }
-
-        // 清除现有数据
-        chart.getData().clear();
 
         // 获取交易数据
         List<Transaction> transactions = transactionService.getAllTransactions();
@@ -402,11 +403,69 @@ public class InvestmentController {
         // 添加数据系列到图表
         chart.getData().add(series);
         
+        // 设置数据系列的颜色和样式
+        String seriesColor = getSeriesColor(isIncome, isExpense, isBalance);
+        String lineStyle = "-fx-stroke-width: 2.5px;";
+        
+        // 应用样式到数据系列
+        series.getNode().setStyle(lineStyle + seriesColor);
+        
+        // 为数据点添加样式和交互效果
+        for (XYChart.Data<String, Number> data : series.getData()) {
+            // 确保数据点节点已创建
+            javafx.application.Platform.runLater(() -> {
+                if (data.getNode() != null) {
+                    // 设置数据点样式
+                    data.getNode().setStyle(seriesColor + "-fx-background-radius: 5px; -fx-padding: 5px;");
+                    
+                    // 添加鼠标悬停效果
+                    javafx.scene.effect.DropShadow shadow = new javafx.scene.effect.DropShadow();
+                    shadow.setColor(javafx.scene.paint.Color.GRAY);
+                    shadow.setRadius(5);
+                    
+                    // 鼠标进入时添加阴影效果
+                    data.getNode().setOnMouseEntered(event -> {
+                        data.getNode().setEffect(shadow);
+                        data.getNode().setScaleX(1.2);
+                        data.getNode().setScaleY(1.2);
+                    });
+                    
+                    // 鼠标离开时移除阴影效果
+                    data.getNode().setOnMouseExited(event -> {
+                        data.getNode().setEffect(null);
+                        data.getNode().setScaleX(1);
+                        data.getNode().setScaleY(1);
+                    });
+                    
+                    // 鼠标点击时显示数据值
+                    data.getNode().setOnMouseClicked(event -> {
+                        String message = String.format("%s: %.2f", data.getXValue(), data.getYValue().doubleValue());
+                        javafx.scene.control.Tooltip tooltip = new javafx.scene.control.Tooltip(message);
+                        javafx.scene.control.Tooltip.install(data.getNode(), tooltip);
+                    });
+                }
+            });
+        }
+        
         // 强制布局更新
         chart.layout();
         
-        // 重新启用动画
+        // 启用动画效果
         chart.setAnimated(true);
+    }
+    
+    /**
+     * 根据数据类型获取适当的颜色样式
+     */
+    private String getSeriesColor(boolean isIncome, boolean isExpense, boolean isBalance) {
+        if (isBalance) {
+            return "-fx-stroke: #8A2BE2; -fx-background-color: #8A2BE2, white;"; // 紫色
+        } else if (isIncome) {
+            return "-fx-stroke: #2E8B57; -fx-background-color: #2E8B57, white;"; // 绿色
+        } else if (isExpense) {
+            return "-fx-stroke: #CD5C5C; -fx-background-color: #CD5C5C, white;"; // 红色
+        }
+        return "-fx-stroke: #1E90FF; -fx-background-color: #1E90FF, white;"; // 默认蓝色
     }
 
     private LocalDate getStartDate(LocalDate endDate, String timePeriod) {
