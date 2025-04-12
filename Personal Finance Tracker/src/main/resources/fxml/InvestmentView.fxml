@@ -107,9 +107,9 @@
                             </VBox>
                         </HBox>
                     </VBox>
-                    <HBox spacing="20" alignment="CENTER" VBox.vgrow="ALWAYS">
-                        <PieChart fx:id="leftPieChart" title="Left Period Analysis" HBox.hgrow="ALWAYS" />
-                        <PieChart fx:id="rightPieChart" title="Right Period Analysis" HBox.hgrow="ALWAYS" />
+                    <HBox spacing="50" alignment="CENTER" VBox.vgrow="ALWAYS">
+                        <PieChart fx:id="leftPieChart" title="Left Period Analysis" prefWidth="300" prefHeight="300" />
+                        <PieChart fx:id="rightPieChart" title="Right Period Analysis" prefWidth="300" prefHeight="300" />
                     </HBox>
                 </VBox>
             </VBox>
@@ -193,9 +193,9 @@
                         </VBox>
                     </HBox>
                 </VBox>
-                <HBox spacing="20" alignment="CENTER" VBox.vgrow="ALWAYS">
-                    <PieChart fx:id="singleLeftPieChart" title="Left Period Analysis" HBox.hgrow="ALWAYS" />
-                    <PieChart fx:id="singleRightPieChart" title="Right Period Analysis" HBox.hgrow="ALWAYS" />
+                <HBox spacing="100" alignment="CENTER" VBox.vgrow="ALWAYS">
+                    <PieChart fx:id="singleLeftPieChart" title="Left Period Analysis" prefWidth="300" prefHeight="300" />
+                    <PieChart fx:id="singleRightPieChart" title="Right Period Analysis" prefWidth="300" prefHeight="300" />
                 </HBox>
             </VBox>
         </StackPane>
