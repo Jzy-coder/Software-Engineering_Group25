@@ -82,7 +82,7 @@ public class CSVParser {
                     if (cleaned.isEmpty()) {
                         throw new NumberFormatException("Empty amount value");
                     }
-                    double amount = Double.parseDouble(cleaned);
+                    double amount = Math.abs(Double.parseDouble(cleaned));
                     logger.debug("清洗后金额值: {}", cleaned);
                     String description = nextLine[7].trim();
                     String dateStr = nextLine[2].trim();
@@ -103,7 +103,7 @@ public class CSVParser {
                     Transaction transaction = new Transaction(
                         category,
                         mappedType,
-                        (type.startsWith("/") ? -Math.abs(amount) : Math.abs(amount)),
+                        amount,
                         description,
                         date
                     );
