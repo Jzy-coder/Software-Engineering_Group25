@@ -18,6 +18,10 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.util.ResourceBundle;
 import java.util.Optional;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Locale;
+import com.finance.util.BudgetDataManager;
 
 public class BudgetController implements Initializable {
 
@@ -63,6 +67,18 @@ public class BudgetController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         initializeTable();
+        loadBudgetData();
+    }
+
+    private void loadBudgetData() {
+        List<BudgetPlan> plans = BudgetDataManager.loadBudgetPlans();
+        budgetTable.setItems(FXCollections.observableArrayList(plans));
+        updateBudgetSummary();
+    }
+
+    private void saveBudgetData() {
+        List<BudgetPlan> plans = new ArrayList<>(budgetTable.getItems());
+        BudgetDataManager.saveBudgetPlans(plans);
     }
 
     @FXML
@@ -80,7 +96,7 @@ public class BudgetController implements Initializable {
         doneAmountColumn.setCellValueFactory(new PropertyValueFactory<>("doneAmount"));
 
         // 设置类别列为ComboBox
-        ObservableList<String> categories = FXCollections.observableArrayList("食品", "交通", "住房", "娱乐", "其他");
+        ObservableList<String> categories = FXCollections.observableArrayList("Food", "Transportation", "Housing", "Entertainment", "Others");
         categoryColumn.setCellFactory(ComboBoxTableCell.forTableColumn(categories));
         categoryColumn.setOnEditCommit(event -> {
             BudgetPlan plan = event.getRowValue();
@@ -89,7 +105,7 @@ public class BudgetController implements Initializable {
 
         // 设置编辑按钮列
         editColumn.setCellFactory(param -> new TableCell<>() {
-            private final Button editButton = new Button("编辑");
+            private final Button editButton = new Button("Edit");
             
             {
                 editButton.setOnAction(event -> {
@@ -111,7 +127,7 @@ public class BudgetController implements Initializable {
 
         // 设置删除按钮列
         deleteColumn.setCellFactory(param -> new TableCell<>() {
-            private final Button deleteButton = new Button("删除");
+            private final Button deleteButton = new Button("Delete");
             
             {
                 deleteButton.setOnAction(event -> {
@@ -134,54 +150,56 @@ public class BudgetController implements Initializable {
 
     private void handleDeletePlan(BudgetPlan plan) {
         Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmDialog.setTitle("确认删除");
-        confirmDialog.setHeaderText("确定要删除这个预算计划吗？");
-        confirmDialog.setContentText("计划名称: " + plan.getPlanName());
+        confirmDialog.setTitle("Confirm Delete");
+        confirmDialog.setHeaderText("Are you sure you want to delete this budget plan?");
+        confirmDialog.setContentText("Plan Name: " + plan.getPlanName());
 
         Optional<ButtonType> result = confirmDialog.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             budgetTable.getItems().remove(plan);
             updateBudgetSummary();
+            saveBudgetData();
         }
     }
 
     @FXML
     private void handleAddPlan() {
-        // 创建输入表单对话框
         Dialog<BudgetPlan> dialog = new Dialog<>();
-        dialog.setTitle("添加预算计划");
-        dialog.setHeaderText("请输入预算计划详情");
+        dialog.setTitle("Add Budget Plan");
+        dialog.setHeaderText("Please enter budget plan details");
 
-        // 设置对话框按钮
-        ButtonType saveButtonType = new ButtonType("保存", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+        ButtonType saveButtonType = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, cancelButtonType);
 
-        // 创建表单网格
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 10));
 
-        // 添加表单字段
         TextField planNameField = new TextField();
         TextField budgetAmountField = new TextField();
         TextField doneAmountField = new TextField();
         DatePicker startDatePicker = new DatePicker();
         DatePicker endDatePicker = new DatePicker();
+        
+        // Set default locale for DatePickers
+        Locale.setDefault(Locale.ENGLISH);
+        
         ComboBox<String> categoryComboBox = new ComboBox<>();
-        categoryComboBox.getItems().addAll("食品", "交通", "住房", "娱乐", "其他");
+        categoryComboBox.getItems().addAll("Food", "Transportation", "Housing", "Entertainment", "Others");
 
-        grid.add(new Label("计划名称:"), 0, 0);
+        grid.add(new Label("Plan Name:"), 0, 0);
         grid.add(planNameField, 1, 0);
-        grid.add(new Label("预算金额:"), 0, 1);
+        grid.add(new Label("Budget Amount:"), 0, 1);
         grid.add(budgetAmountField, 1, 1);
-        grid.add(new Label("已完成金额:"), 0, 2);
+        grid.add(new Label("Done Amount:"), 0, 2);
         grid.add(doneAmountField, 1, 2);
-        grid.add(new Label("开始日期:"), 0, 3);
+        grid.add(new Label("Start Date:"), 0, 3);
         grid.add(startDatePicker, 1, 3);
-        grid.add(new Label("结束日期:"), 0, 4);
+        grid.add(new Label("End Date:"), 0, 4);
         grid.add(endDatePicker, 1, 4);
-        grid.add(new Label("类别:"), 0, 5);
+        grid.add(new Label("Category:"), 0, 5);
         grid.add(categoryComboBox, 1, 5);
 
         dialog.getDialogPane().setContent(grid);
@@ -198,7 +216,7 @@ public class BudgetController implements Initializable {
                     String category = categoryComboBox.getValue();
 
                     if (planName.isEmpty() || startDate == null || endDate == null || category == null) {
-                        showAlert("请填写所有必填字段");
+                        showAlert("Please fill in all required fields");
                         return null;
                     }
 
@@ -206,7 +224,7 @@ public class BudgetController implements Initializable {
                     plan.setDoneAmount(doneAmount);
                     return plan;
                 } catch (NumberFormatException e) {
-                    showAlert("请输入有效的预算金额");
+                    showAlert("Please enter a valid budget amount");
                     return null;
                 }
             }
@@ -218,6 +236,7 @@ public class BudgetController implements Initializable {
             if (budgetPlan != null) {
                 budgetTable.getItems().add(budgetPlan);
                 updateBudgetSummary();
+                saveBudgetData();
             }
         });
     }
@@ -231,29 +250,30 @@ public class BudgetController implements Initializable {
     }
 
     private void handleEditPlan(BudgetPlan plan) {
-        // 创建编辑表单对话框
         Dialog<BudgetPlan> dialog = new Dialog<>();
-        dialog.setTitle("编辑预算计划");
-        dialog.setHeaderText("请修改预算计划详情");
+        dialog.setTitle("Edit Budget Plan");
+        dialog.setHeaderText("Please modify budget plan details");
 
-        // 设置对话框按钮
-        ButtonType saveButtonType = new ButtonType("保存", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+        ButtonType saveButtonType = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, cancelButtonType);
 
-        // 创建表单网格
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 10));
 
-        // 添加表单字段并预填充当前值
         TextField planNameField = new TextField(plan.getPlanName());
         TextField budgetAmountField = new TextField(String.valueOf(plan.getBudgetAmount()));
         TextField doneAmountField = new TextField(String.valueOf(plan.getDoneAmount()));
         DatePicker startDatePicker = new DatePicker(plan.getStartDate());
         DatePicker endDatePicker = new DatePicker(plan.getEndDate());
+        
+        // Set default locale for DatePickers
+        Locale.setDefault(Locale.ENGLISH);
+        
         ComboBox<String> categoryComboBox = new ComboBox<>();
-        categoryComboBox.getItems().addAll("食品", "交通", "住房", "娱乐", "其他");
+        categoryComboBox.getItems().addAll("Food", "Transportation", "Housing", "Entertainment", "Others");
         categoryComboBox.setValue(plan.getCategory());
 
         grid.add(new Label("计划名称:"), 0, 0);
@@ -304,6 +324,7 @@ public class BudgetController implements Initializable {
                 int index = budgetTable.getItems().indexOf(plan);
                 budgetTable.getItems().set(index, updatedPlan);
                 updateBudgetSummary();
+                saveBudgetData();
             }
         });
     }
