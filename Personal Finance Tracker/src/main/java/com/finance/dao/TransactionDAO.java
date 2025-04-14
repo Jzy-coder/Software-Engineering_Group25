@@ -28,7 +28,7 @@ import com.google.gson.reflect.TypeToken;
  * Transaction Data Access Object, responsible for data persistence operations
  */
 public class TransactionDAO {
-    private static final String DATA_DIR = "data";
+    private static final String DATA_DIR = "target/data";
     private static final String FILE_NAME_TEMPLATE = "%s_transactions.json";
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final Gson gson;
