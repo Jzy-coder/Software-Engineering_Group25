@@ -208,7 +208,7 @@ public class IncomeExpenseController implements Initializable {
 
             String category = categoryComboBox.getValue();
             String type = typeComboBox.getValue();
-            double amount = Double.parseDouble(amountField.getText());
+            double amount = Math.abs(Double.parseDouble(amountField.getText()));
             String description = descriptionArea.getText();
             
             // 非空校验
