@@ -220,10 +220,7 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
     showAlert("金额不能为空");
     return;
 }
-if (descriptionArea.getText() == null || descriptionArea.getText().trim().isEmpty()) {
-    showAlert("描述内容不能为空");
-    return;
-}
+
             
             Transaction transaction = new Transaction(category, type, amount, description, transactionDate);
             transactionService.addTransaction(transaction);
