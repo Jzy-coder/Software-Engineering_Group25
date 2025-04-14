@@ -1,18 +1,20 @@
 package com.finance.util;
 
-import com.finance.model.Transaction;
 import java.io.File;
 import java.io.FileReader;
-import java.time.LocalDateTime;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Arrays;
-import com.opencsv.CSVReader;
+import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.finance.model.Transaction;
+import com.opencsv.CSVReader;
 
 public class CSVParser {
     private static final Logger logger = LoggerFactory.getLogger(CSVParser.class);
@@ -29,6 +31,18 @@ public class CSVParser {
             case "奖金": return "Bonus";
             default: return "Others";
         }
+    }
+
+    private static final Set<String> VALID_INCOME_TYPES = Set.of("Salary", "Bonus", "Others");
+    private static final Set<String> validExpenseTypes = Set.of("Food", "Shopping", "Transportation", "Housing", "Entertainment", "Others");
+
+    private static boolean isValidTransaction(String category, String type) {
+        if (category.equals("Income")) {
+            return VALID_INCOME_TYPES.contains(type);
+        } else if (category.equals("Expense")) {
+            return validExpenseTypes.contains(type);
+        }
+        return false;
     }
 
     public static List<Transaction> parseWeChatCSV(File file) throws Exception {
@@ -70,13 +84,25 @@ public class CSVParser {
 
                     logger.debug("解析成功: type={}, amount={}, date={}", type, amount, date);
 
+                    String category = type.startsWith("/") ? "Expense" : "Income";
+                    String mappedType = mapChineseType(type.replace("/", ""));
+
+                    if (!isValidTransaction(category, mappedType)) {
+                        logger.warn("跳过无效交易类型: {} - {}", category, mappedType);
+                        continue;
+                    }
+
                     Transaction transaction = new Transaction(
-                        type.startsWith("/") ? "Expense" : "Income",
-                        mapChineseType(type.replace("/", "")),
+                        category,
+                        mappedType,
                         (type.startsWith("/") ? -Math.abs(amount) : Math.abs(amount)),
                         description,
                         date
                     );
+// 由于 TransactionDAO 类无法解析，暂时假设没有已存在的交易，初始化一个空列表
+                    List<Transaction> existingTransactions = new ArrayList<>();
+                    long maxId = existingTransactions.stream().mapToLong(Transaction::getId).max().orElse(0L);
+                    transaction.setId(maxId + 1);
                     transactions.add(transaction);
                 } catch (NumberFormatException e) {
                     logger.error("金额格式错误: {}", nextLine[4]);
