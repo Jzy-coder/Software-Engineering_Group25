@@ -26,7 +26,7 @@ public class LoginManager {
         if (transactionService == null) {
             synchronized (LoginManager.class) {
                 if (transactionService == null) {
-                    transactionService = new TransactionService();
+                    transactionService = new com.finance.service.impl.TransactionServiceImpl();
                     transactionService.switchUser(currentUsername, false);
                 }
             }
