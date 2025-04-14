@@ -65,6 +65,13 @@
             <artifactId>logback-classic</artifactId>
             <version>1.2.11</version>
         </dependency>
+        
+        <!-- OpenCSV依赖 -->
+        <dependency>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>5.9</version>
+        </dependency>
     </dependencies>
 
     <build>

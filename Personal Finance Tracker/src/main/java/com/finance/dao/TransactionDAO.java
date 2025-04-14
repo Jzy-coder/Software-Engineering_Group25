@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.finance.model.Transaction;
 import com.google.gson.Gson;
@@ -28,6 +30,10 @@ import com.google.gson.reflect.TypeToken;
  * Transaction Data Access Object, responsible for data persistence operations
  */
 public class TransactionDAO {
+
+    public void clearCache() {
+        initializeDataFile();
+    }
     private static final String DATA_DIR = "data";
     private static final String FILE_NAME_TEMPLATE = "%s_transactions.json";
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -91,7 +97,7 @@ public class TransactionDAO {
     /**
      * Update current user and switch data file
      */
-    public void updateCurrentUser(String username, boolean isRename) {
+    public void switchUser(String username, boolean isRename) {
         String oldUsername = this.currentUsername;
         this.currentUsername = username;
 
@@ -133,16 +139,14 @@ public class TransactionDAO {
     
     
     /**
-     * Find all transactions
+     * 获取所有交易记录
      */
-    public List<Transaction> findAll() {
+    public List<Transaction> getAllTransactions() {
         try (Reader reader = new FileReader(dataFile)) {
-            Type type = new TypeToken<List<Transaction>>() {
-                private static final long serialVersionUID = 1L;
-            }.getType();
+            Type type = new TypeToken<List<Transaction>>() {}.getType();
             return gson.fromJson(reader, type);
         } catch (IOException e) {
-            System.err.println("Error reading transactions from file: " + e.getMessage());
+            System.err.println("读取交易记录错误: " + e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -151,45 +155,80 @@ public class TransactionDAO {
      * Save new transaction
      */
     public void save(Transaction transaction) {
-        List<Transaction> transactions = findAll();
-        // Generate new ID
+        List<Transaction> transactions = getAllTransactions();
         long maxId = transactions.stream()
+                .filter(t -> t.getId() != null)
                 .mapToLong(Transaction::getId)
                 .max()
                 .orElse(0L);
         transaction.setId(maxId + 1);
         
         transactions.add(transaction);
-        saveToFile(transactions);
-    }
-    
-    /**
-     * Update transaction
-     */
-    public void update(Transaction transaction) {
-        List<Transaction> transactions = findAll();
-        for (int i = 0; i < transactions.size(); i++) {
-            if (transactions.get(i).getId().equals(transaction.getId())) {
-                transactions.set(i, transaction);
-                break;
-            }
+        try {
+            saveToFile(transactions);
+        } catch (IOException e) {
+            throw new RuntimeException("保存到文件失败：" + e.getMessage(), e);
         }
-        saveToFile(transactions);
-    }
+    }    
     
     /**
-     * Delete transaction
-     */
-    public void delete(Long id) {
-        List<Transaction> transactions = findAll();
-        transactions.removeIf(t -> t.getId().equals(id));
-        saveToFile(transactions);
+    * Update a transaction and persist changes
+    */
+public void update(Transaction transaction) {
+    List<Transaction> transactions = getAllTransactions();
+    for (int i = 0; i < transactions.size(); i++) {
+        if (transactions.get(i).getId().equals(transaction.getId())) {
+            transactions.set(i, transaction);
+            break;
+        }
     }
+    try {
+        saveToFile(transactions);
+    } catch (IOException e) {
+        throw new RuntimeException("更新交易失败：" + e.getMessage(), e);
+    }
+}
+
+/**
+ * Delete transaction by ID
+ */
+public void deleteById(Long id) {
+    List<Transaction> transactions = getAllTransactions();
+    transactions.removeIf(t -> t.getId().equals(id));
+    try {
+        saveToFile(transactions);
+    } catch (IOException e) {
+        throw new RuntimeException("删除交易失败：" + e.getMessage(), e);
+    }
+}
+
+/**
+ * Batch insert transactions with duplication check
+ */
+public void batchInsert(List<Transaction> newTransactions) {
+    List<Transaction> existing = getAllTransactions();
+
+    // 使用HashSet去重（基于交易日期、类型和金额）
+    Set<String> uniqueKeys = existing.stream()
+        .map(t -> t.getDate().toString() + t.getType() + t.getAmount())
+        .collect(Collectors.toSet());
+
+    List<Transaction> merged = new ArrayList<>(existing);
+    merged.addAll(newTransactions.stream()
+        .filter(t -> !uniqueKeys.contains(t.getDate().toString() + t.getType() + t.getAmount()))
+        .collect(Collectors.toList()));
+
+    try {
+        saveToFile(merged);
+    } catch (IOException e) {
+        throw new RuntimeException("批量添加交易失败：" + e.getMessage(), e);
+    }
+}
     
     /**
      * Save transaction list to file
      */
-    private void saveToFile(List<Transaction> transactions) {
+    public void saveToFile(List<Transaction> transactions) throws IOException {
         try (Writer writer = new FileWriter(dataFile)) {
             gson.toJson(transactions, writer);
         } catch (IOException e) {
