@@ -15,6 +15,14 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    public long getNextTransactionId() {
+        return transactionDAO.getAllTransactions().stream()
+                .mapToLong(Transaction::getId)
+                .max()
+                .orElse(0L) + 1;
+    }
+
+    @Override
     public void batchImport(List<Transaction> transactions) {
         List<Transaction> existing = transactionDAO.getAllTransactions();
         existing.addAll(transactions);

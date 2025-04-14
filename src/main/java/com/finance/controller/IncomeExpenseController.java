@@ -1,26 +1,24 @@
 package com.finance.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ResourceBundle;
-import java.util.ArrayList;
 import java.util.List;
-import javafx.stage.FileChooser;
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.ButtonBar;
+import java.util.ResourceBundle;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.finance.model.Transaction;
 import com.finance.service.TransactionService;
 import com.finance.util.CSVParser;
 
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -31,6 +29,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -38,10 +37,8 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.FileChooser;
 import javafx.util.Callback;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ObservableValue;
-import java.time.format.DateTimeFormatter;
 
 /**
  * Income/Expense Interface Controller
@@ -446,7 +443,7 @@ if (descriptionArea.getText() == null || descriptionArea.getText().trim().isEmpt
         if (file != null) {
             try {
                 // CSV解析逻辑
-                List<Transaction> importedTransactions = CSVParser.parseWeChatCSV(file);
+                List<Transaction> importedTransactions = new CSVParser(transactionService).parseWeChatCSV(file, transactionService.getAllTransactions());
                 
                 // 创建预览对话框
                 Dialog<ButtonType> dialog = new Dialog<>();

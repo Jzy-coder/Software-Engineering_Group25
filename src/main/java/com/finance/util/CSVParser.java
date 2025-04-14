@@ -14,9 +14,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.finance.model.Transaction;
+import com.finance.service.TransactionService;
 import com.opencsv.CSVReader;
 
 public class CSVParser {
+    private final TransactionService transactionService;
+    
+    public CSVParser(TransactionService transactionService) {
+        this.transactionService = transactionService;
+    }
+    
     private static final Logger logger = LoggerFactory.getLogger(CSVParser.class);
     private static final DateTimeFormatter WECHAT_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     
@@ -45,8 +52,9 @@ public class CSVParser {
         return false;
     }
 
-    public static List<Transaction> parseWeChatCSV(File file) throws Exception {
+    public List<Transaction> parseWeChatCSV(File file, List<Transaction> existingTransactions) throws Exception {
         List<Transaction> transactions = new ArrayList<>();
+        long maxExistingId = transactionService.getAllTransactions().stream().mapToLong(Transaction::getId).max().orElse(0L);
 
         try (CSVReader reader = new CSVReader(new FileReader(file))) {
             // 跳过微信CSV文件头（前17行）
@@ -99,11 +107,14 @@ public class CSVParser {
                         description,
                         date
                     );
-// 由于 TransactionDAO 类无法解析，暂时假设没有已存在的交易，初始化一个空列表
-                    List<Transaction> existingTransactions = new ArrayList<>();
-                    long maxId = existingTransactions.stream().mapToLong(Transaction::getId).max().orElse(0L);
-                    transaction.setId(maxId + 1);
+
+                    // 通过服务层获取事务ID
+                    // 从现有最大ID开始递增
+//long maxExistingId = transactionService.getAllTransactions().stream().mapToLong(Transaction::getId).max().orElse(0L);
+transaction.setId(++maxExistingId);
                     transactions.add(transaction);
+// 由于 TransactionService 中未定义 syncTransactionId(long) 方法，暂时注释掉该调用
+// transactionService.syncTransactionId(maxExistingId);
                 } catch (NumberFormatException e) {
                     logger.error("金额格式错误: {}", nextLine[4]);
                     throw new Exception("第" + (reader.getLinesRead() + 17) + "行金额格式错误: " + amountStr, e); // 准确计算实际文件行号（17行头+已读行数）

@@ -1,7 +1,8 @@
 package com.finance.service;
 
-import com.finance.model.Transaction;
 import java.util.List;
+
+import com.finance.model.Transaction;
 
 public interface TransactionService {
     void batchImport(List<Transaction> transactions);
@@ -13,4 +14,5 @@ public interface TransactionService {
     void updateTransaction(Transaction transaction);
     double calculateTotalByCategory(String category);
     double calculateBalance();
+    long getNextTransactionId();
 }
