@@ -1,14 +1,24 @@
 package com.finance.controller;
 
+import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.ResourceBundle;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.finance.model.Transaction;
 import com.finance.service.TransactionService;
+import com.finance.util.CSVParser;
 
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -19,6 +29,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -26,20 +37,22 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.FileChooser;
 import javafx.util.Callback;
-import javafx.beans.value.ObservableValue; 
 
 /**
  * Income/Expense Interface Controller
  */
 public class IncomeExpenseController implements Initializable {
 
+    private static final Logger logger = LoggerFactory.getLogger(IncomeExpenseController.class);
+
     // ▼▼▼▼▼▼▼▼▼ 新增代码：定义分类选项 ▼▼▼▼▼▼▼▼▼
     private final ObservableList<String> incomeTypes = 
         FXCollections.observableArrayList("Salary", "Bonus", "Others");
     private final ObservableList<String> expenseTypes = 
         FXCollections.observableArrayList("Food", "Shopping", "Transportation", "Housing", "Entertainment", "Others");
-    // ▲▲▲▲▲▲▲▲▲ 新增结束 ▲▲▲▲▲▲▲▲▲
+    // ▲▲▲▲▲▲▲▲▲▲ 新增结束 ▲▲▲▲▲▲▲▲▲▲
 
     private TransactionService transactionService;
     private ObservableList<Transaction> transactionList;
@@ -186,18 +199,28 @@ public class IncomeExpenseController implements Initializable {
         try {
             
              // 获取用户选择的日期
-             LocalDate selectedDate = datePicker.getValue();
-             LocalDateTime transactionDate = selectedDate.atStartOfDay(); // 转换为当天零点时间
+             if (datePicker.getValue() == null) {
+                showAlert("请选择交易日期");
+                return;
+            }
+            LocalDate selectedDate = datePicker.getValue();
+            LocalDateTime transactionDate = selectedDate.atStartOfDay(); // 转换为当天零点时间
 
             String category = categoryComboBox.getValue();
             String type = typeComboBox.getValue();
-            double amount = Double.parseDouble(amountField.getText());
+            double amount = Math.abs(Double.parseDouble(amountField.getText()));
             String description = descriptionArea.getText();
             
-            if (category == null || type == null) {
-                showAlert("Category and type must be selected");
-                return;
-            }
+            // 非空校验
+if (category == null || type == null) {
+    showAlert("请选择收支类别和类型");
+    return;
+}
+if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
+    showAlert("金额不能为空");
+    return;
+}
+
             
             Transaction transaction = new Transaction(category, type, amount, description, transactionDate);
             transactionService.addTransaction(transaction);
@@ -213,9 +236,10 @@ public class IncomeExpenseController implements Initializable {
             updateSummary();
             
         } catch (NumberFormatException e) {
-            showAlert("Amount must be a valid number");
+            showAlert("金额格式错误，请输入有效数字（示例：199.99）");
         } catch (Exception e) {
-            showAlert("Failed to add transaction: " + e.getMessage());
+            logger.error("添加交易记录失败", e);
+            showAlert("添加交易失败: " + e.getMessage());
         }
     }
     
@@ -345,7 +369,7 @@ public class IncomeExpenseController implements Initializable {
                 updateSummary();
                 
             } catch (NumberFormatException e) {
-                showAlert("Amount must be a valid number");
+                showAlert("金额格式错误，请输入有效数字（示例：199.99）");
             } catch (Exception e) {
                 showAlert("Failed to update transaction: " + e.getMessage());
             }
@@ -396,5 +420,80 @@ public class IncomeExpenseController implements Initializable {
         // Reset button text and action
         addButton.setText("Add New Transaction");
         addButton.setOnAction((event) -> handleAddTransaction());
+    }
+    
+    @FXML
+    private void handleImportCSV() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("选择CSV文件");
+        
+        // 设置微信默认路径
+        Path wechatPath = Paths.get(System.getProperty("user.home"), "Documents", "WeChat Files");
+        if (wechatPath.toFile().exists()) {
+            fileChooser.setInitialDirectory(wechatPath.toFile());
+        } else {
+            fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+        }
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV文件", "*.csv"));
+        File file = fileChooser.showOpenDialog(transactionTable.getScene().getWindow());
+
+        if (file != null) {
+            try {
+                // CSV解析逻辑
+                List<Transaction> importedTransactions = new CSVParser(transactionService).parseWeChatCSV(file, transactionService.getAllTransactions());
+                
+                // 创建预览对话框
+                Dialog<ButtonType> dialog = new Dialog<>();
+                dialog.setTitle("导入预览");
+                dialog.setHeaderText(String.format("共发现%d条待导入记录", importedTransactions.size()));
+                
+                // 添加预览表格
+                TableView<Transaction> previewTable = createPreviewTable(importedTransactions);
+                dialog.getDialogPane().setContent(previewTable);
+                dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+                
+                if (dialog.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+                    transactionService.batchImport(importedTransactions);
+                    loadTransactions();
+                    updateSummary();
+                    showAlert("成功导入" + importedTransactions.size() + "条记录");
+
+                }
+            } catch (Exception e) {
+                showAlert("CSV文件解析失败: " + e.getMessage());
+            }
+        }
+    }
+
+    private TableView<Transaction> createPreviewTable(List<Transaction> transactions) {
+        TableView<Transaction> previewTable = new TableView<>();
+        
+        // 定义表格列
+        TableColumn<Transaction, String> categoryCol = new TableColumn<>("Category");
+        categoryCol.setCellValueFactory(new PropertyValueFactory<>("category"));
+        
+        TableColumn<Transaction, String> typeCol = new TableColumn<>("Type");
+        typeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
+        
+        TableColumn<Transaction, Double> amountCol = new TableColumn<>("Amount");
+        amountCol.setCellValueFactory(new PropertyValueFactory<>("amount"));
+        
+        TableColumn<Transaction, String> dateCol = new TableColumn<>("Date");
+        dateCol.setCellValueFactory(cellData -> {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            return new SimpleStringProperty(cellData.getValue().getDate().format(formatter));
+        });
+        
+        // 添加列到表格
+        previewTable.getColumns().addAll(categoryCol, typeCol, amountCol, dateCol);
+        
+        // 设置数据源
+        previewTable.setItems(FXCollections.observableArrayList(transactions));
+        
+        // 设置表格样式
+        previewTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        previewTable.setPrefHeight(400);
+        
+        return previewTable;
     }
 }

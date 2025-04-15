@@ -45,6 +45,8 @@
                         <Button fx:id="addButton" text="Add New Transaction" onAction="#handleAddTransaction" 
                                 GridPane.rowIndex="5" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
 
+                        <Button text="importCSV" onAction="#handleImportCSV" style="-fx-background-color: #2196F3; -fx-text-fill: white;"
+                                GridPane.rowIndex="6" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
                     </GridPane>
                 </VBox>
                 

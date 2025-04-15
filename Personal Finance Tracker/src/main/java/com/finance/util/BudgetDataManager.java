@@ -1,51 +1,33 @@
 package com.finance.util;
 
-import com.finance.controller.BudgetPlan;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonSerializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
-
+import com.finance.model.Budget;
 import java.io.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 public class BudgetDataManager {
-    private static final String DATA_FILE = "data/budget_data.json";
-    private static final Gson gson = new GsonBuilder()
-            .registerTypeAdapter(LocalDate.class, (JsonSerializer<LocalDate>) (date, type, context) ->
-                    new JsonPrimitive(date.toString()))
-            .registerTypeAdapter(LocalDate.class, (JsonDeserializer<LocalDate>) (json, type, context) ->
-                    LocalDate.parse(json.getAsString()))
-            .setPrettyPrinting()
-            .create();
-
-    public static void saveBudgetPlans(List<BudgetPlan> plans) {
-        File dataDir = new File("data");
-        if (!dataDir.exists()) {
-            dataDir.mkdir();
-        }
-
-        try (Writer writer = new FileWriter(DATA_FILE)) {
-            gson.toJson(plans, writer);
+    private static final String DATA_FILE = "data/budgets.dat";
+    
+    public static void saveBudgets(List<Budget> budgets) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(
+                new FileOutputStream(DATA_FILE))) {
+            oos.writeObject(budgets);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
-    public static List<BudgetPlan> loadBudgetPlans() {
+    
+    @SuppressWarnings("unchecked")
+    public static List<Budget> loadBudgets() {
         File file = new File(DATA_FILE);
         if (!file.exists()) {
             return new ArrayList<>();
         }
-
-        try (Reader reader = new FileReader(DATA_FILE)) {
-            return gson.fromJson(reader, new TypeToken<List<BudgetPlan>>(){}.getType());
-        } catch (IOException e) {
+        
+        try (ObjectInputStream ois = new ObjectInputStream(
+                new FileInputStream(DATA_FILE))) {
+            return (List<Budget>) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
             return new ArrayList<>();
         }

@@ -4,47 +4,30 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 
-<BorderPane xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.BudgetController">
-    <center>
-        <VBox spacing="10" style="-fx-padding: 10;">
-            <Label text="Budget Management" style="-fx-font-size: 18; -fx-font-weight: bold;" />
+<VBox spacing="20" alignment="CENTER" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.BudgetController">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+    
+    <Label text="Budget Management" style="-fx-font-size: 24px;"/>
+    
+    <VBox spacing="10" alignment="CENTER">
+        <Button fx:id="addButton" text="Add Budget" onAction="#handleAddBudget" styleClass="primary-button"/>
+        
+        <GridPane fx:id="inputGrid" visible="false" vgap="10" hgap="10" alignment="CENTER">
+            <Label text="Planned Amount:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <TextField fx:id="plannedAmountField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
             
-            <HBox spacing="20">
-                <!-- Left side - Budget Plans List -->
-                <VBox spacing="10" minWidth="300" HBox.hgrow="ALWAYS">
-                    <HBox spacing="10" alignment="CENTER_LEFT">
-                        <Label text="Budget Plans" style="-fx-font-size: 14; -fx-font-weight: bold;" />
-                        <Button fx:id="addPlanButton" text="Click to Add" onAction="#handleAddPlan" 
-                                style="-fx-background-color: #4CAF50; -fx-text-fill: white;" />
-                    </HBox>
-                    
-                    <TableView fx:id="budgetTable" VBox.vgrow="ALWAYS">
-                        <columns>
-                            <TableColumn fx:id="planNameColumn" text="Plan Name" prefWidth="150" />
-                            <TableColumn fx:id="budgetAmountColumn" text="Budget Amount" prefWidth="120" />
-                            <TableColumn fx:id="doneAmountColumn" text="Done Amount" prefWidth="120" />
-                            <TableColumn fx:id="startDateColumn" text="Start Date" prefWidth="100" />
-                            <TableColumn fx:id="endDateColumn" text="End Date" prefWidth="100" />
-                            <TableColumn fx:id="categoryColumn" text="Category" prefWidth="100" />
-                            <TableColumn fx:id="deleteColumn" text="Delete" prefWidth="60" />
-                            <TableColumn fx:id="editColumn" text="Edit" prefWidth="60" />
-                        </columns>
-                    </TableView>
-                </VBox>
+            <Label text="Current Amount:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+            <TextField fx:id="actualAmountField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+            
+            <HBox spacing="10" alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                <Button text="Confirm" onAction="#handleConfirm"/>
+                <Button text="Cancel" onAction="#handleCancel"/>
             </HBox>
-            
-            <!-- Summary Section -->
-            <VBox spacing="10" style="-fx-padding: 10; -fx-border-color: #cccccc; -fx-border-radius: 5;">
-                <HBox spacing="10" alignment="CENTER_LEFT">
-                    <Label text="Budget Progress:" style="-fx-font-size: 14;" />
-                    <Label fx:id="totalBudgetLabel" text="¥0.00 / ¥0.00" style="-fx-font-size: 14;" />
-                </HBox>
-                <ProgressBar fx:id="budgetProgressBar" progress="0.0" prefWidth="Infinity" style="-fx-accent: #4CAF50;" />
-                <HBox spacing="20" alignment="CENTER">
-                    <Label fx:id="usedBudgetLabel" text="Used: ¥0.00" style="-fx-text-fill: #666666;" />
-                    <Label fx:id="remainingBudgetLabel" text="Remaining: ¥0.00" style="-fx-text-fill: #666666;" />
-                </HBox>
-            </VBox>
-        </VBox>
-    </center>
-</BorderPane>
+        </GridPane>
+        
+        <VBox fx:id="budgetListContainer" spacing="10" alignment="CENTER" style="-fx-alignment: CENTER;"/>
+
+    </VBox>
+</VBox>
