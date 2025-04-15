@@ -15,12 +15,9 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
-import javafx.stage.Stage;
-import javafx.util.StringConverter;
 
 import java.net.URL;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -142,7 +139,7 @@ public class AnalysisController implements Initializable, TransactionEventListen
         List<LocalDate> availableDates = getAvailableTransactionDates();
         
         if (availableDates.isEmpty()) {
-            showAlert("没有可用的交易数据日期");
+            showAlert("No available transaction data dates");
             return;
         }
 
