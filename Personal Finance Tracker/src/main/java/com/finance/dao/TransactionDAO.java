@@ -231,4 +231,12 @@ public void batchInsert(List<Transaction> newTransactions) {
             System.err.println("Error saving transactions to file: " + e.getMessage());
         }
     }
+    
+    /**
+     * Clear cache by reloading data from file
+     */
+    public void clearCache() {
+        // Simply reload data from file to clear any in-memory caching
+        getAllTransactions();
+    }
 }
