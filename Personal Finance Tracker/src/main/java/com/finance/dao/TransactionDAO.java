@@ -93,6 +93,10 @@ public class TransactionDAO {
     /**
      * Update current user and switch data file
      */
+    public void clearCache() {
+        // Clear any cached data if needed
+    }
+    
     public void switchUser(String username, boolean isRename) {
         String oldUsername = this.currentUsername;
         this.currentUsername = username;
@@ -230,13 +234,5 @@ public void batchInsert(List<Transaction> newTransactions) {
         } catch (IOException e) {
             System.err.println("Error saving transactions to file: " + e.getMessage());
         }
-    }
-    
-    /**
-     * Clear cache by reloading data from file
-     */
-    public void clearCache() {
-        // Simply reload data from file to clear any in-memory caching
-        getAllTransactions();
     }
 }
