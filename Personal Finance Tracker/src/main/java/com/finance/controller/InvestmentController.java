@@ -10,12 +10,18 @@ import java.util.stream.Collectors;
 import com.finance.model.Transaction;
 import com.finance.service.TransactionService;
 
+import javafx.application.Platform;
+import javafx.scene.Node;
+
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.StackPane;
 import javafx.collections.FXCollections;
@@ -24,6 +30,8 @@ import javafx.beans.value.ChangeListener;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
+
+import javafx.scene.control.Tooltip;
 
 public class InvestmentController {
     @FXML
@@ -47,61 +55,17 @@ public class InvestmentController {
     @FXML
     private ComboBox<String> singleCategoryComboBox;
 
-    // Comparison View Controls - Left Side
+    // New Comparison View Controls
     @FXML
-    private DatePicker leftStartDate;
+    private ComboBox<String> comparisonTimePeriodComboBox;
     @FXML
-    private DatePicker leftEndDate;
+    private Button refreshComparisonBtn;
     @FXML
-    private RadioButton leftIncomeRadio;
+    private PieChart incomePieChart;
     @FXML
-    private RadioButton leftExpenseRadio;
+    private PieChart expensePieChart;
     @FXML
-    private ListView<String> leftCategoryList;
-    @FXML
-    private PieChart leftPieChart;
-
-    // Comparison View Controls - Right Side
-    @FXML
-    private DatePicker rightStartDate;
-    @FXML
-    private DatePicker rightEndDate;
-    @FXML
-    private RadioButton rightIncomeRadio;
-    @FXML
-    private RadioButton rightExpenseRadio;
-    @FXML
-    private ListView<String> rightCategoryList;
-    @FXML
-    private PieChart rightPieChart;
-
-    // Single Comparison View Controls - Left Side
-    @FXML
-    private DatePicker singleLeftStartDate;
-    @FXML
-    private DatePicker singleLeftEndDate;
-    @FXML
-    private RadioButton singleLeftIncomeRadio;
-    @FXML
-    private RadioButton singleLeftExpenseRadio;
-    @FXML
-    private ListView<String> singleLeftCategoryList;
-    @FXML
-    private PieChart singleLeftPieChart;
-
-    // Single Comparison View Controls - Right Side
-    @FXML
-    private DatePicker singleRightStartDate;
-    @FXML
-    private DatePicker singleRightEndDate;
-    @FXML
-    private RadioButton singleRightIncomeRadio;
-    @FXML
-    private RadioButton singleRightExpenseRadio;
-    @FXML
-    private ListView<String> singleRightCategoryList;
-    @FXML
-    private PieChart singleRightPieChart;
+    private TableView<Map.Entry<String, Double>> comparisonTable;
 
     private final ObservableList<String> incomeCategories = FXCollections.observableArrayList("All", "Salary", "Bonus", "Others");
     private final ObservableList<String> expenseCategories = FXCollections.observableArrayList("All", "Food", "Shopping", "Transportation", "Housing", "Entertainment", "Others");
@@ -184,6 +148,7 @@ public class InvestmentController {
                 break;
             case "Comparison":
                 singleComparisonView.setVisible(true);
+                updateComparisonCharts();
                 break;
         }
     }
@@ -443,50 +408,106 @@ public class InvestmentController {
     }
 
     private void initializeComparisonControls() {
-        // 初始化类别列表
-        initializeCategoryList(leftCategoryList, leftIncomeRadio, leftExpenseRadio);
-        initializeCategoryList(rightCategoryList, rightIncomeRadio, rightExpenseRadio);
-        initializeCategoryList(singleLeftCategoryList, singleLeftIncomeRadio, singleLeftExpenseRadio);
-        initializeCategoryList(singleRightCategoryList, singleRightIncomeRadio, singleRightExpenseRadio);
-
         // 设置日期选择器的默认值
         setupDatePickers();
+        
+        // 设置刷新按钮点击事件
+        refreshComparisonBtn.setOnAction(event -> updateComparisonCharts());
+        
+        // 设置时间段选择监听器
+        comparisonTimePeriodComboBox.getSelectionModel().selectedItemProperty()
+            .addListener((observable, oldValue, newValue) -> {
+                if (newValue != null) {
+                    updateComparisonCharts();
+                }
+            });
     }
-
-    private void initializeCategoryList(ListView<String> listView, RadioButton incomeRadio, RadioButton expenseRadio) {
-        // 设置多选模式
-        listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-
-        // 添加收入/支出单选按钮的监听器
-        incomeRadio.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                listView.setItems(FXCollections.observableArrayList(incomeCategories));
-            }
-        });
-
-        expenseRadio.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                listView.setItems(FXCollections.observableArrayList(expenseCategories));
-            }
-        });
-
-        // 设置初始类别列表
-        listView.setItems(FXCollections.observableArrayList(incomeCategories));
+    
+    private void updateComparisonCharts() {
+        String timePeriod = comparisonTimePeriodComboBox.getValue();
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate = getStartDate(endDate, timePeriod);
+        
+        // 获取交易数据
+        List<Transaction> transactions = transactionService.getAllTransactions();
+        
+        // 更新收入饼图
+        updatePieChart(incomePieChart, transactions, startDate, endDate, "Income");
+        
+        // 更新支出饼图
+        updatePieChart(expensePieChart, transactions, startDate, endDate, "Expense");
     }
+    
+    private void updatePieChart(PieChart chart, List<Transaction> transactions,
+    LocalDate startDate, LocalDate endDate, String category) {
+chart.getData().clear();
+
+// 分组统计金额
+Map<String, Double> amountsByType = transactions.stream()
+.filter(t -> !t.getDate().toLocalDate().isBefore(startDate)
+&& !t.getDate().toLocalDate().isAfter(endDate)
+&& t.getCategory().equals(category))
+.collect(Collectors.groupingBy(
+Transaction::getType,
+Collectors.summingDouble(Transaction::getAmount)
+));
+
+// 转换为 PieChart.Data，只显示类型，隐藏金额
+ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
+for (Map.Entry<String, Double> entry : amountsByType.entrySet()) {
+PieChart.Data data = new PieChart.Data(entry.getKey(), entry.getValue());
+pieChartData.add(data);
+}
+
+chart.setData(pieChartData);
+chart.setTitle(category + " Distribution");
+
+// 图表尺寸锁死
+chart.setMinSize(350, 350);
+chart.setPrefSize(350, 350);
+chart.setMaxSize(350, 350);
+
+// 隐藏默认标签（它们会撑大绘图区）
+chart.setLabelsVisible(false);
+
+// 设置统一缩放图形部分
+Platform.runLater(() -> {
+Node pie = chart.lookup(".chart-pie");
+if (pie != null) {
+pie.setScaleX(0.9);
+pie.setScaleY(0.9);
+}
+
+// 为每个扇形添加 Tooltip
+for (PieChart.Data data : chart.getData()) {
+Node node = data.getNode();
+if (node != null) {
+String tooltipText = String.format("%s: %.2f", data.getName(), data.getPieValue());
+Tooltip tooltip = new Tooltip(tooltipText);
+Tooltip.install(node, tooltip);
+}
+}
+});
+}
+
+
 
     private void setupDatePickers() {
         // 设置默认日期范围（例如：最近一个月）
         LocalDate endDate = LocalDate.now();
         LocalDate startDate = endDate.minusMonths(1);
 
-        leftStartDate.setValue(startDate);
-        leftEndDate.setValue(endDate);
-        rightStartDate.setValue(startDate);
-        rightEndDate.setValue(endDate);
-        singleLeftStartDate.setValue(startDate);
-        singleLeftEndDate.setValue(endDate);
-        singleRightStartDate.setValue(startDate);
-        singleRightEndDate.setValue(endDate);
+        // 初始化Comparison视图的时间段选择器
+        ObservableList<String> timePeriods = FXCollections.observableArrayList(
+            "The recent week",
+            "The recent 15 days", 
+            "The recent month",
+            "The recent three months",
+            "The recent half-year",
+            "The recent year"
+        );
+        comparisonTimePeriodComboBox.setItems(timePeriods);
+        comparisonTimePeriodComboBox.getSelectionModel().selectFirst();
     }
 
     private void setupRadioButtonListeners() {
