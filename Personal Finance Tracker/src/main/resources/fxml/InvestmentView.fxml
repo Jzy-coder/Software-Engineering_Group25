@@ -118,61 +118,55 @@
             <VBox fx:id="singleComparisonView" visible="false" style="-fx-background-color: white;" spacing="10">
                 <VBox spacing="10" style="-fx-padding: 10;">
                     <HBox spacing="20" alignment="CENTER_LEFT">
-                        <Label text="Time Period:" style="-fx-font-size: 14;"/>
-                        <ComboBox fx:id="comparisonTimePeriodComboBox" prefWidth="200">
-                            <items>
-                                <FXCollections fx:factory="observableArrayList">
-                                    <String fx:value="The recent week" />
-                                    <String fx:value="The recent 15 days" />
-                                    <String fx:value="The recent month" />
-                                    <String fx:value="The recent three months" />
-                                    <String fx:value="The recent half-year" />
-                                    <String fx:value="The recent year" />
-                                </FXCollections>
-                            </items>
-                        </ComboBox>
-                        <Button fx:id="refreshComparisonBtn" text="Refresh" style="-fx-font-size: 14;"/>
+                        <Label text="Comparison Mode:" style="-fx-font-size: 14;"/>
+                        <RadioButton fx:id="comparisonIncomeRadio" text="Income" selected="true">
+                            <toggleGroup>
+                                <ToggleGroup fx:id="comparisonDataTypeToggle" />
+                            </toggleGroup>
+                        </RadioButton>
+                        <RadioButton fx:id="comparisonExpenseRadio" text="Expense" toggleGroup="$comparisonDataTypeToggle" />
                     </HBox>
                 </VBox>
-                <HBox alignment="CENTER" spacing="100" VBox.vgrow="ALWAYS" style="-fx-padding: 10;">
-                    <HBox.hgrow>
-                        <Priority fx:constant="ALWAYS" />
-                    </HBox.hgrow>
-                    <PieChart fx:id="incomePieChart"
-                        title="Income Distribution"
-                        minWidth="350" prefWidth="350" maxWidth="350"
-                        minHeight="350" prefHeight="350" maxHeight="350" 
-                        legendVisible="false"
-                        labelsVisible="true"
-                        animated="true"
-                        style="-fx-padding: 10 10 10 10; -fx-title-side: TOP; -fx-title-gap: 10;">
-                        <HBox.hgrow>
-                            <Priority fx:constant="ALWAYS" />
-                        </HBox.hgrow>
-                    </PieChart>
-                    <PieChart fx:id="expensePieChart"
-                        title="Expense Distribution"
-                        minWidth="350" prefWidth="350" maxWidth="350"
-                        minHeight="350" prefHeight="350" maxHeight="350"
-                        legendVisible="false"
-                        labelsVisible="true"
-                        animated="true"
-                        style="-fx-padding: 10 10 10 10; -fx-title-side: TOP; -fx-title-gap: 10;">
-                        <HBox.hgrow>
-                            <Priority fx:constant="ALWAYS" />
-                        </HBox.hgrow>
-                    </PieChart>
+                <HBox alignment="CENTER" spacing="50" VBox.vgrow="ALWAYS" style="-fx-padding: 10;">
+                    <!-- Left Comparison Panel -->
+                    <VBox spacing="10" style="-fx-padding: 10;" HBox.hgrow="ALWAYS">
+                        <HBox spacing="20" alignment="CENTER_LEFT">
+                            <Label text="From:" style="-fx-font-size: 14;"/>
+                            <DatePicker fx:id="leftStartDatePicker" prefWidth="150"/>
+                            <Label text="To:" style="-fx-font-size: 14;"/>
+                            <DatePicker fx:id="leftEndDatePicker" prefWidth="150"/>
+                        </HBox>
+                        <PieChart fx:id="leftPieChart"
+                            title=""
+                            minWidth="350" prefWidth="350" maxWidth="350"
+                            minHeight="350" prefHeight="350" maxHeight="350" 
+                            legendVisible="false"
+                            labelsVisible="false"
+                            animated="true"
+                            style="-fx-padding: 10 10 10 10; -fx-title-side: TOP; -fx-title-gap: 10;">
+                        </PieChart>
+                    </VBox>
+                    
+                    <!-- Right Comparison Panel -->
+                    <VBox spacing="10" style="-fx-padding: 10;" HBox.hgrow="ALWAYS">
+                        <HBox spacing="20" alignment="CENTER_LEFT">
+                            <Label text="From:" style="-fx-font-size: 14;"/>
+                            <DatePicker fx:id="rightStartDatePicker" prefWidth="150"/>
+                            <Label text="To:" style="-fx-font-size: 14;"/>
+                            <DatePicker fx:id="rightEndDatePicker" prefWidth="150"/>
+                        </HBox>
+                        <PieChart fx:id="rightPieChart"
+                            title=""
+                            minWidth="350" prefWidth="350" maxWidth="350"
+                            minHeight="350" prefHeight="350" maxHeight="350"
+                            legendVisible="false"
+                            labelsVisible="false"
+                            animated="true"
+                            style="-fx-padding: 10 10 10 10; -fx-title-side: TOP; -fx-title-gap: 10;">
+                        </PieChart>
+                    </VBox>
                 </HBox>
-                <TableView fx:id="comparisonTable" VBox.vgrow="ALWAYS">
-                    <columns>
-                        <TableColumn text="Category" />
-                        <TableColumn text="Type" />
-                        <TableColumn text="Amount" />
-                        <TableColumn text="Percentage" />
-                    </columns>
-                </TableView>
             </VBox>
         </StackPane>
     </center>
 </BorderPane>
-

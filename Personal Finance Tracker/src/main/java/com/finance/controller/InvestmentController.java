@@ -12,6 +12,8 @@ import com.finance.service.TransactionService;
 
 import javafx.application.Platform;
 import javafx.scene.Node;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.paint.Color;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -32,6 +34,12 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.ToggleGroup;
+import javafx.animation.FadeTransition;
+import javafx.util.Duration;
+import javafx.scene.layout.HBox;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.control.Label;
 
 public class InvestmentController {
     @FXML
@@ -57,15 +65,23 @@ public class InvestmentController {
 
     // New Comparison View Controls
     @FXML
-    private ComboBox<String> comparisonTimePeriodComboBox;
+    private RadioButton comparisonIncomeRadio;
     @FXML
-    private Button refreshComparisonBtn;
+    private RadioButton comparisonExpenseRadio;
     @FXML
-    private PieChart incomePieChart;
+    private ToggleGroup comparisonDataTypeToggle;
     @FXML
-    private PieChart expensePieChart;
+    private DatePicker leftStartDatePicker;
     @FXML
-    private TableView<Map.Entry<String, Double>> comparisonTable;
+    private DatePicker leftEndDatePicker;
+    @FXML
+    private DatePicker rightStartDatePicker;
+    @FXML
+    private DatePicker rightEndDatePicker;
+    @FXML
+    private PieChart leftPieChart;
+    @FXML
+    private PieChart rightPieChart;
 
     private final ObservableList<String> incomeCategories = FXCollections.observableArrayList("All", "Salary", "Bonus", "Others");
     private final ObservableList<String> expenseCategories = FXCollections.observableArrayList("All", "Food", "Shopping", "Transportation", "Housing", "Entertainment", "Others");
@@ -129,6 +145,11 @@ public class InvestmentController {
             updateTendencyChart(singleTendencyLineChart, singleTimePeriodComboBox.getValue(),
                 singleIncomeRadio.isSelected(), singleExpenseRadio.isSelected(), singleBalanceRadio.isSelected(),
                 singleCategoryComboBox.getValue());
+            
+            // 预加载比较视图数据
+            singleComparisonView.applyCss();
+            singleComparisonView.layout();
+            updateComparisonCharts();
         });
     }
     
@@ -148,7 +169,12 @@ public class InvestmentController {
                 break;
             case "Comparison":
                 singleComparisonView.setVisible(true);
-                updateComparisonCharts();
+                // Force layout before updating charts to ensure proper rendering
+                Platform.runLater(() -> {
+                    singleComparisonView.applyCss();
+                    singleComparisonView.layout();
+                    updateComparisonCharts();
+                });
                 break;
         }
     }
@@ -407,108 +433,301 @@ public class InvestmentController {
         return true;
     }
 
-    private void initializeComparisonControls() {
-        // 设置日期选择器的默认值
-        setupDatePickers();
-        
-        // 设置刷新按钮点击事件
-        refreshComparisonBtn.setOnAction(event -> updateComparisonCharts());
-        
-        // 设置时间段选择监听器
-        comparisonTimePeriodComboBox.getSelectionModel().selectedItemProperty()
-            .addListener((observable, oldValue, newValue) -> {
-                if (newValue != null) {
-                    updateComparisonCharts();
-                }
-            });
-    }
     
     private void updateComparisonCharts() {
-        String timePeriod = comparisonTimePeriodComboBox.getValue();
-        LocalDate endDate = LocalDate.now();
-        LocalDate startDate = getStartDate(endDate, timePeriod);
+        Platform.runLater(() -> {
+            boolean showIncome = comparisonIncomeRadio.isSelected();
+            LocalDate leftStartDate = leftStartDatePicker.getValue();
+            LocalDate leftEndDate = leftEndDatePicker.getValue();
+            LocalDate rightStartDate = rightStartDatePicker.getValue();
+            LocalDate rightEndDate = rightEndDatePicker.getValue();
+            
+            List<Transaction> transactions = transactionService.getAllTransactions();
+            
+            // Update left pie chart
+            updatePieChart(leftPieChart, transactions, leftStartDate, leftEndDate, 
+                          showIncome ? "Income" : "Expense");
+            
+            // Update right pie chart
+            updatePieChart(rightPieChart, transactions, rightStartDate, rightEndDate,
+                          showIncome ? "Income" : "Expense");
+            
+            // Set chart titles
+            leftPieChart.setTitle((showIncome ? "Income" : "Expense") + " - " + 
+                leftStartDate + " to " + leftEndDate);
+            rightPieChart.setTitle((showIncome ? "Income" : "Expense") + " - " + 
+                rightStartDate + " to " + rightEndDate);
+        });
+    }
+
+    private void initializeComparisonControls() {
+        // Set default dates (one month before today to today for both pickers)
+        LocalDate now = LocalDate.now();
+        LocalDate oneMonthBefore = now.minusMonths(1);
+        leftStartDatePicker.setValue(oneMonthBefore);
+        leftEndDatePicker.setValue(now);
+        rightStartDatePicker.setValue(oneMonthBefore);
+        rightEndDatePicker.setValue(now);
+
+        // Initialize pie charts with proper settings
+        Platform.runLater(() -> {
+            leftPieChart.setLabelsVisible(false);
+            leftPieChart.setLegendVisible(false);
+            leftPieChart.setMinSize(350, 350);
+            leftPieChart.setPrefSize(350, 350);
+            leftPieChart.setMaxSize(350, 350);
+            
+            rightPieChart.setLabelsVisible(false);
+            rightPieChart.setLegendVisible(false);
+            rightPieChart.setMinSize(350, 350);
+            rightPieChart.setPrefSize(350, 350);
+            rightPieChart.setMaxSize(350, 350);
+            
+            // Force initial layout and update
+            singleComparisonView.applyCss();
+            singleComparisonView.layout();
+            updateComparisonCharts();
+        });
         
-        // 获取交易数据
-        List<Transaction> transactions = transactionService.getAllTransactions();
+        // Initialize pie charts with proper settings
+        leftPieChart.setLabelsVisible(false);
+        leftPieChart.setLegendVisible(false);
+        leftPieChart.setMinSize(350, 350);
+        leftPieChart.setPrefSize(350, 350);
+        leftPieChart.setMaxSize(350, 350);
         
-        // 更新收入饼图
-        updatePieChart(incomePieChart, transactions, startDate, endDate, "Income");
+        rightPieChart.setLabelsVisible(false);
+        rightPieChart.setLegendVisible(false);
+        rightPieChart.setMinSize(350, 350);
+        rightPieChart.setPrefSize(350, 350);
+        rightPieChart.setMaxSize(350, 350);
+
+        // Add date validation to prevent selecting future dates or dates before start date
+        leftEndDatePicker.setDayCellFactory(picker -> new javafx.scene.control.DateCell() {
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                setDisable(empty || date.compareTo(LocalDate.now()) > 0 || 
+                          date.compareTo(leftStartDatePicker.getValue()) < 0);
+            }
+        });
+        rightEndDatePicker.setDayCellFactory(picker -> new javafx.scene.control.DateCell() {
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                setDisable(empty || date.compareTo(LocalDate.now()) > 0 || 
+                          date.compareTo(rightStartDatePicker.getValue()) < 0);
+            }
+        });
+
+        // Also validate when start dates change
+        leftStartDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && leftEndDatePicker.getValue() != null && 
+                leftEndDatePicker.getValue().compareTo(newVal) < 0) {
+                leftEndDatePicker.setValue(newVal);
+            }
+        });
+        rightStartDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && rightEndDatePicker.getValue() != null && 
+                rightEndDatePicker.getValue().compareTo(newVal) < 0) {
+                rightEndDatePicker.setValue(newVal);
+            }
+        });
         
-        // 更新支出饼图
-        updatePieChart(expensePieChart, transactions, startDate, endDate, "Expense");
+        // Setup date picker listeners
+        leftStartDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) updateLeftPieChart();
+        });
+        leftEndDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) updateLeftPieChart();
+        });
+        rightStartDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) updateRightPieChart();
+        });
+        rightEndDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) updateRightPieChart();
+        });
+        
+        // Setup radio button listeners
+        comparisonIncomeRadio.selectedProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal) updateComparisonCharts();
+        });
+        comparisonExpenseRadio.selectedProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal) updateComparisonCharts();
+        });
+    }
+
+    private void updateLeftPieChart() {
+        Platform.runLater(() -> {
+            boolean showIncome = comparisonIncomeRadio.isSelected();
+            LocalDate startDate = leftStartDatePicker.getValue();
+            LocalDate endDate = leftEndDatePicker.getValue();
+            List<Transaction> transactions = transactionService.getAllTransactions();
+            updatePieChart(leftPieChart, transactions, startDate, endDate, 
+                showIncome ? "Income" : "Expense");
+            leftPieChart.setTitle((showIncome ? "Income" : "Expense") + " - " + 
+                startDate + " to " + endDate);
+        });
+    }
+
+    private void updateRightPieChart() {
+        Platform.runLater(() -> {
+            boolean showIncome = comparisonIncomeRadio.isSelected();
+            LocalDate startDate = rightStartDatePicker.getValue();
+            LocalDate endDate = rightEndDatePicker.getValue();
+            List<Transaction> transactions = transactionService.getAllTransactions();
+            updatePieChart(rightPieChart, transactions, startDate, endDate,
+                showIncome ? "Income" : "Expense");
+            rightPieChart.setTitle((showIncome ? "Income" : "Expense") + " - " + 
+                startDate + " to " + endDate);
+        });
     }
     
     private void updatePieChart(PieChart chart, List<Transaction> transactions,
-    LocalDate startDate, LocalDate endDate, String category) {
-chart.getData().clear();
+            LocalDate startDate, LocalDate endDate, String category) {
+        // Keep animations enabled but control the timing
+        chart.setAnimated(true);
+        
+        // Ensure chart is properly initialized
+        chart.setLabelsVisible(false);
+        chart.setMinSize(350, 350);
+        chart.setPrefSize(350, 350);
+        chart.setMaxSize(350, 350);
+        
+        // Create a copy of current data for smooth transition
+        ObservableList<PieChart.Data> oldData = FXCollections.observableArrayList(chart.getData());
+        chart.getData().clear();
 
-// 分组统计金额
-Map<String, Double> amountsByType = transactions.stream()
-.filter(t -> !t.getDate().toLocalDate().isBefore(startDate)
-&& !t.getDate().toLocalDate().isAfter(endDate)
-&& t.getCategory().equals(category))
-.collect(Collectors.groupingBy(
-Transaction::getType,
-Collectors.summingDouble(Transaction::getAmount)
-));
+        // Filter and group transactions
+        Map<String, Double> amountsByType = transactions.stream()
+            .filter(t -> !t.getDate().toLocalDate().isBefore(startDate)
+                && !t.getDate().toLocalDate().isAfter(endDate)
+                && t.getCategory().equals(category))
+            .collect(Collectors.groupingBy(
+                Transaction::getType,
+                Collectors.summingDouble(Transaction::getAmount)
+            ));
 
-// 转换为 PieChart.Data，只显示类型，隐藏金额
-ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
-for (Map.Entry<String, Double> entry : amountsByType.entrySet()) {
-PieChart.Data data = new PieChart.Data(entry.getKey(), entry.getValue());
-pieChartData.add(data);
-}
+        // Calculate total amount for percentage calculation
+        double totalAmount = amountsByType.values().stream().mapToDouble(Double::doubleValue).sum();
 
-chart.setData(pieChartData);
-chart.setTitle(category + " Distribution");
+        // Create new pie chart data
+        ObservableList<PieChart.Data> newData = FXCollections.observableArrayList();
+        
+        if (amountsByType.isEmpty()) {
+            // Add placeholder data when no transactions exist
+            PieChart.Data noData = new PieChart.Data("No Data", 1);
+            newData.add(noData);
+            chart.setTitle(category + " (No Data)");
+        } else {
+            // Add actual transaction data
+            for (Map.Entry<String, Double> entry : amountsByType.entrySet()) {
+                newData.add(new PieChart.Data(entry.getKey(), entry.getValue()));
+            }
+            chart.setTitle(category + " Distribution");
+        }
 
-// 图表尺寸锁死
-chart.setMinSize(350, 350);
-chart.setPrefSize(350, 350);
-chart.setMaxSize(350, 350);
+        // Set new data with animation
+        chart.setData(newData);
+        
+        // Set fixed chart size
+        chart.setMinSize(350, 350);
+        chart.setPrefSize(350, 350);
+        chart.setMaxSize(350, 350);
+        
+        // Hide default labels
+        chart.setLabelsVisible(false);
 
-// 隐藏默认标签（它们会撑大绘图区）
-chart.setLabelsVisible(false);
+        // Define color palette for pie slices and legend
+        String[] colors = {
+            "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40",
+            "#8A2BE2", "#2E8B57", "#CD5C5C", "#1E90FF"
+        };
 
-// 设置统一缩放图形部分
-Platform.runLater(() -> {
-Node pie = chart.lookup(".chart-pie");
-if (pie != null) {
-pie.setScaleX(0.9);
-pie.setScaleY(0.9);
-}
+        Platform.runLater(() -> {
+            // Force layout calculation first
+            chart.applyCss();
+            chart.layout();
+            
+            // Scale pie chart
+            Node pie = chart.lookup(".chart-pie");
+            if (pie != null) {
+                pie.setScaleX(0.9);
+                pie.setScaleY(0.9);
+            }
 
-// 为每个扇形添加 Tooltip
-for (PieChart.Data data : chart.getData()) {
-Node node = data.getNode();
-if (node != null) {
-String tooltipText = String.format("%s: %.2f", data.getName(), data.getPieValue());
-Tooltip tooltip = new Tooltip(tooltipText);
-Tooltip.install(node, tooltip);
-}
-}
-});
-}
+            // Apply consistent colors to pie slices and tooltips
+            for (int i = 0; i < chart.getData().size(); i++) {
+                PieChart.Data data = chart.getData().get(i);
+                Node node = data.getNode();
+                if (node != null) {
+                    String color = colors[i % colors.length];
+                    node.setStyle("-fx-pie-color: " + color + ";");
+                    
+                    String tooltipText = amountsByType.isEmpty() ? 
+                        "No transactions found" :
+                        String.format("%s: %.2f", data.getName(), data.getPieValue());
+                    Tooltip tooltip = new Tooltip(tooltipText);
+                    Tooltip.install(node, tooltip);
+                }
+            }
 
-
-
-    private void setupDatePickers() {
-        // 设置默认日期范围（例如：最近一个月）
-        LocalDate endDate = LocalDate.now();
-        LocalDate startDate = endDate.minusMonths(1);
-
-        // 初始化Comparison视图的时间段选择器
-        ObservableList<String> timePeriods = FXCollections.observableArrayList(
-            "The recent week",
-            "The recent 15 days", 
-            "The recent month",
-            "The recent three months",
-            "The recent half-year",
-            "The recent year"
-        );
-        comparisonTimePeriodComboBox.setItems(timePeriods);
-        comparisonTimePeriodComboBox.getSelectionModel().selectFirst();
+            // Create legend container below the chart
+            VBox legendContainer = new VBox(5);
+            legendContainer.setStyle("-fx-padding: 10; -fx-background-color: #f5f5f5; -fx-border-color: #e0e0e0; -fx-border-width: 1;");
+            
+            // Add legend title
+            Label legendTitle = new Label("Detailed Breakdown:");
+            legendTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 14;");
+            legendContainer.getChildren().add(legendTitle);
+            
+            // Add legend items for each category with matching colors
+            if (!amountsByType.isEmpty()) {
+                int i = 0;
+                for (Map.Entry<String, Double> entry : amountsByType.entrySet()) {
+                    double percentage = (entry.getValue() / totalAmount) * 100;
+                    HBox legendItem = new HBox(10);
+                    
+                    // Add color indicator with matching pie slice color
+                    Rectangle colorRect = new Rectangle(15, 15);
+                    String color = colors[i % colors.length];
+                    colorRect.setStyle("-fx-fill: " + color + ";");
+                    
+                    // Add category name and amount
+                    Label categoryLabel = new Label(entry.getKey() + ": ");
+                    categoryLabel.setStyle("-fx-text-fill: " + color + ";");
+                    Label amountLabel = new Label(String.format("¥%.2f (%.1f%%)", entry.getValue(), percentage));
+                    
+                    legendItem.getChildren().addAll(colorRect, categoryLabel, amountLabel);
+                    legendContainer.getChildren().add(legendItem);
+                    i++;
+                }
+            }
+            
+            // Add legend container to the parent of the chart
+            if (chart.getParent() instanceof VBox) {
+                VBox parent = (VBox) chart.getParent();
+                // Remove existing legend if present
+                parent.getChildren().removeIf(node -> node instanceof VBox && node != chart);
+                parent.getChildren().add(legendContainer);
+            }
+        });
     }
+    
+    private String getColorForCategory(String category) {
+        // Return different colors for different categories
+        switch(category) {
+            case "Salary": return "#2E8B57";
+            case "Bonus": return "#3CB371";
+            case "Food": return "#CD5C5C";
+            case "Shopping": return "#DC143C";
+            case "Transportation": return "#B22222";
+            case "Housing": return "#8B0000";
+            case "Entertainment": return "#FF6347";
+            default: return "#1E90FF";
+        }
+    }
+
+
+
 
     private void setupRadioButtonListeners() {
         // 设置单独视图的单选按钮监听器
