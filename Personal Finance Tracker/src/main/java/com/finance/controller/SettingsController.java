@@ -9,8 +9,6 @@ import java.io.PrintWriter;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
-
-import com.finance.app.FinanceApplication;
 import com.finance.gui.LoginManager;
 import com.finance.gui.UserInfoManager;
 import javafx.application.Platform;
