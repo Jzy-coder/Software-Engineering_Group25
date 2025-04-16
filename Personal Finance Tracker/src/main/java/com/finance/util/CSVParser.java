@@ -1,7 +1,9 @@
 package com.finance.util;
 
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -56,7 +58,7 @@ public class CSVParser {
         List<Transaction> transactions = new ArrayList<>();
         long maxExistingId = transactionService.getAllTransactions().stream().mapToLong(Transaction::getId).max().orElse(0L);
 
-        try (CSVReader reader = new CSVReader(new FileReader(file))) {
+        try (CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
             // 跳过微信CSV文件头（前17行）
             for (int i = 0; i < 17; i++) {
                 reader.readNext();

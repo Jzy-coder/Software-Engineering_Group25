@@ -51,12 +51,12 @@ public class BudgetController implements Initializable {
             double actualAmount = Double.parseDouble(actualAmountField.getText());
             
             if (plannedAmount <= 0) {
-                showAlert("Planned amount must be greater than 0");
+                showAlert("计划金额必须大于0");
                 return;
             }
             
             if (actualAmount < 0) {
-                showAlert("Current amount cannot be negative");
+                showAlert("当前金额不能为负数");
                 return;
             }
             
@@ -69,7 +69,7 @@ public class BudgetController implements Initializable {
             inputGrid.setVisible(false);
             resetInputFields();
         } catch (NumberFormatException e) {
-            showAlert("Please enter valid numbers");
+            showAlert("请输入有效的数字");
         }
     }
     
@@ -97,7 +97,7 @@ public class BudgetController implements Initializable {
         VBox progressBox = new VBox(5);
         progressBox.setPrefWidth(300);
         
-        Label progressLabel = new Label(String.format("Target: %.2f / Current: %.2f", plannedAmount, actualAmount));
+        Label progressLabel = new Label(String.format("目标: %.2f / 当前: %.2f", plannedAmount, actualAmount));
         ProgressBar progressBar = new ProgressBar();
         progressBar.setPrefWidth(280);
         
@@ -108,7 +108,7 @@ public class BudgetController implements Initializable {
         
         progressBox.getChildren().addAll(progressLabel, progressBar, percentageLabel);
         
-        Button editButton = new Button("Edit");
+        Button editButton = new Button("编辑");
         editButton.setOnAction(e -> {
             int index = budgetListContainer.getChildren().indexOf(container);
             currentEditingIndex = index;
@@ -117,10 +117,12 @@ public class BudgetController implements Initializable {
             inputGrid.setVisible(true);
         });
 
-        Button deleteButton = new Button("Delete");
+        Button deleteButton = new Button("删除");
         deleteButton.setOnAction(e -> {
             int index = budgetListContainer.getChildren().indexOf(container);
+            budgets.remove(index);
             budgetListContainer.getChildren().remove(index);
+            BudgetDataManager.saveBudgets(budgets);
         });
         
         container.getChildren().addAll(progressBox, editButton, deleteButton);
@@ -133,7 +135,7 @@ public class BudgetController implements Initializable {
         ProgressBar progressBar = (ProgressBar) progressBox.getChildren().get(1);
         Label percentageLabel = (Label) progressBox.getChildren().get(2);
         
-        progressLabel.setText(String.format("Target: %.2f / Current: %.2f", plannedAmount, actualAmount));
+        progressLabel.setText(String.format("目标: %.2f / 当前: %.2f", plannedAmount, actualAmount));
         
         double progress = actualAmount / plannedAmount;
         progressBar.setProgress(Math.min(progress, 1.0));
@@ -148,7 +150,7 @@ public class BudgetController implements Initializable {
     
     private void showAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
+        alert.setTitle("错误");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();

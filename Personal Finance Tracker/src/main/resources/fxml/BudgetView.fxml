@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
 <?import javafx.geometry.Insets?>
 
 <VBox spacing="20" alignment="CENTER" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.BudgetController">
@@ -10,7 +10,6 @@
     </padding>
     
     <Label text="Budget Management" style="-fx-font-size: 24px;"/>
-    
     <VBox spacing="10" alignment="CENTER">
         <Button fx:id="addButton" text="Add Budget" onAction="#handleAddBudget" styleClass="primary-button"/>
         

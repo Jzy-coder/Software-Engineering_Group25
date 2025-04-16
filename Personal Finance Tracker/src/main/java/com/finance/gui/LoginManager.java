@@ -136,6 +136,10 @@ public class LoginManager {
             getTransactionService().clearCache();
             // Update current username
             currentUsername = username;
+
+            // Update budget data file name
+            com.finance.util.BudgetDataManager.handleUsernameChange(oldUsername, username);
+
             // Switch to current user's transaction data
             getTransactionService().switchUser(username, true);
         } catch (IOException e) {
