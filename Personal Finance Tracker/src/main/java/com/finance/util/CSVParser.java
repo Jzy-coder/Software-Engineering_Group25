@@ -28,16 +28,16 @@ public class CSVParser {
     private static final DateTimeFormatter WECHAT_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     
     private static String mapChineseType(String chineseType) {
-        switch(chineseType) {
-            case "餐饮": return "Food";
-            case "购物": return "Shopping";
-            case "交通": return "Transportation";
-            case "住房": return "Housing";
-            case "娱乐": return "Entertainment";
-            case "工资": return "Salary";
-            case "奖金": return "Bonus";
-            default: return "Others";
-        }
+        return switch(chineseType) {
+            case "餐饮" -> "Food";
+            case "购物" -> "Shopping";
+            case "交通" -> "Transportation";
+            case "住房" -> "Housing";
+            case "娱乐" -> "Entertainment";
+            case "工资" -> "Salary";
+            case "奖金" -> "Bonus";
+            default -> "Others";
+        };
     }
 
     private static final Set<String> VALID_INCOME_TYPES = Set.of("Salary", "Bonus", "Others");
@@ -88,7 +88,7 @@ public class CSVParser {
                     String dateStr = nextLine[2].trim();
                     // 只保留日期部分（前10个字符），忽略时间
                     String dateOnlyStr = dateStr.length() >= 10 ? dateStr.substring(0, 10) : dateStr;
-                    LocalDateTime date = LocalDate.parse(dateOnlyStr, DateTimeFormatter.ofPattern("yyyy-MM-dd")).atStartOfDay();
+                    LocalDateTime date = LocalDate.parse(dateOnlyStr, WECHAT_FORMATTER).atStartOfDay();
 
                     logger.debug("解析成功: type={}, amount={}, date={}", type, amount, date);
 

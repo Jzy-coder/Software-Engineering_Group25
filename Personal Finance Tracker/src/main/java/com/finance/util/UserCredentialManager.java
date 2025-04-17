@@ -1,11 +1,18 @@
 package com.finance.util;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import java.io.*;
-import java.util.*;
-import java.security.*;
-import java.util.Base64;
 
 /**
  * Manages user credentials for the remember password feature
@@ -15,6 +22,7 @@ public class UserCredentialManager {
     private static final String CREDENTIALS_FILE = "UserInfo/saved_credentials.json";
     private static final String ENCRYPTION_KEY = "FinanceTrackerSecretKey";
     private static final Gson gson = new Gson();
+    private static final Logger logger = LoggerFactory.getLogger(UserCredentialManager.class);
 
     /**
      * Represents a stored credential entry
@@ -50,7 +58,7 @@ public class UserCredentialManager {
                 gson.toJson(credentials, writer);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Failed to save credentials", e);
         }
     }
 
@@ -92,7 +100,7 @@ public class UserCredentialManager {
                 gson.toJson(credentials, writer);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Failed to remove credentials", e);
         }
     }
 
@@ -108,7 +116,7 @@ public class UserCredentialManager {
         try (FileReader reader = new FileReader(file)) {
             return gson.fromJson(reader, new TypeToken<List<CredentialEntry>>(){}.getType());
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Failed to load credentials", e);
             return new ArrayList<>();
         }
     }
@@ -128,7 +136,7 @@ public class UserCredentialManager {
 
             return Base64.getEncoder().encodeToString(encrypted);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Failed to encrypt password", e);
             return null;
         }
     }
@@ -148,7 +156,7 @@ public class UserCredentialManager {
 
             return new String(decrypted);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Failed to decrypt password", e);
             return null;
         }
     }

@@ -67,7 +67,34 @@
                 </VBox>
             </HBox>
             
-            <!-- Summary Section -->
+            <!-- Date Range Selector -->
+            <VBox spacing="10" style="-fx-padding: 10; -fx-border-color: #cccccc; -fx-border-radius: 5;">
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="Period From:" />
+                    <DatePicker fx:id="fromDatePicker" prefWidth="200" />
+                    <Label text="To:" />
+                    <DatePicker fx:id="toDatePicker" prefWidth="200" />
+                    <Button fx:id="filterButton" text="Filter" onAction="#handleFilterByDateRange" style="-fx-background-color: #2196F3; -fx-text-fill: white;" />
+                </HBox>
+            </VBox>
+            
+            <!-- Period Summary Section -->
+            <HBox spacing="20" style="-fx-padding: 10; -fx-border-color: #cccccc; -fx-border-radius: 5;">
+                <VBox spacing="5" style="-fx-padding: 5;" HBox.hgrow="ALWAYS">
+                    <Label text="Period Income:" />
+                    <Label fx:id="periodIncomeLabel" text="¥0.00" style="-fx-font-size: 16; -fx-text-fill: green;" />
+                </VBox>
+                <VBox spacing="5" style="-fx-padding: 5;" HBox.hgrow="ALWAYS">
+                    <Label text="Period Expense:" />
+                    <Label fx:id="periodExpenseLabel" text="¥0.00" style="-fx-font-size: 16; -fx-text-fill: red;" />
+                </VBox>
+                <VBox spacing="5" style="-fx-padding: 5;" HBox.hgrow="ALWAYS">
+                    <Label text="Period Balance:" />
+                    <Label fx:id="periodBalanceLabel" text="¥0.00" style="-fx-font-size: 16; -fx-font-weight: bold;" />
+                </VBox>
+            </HBox>
+            
+            <!-- Total Summary Section -->
             <HBox spacing="20" style="-fx-padding: 10; -fx-border-color: #cccccc; -fx-border-radius: 5;">
                 <VBox spacing="5" style="-fx-padding: 5;" HBox.hgrow="ALWAYS">
                     <Label text="Total Income:" />
