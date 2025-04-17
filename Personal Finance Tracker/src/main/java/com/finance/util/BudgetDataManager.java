@@ -50,4 +50,15 @@ public class BudgetDataManager {
             oldFile.renameTo(newFile);
         }
     }
+
+    /**
+     * 获取用户最新设置的预算条目
+     */
+    public static Budget getLatestBudget() {
+        List<Budget> budgets = loadBudgets();
+        if (budgets.isEmpty()) {
+            return new Budget(0.0, 0.0); // 默认值：计划金额和实际金额均为0
+        }
+        return budgets.get(budgets.size() - 1); // 返回最后一条记录
+    }
 }

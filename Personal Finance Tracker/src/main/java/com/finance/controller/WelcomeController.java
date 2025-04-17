@@ -6,8 +6,11 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import com.finance.gui.LoginManager;
+import com.finance.model.Budget;
 import com.finance.model.Transaction;
 import com.finance.service.TransactionService;
+import com.finance.util.BudgetDataManager;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -91,8 +94,9 @@ public class WelcomeController implements Initializable {
      * Update the summary information (total expenditure and balance)
      */
     private void updateSummary() {
-        double totalTodayExpenditure = calculateTotalTodayExpenditure();
+
         
+        double totalTodayExpenditure = calculateTotalTodayExpenditure();
         double balance = calculateBalance();
 
         totalTodayExpenditureLabel.setText("Today's total expenditure is: " + totalTodayExpenditure);
@@ -114,12 +118,21 @@ public class WelcomeController implements Initializable {
     }
 
     /**
-     * Calculate the balance (assuming a target deposit of 5000)
-     */
+         * Calculate the balance (assuming a target deposit of 5000)
+         */
     private double calculateBalance() {
-        double depositTarget = 0; // Set a deposit target
-        double totalSpent = calculateTotalTodayExpenditure();
-        
-        return depositTarget - totalSpent ;
+
+        //获取所有条目的budget
+        List<Budget> budgets = BudgetDataManager.loadBudgets();
+        double totalPlanned = 0.0;
+        double totalActual = 0.0;
+    
+        for (Budget budget : budgets) {
+            totalPlanned += budget.getPlannedAmount();
+            totalActual += budget.getActualAmount();
+        }
+    
+        return totalPlanned - totalActual;
     }
+
 }
