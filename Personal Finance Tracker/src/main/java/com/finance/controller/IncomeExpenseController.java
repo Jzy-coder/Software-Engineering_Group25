@@ -109,6 +109,7 @@ public class IncomeExpenseController implements Initializable {
     
     @FXML
     private Label balanceLabel;
+
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -243,18 +244,19 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
         }
     }
     
-    /**
-     * Update summary information
+     /**
+     * 更新总结信息，包括今天的总支出。
      */
     private void updateSummary() {
         double income = transactionService.calculateTotalByCategory("Income");
         double expense = transactionService.calculateTotalByCategory("Expense");
         double balance = income - expense;
-        
+
         totalIncomeLabel.setText(String.format("¥%.2f", income));
         totalExpenseLabel.setText(String.format("¥%.2f", expense));
         balanceLabel.setText(String.format("¥%.2f", balance));
     }
+
     
     /**
      * Show alert dialog
@@ -496,4 +498,6 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
         
         return previewTable;
     }
+
+   
 }

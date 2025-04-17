@@ -1,6 +1,8 @@
 package com.finance.service.impl;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.finance.dao.TransactionDAO;
 import com.finance.model.Transaction;
@@ -75,5 +77,18 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public void clearCache() {
         transactionDAO.clearCache();
+    }
+
+    /**
+     * 根据日期获取交易记录
+     * @param date 指定的日期
+     * @return 当天的交易记录列表
+     */
+    @Override
+    public List<Transaction> getTransactionsByDate(LocalDate date) {
+        // 获取所有交易记录并过滤出指定日期的记录
+        return transactionDAO.getAllTransactions().stream()
+                .filter(transaction -> transaction.getDate().toLocalDate().isEqual(date))
+                .collect(Collectors.toList());
     }
 }

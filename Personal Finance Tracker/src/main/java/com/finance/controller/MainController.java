@@ -31,6 +31,14 @@ public class MainController implements Initializable {
     }
     
     /**
+     * Show Welcome view
+     */
+    @FXML
+    private void showWelcomeView() {
+        loadView("/fxml/WelcomeView.fxml");
+    }
+    
+    /**
      * Show Income/Expense view
      */
     @FXML
@@ -69,6 +77,7 @@ public class MainController implements Initializable {
     private void showSettingsView() {
         loadView("/fxml/SettingsView.fxml");
     }
+
     
     /**
      * Load view into content area
