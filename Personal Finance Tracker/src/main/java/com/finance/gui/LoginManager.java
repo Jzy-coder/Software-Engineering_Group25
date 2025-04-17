@@ -1,27 +1,18 @@
 package com.finance.gui;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import com.finance.service.TransactionService;
 
 /**
  * Login state management utility class
  */
 public class LoginManager {
-    private static final Logger logger = LoggerFactory.getLogger(LoginManager.class);
     private static String currentUsername = "Default User";
+    private static String currentPassword = "";
     
     /**
      * Validate user login information
@@ -32,14 +23,11 @@ public class LoginManager {
     private static volatile TransactionService transactionService = null;
     
     public static TransactionService getTransactionService() {
-        TransactionService result = transactionService;
-        if (result == null) {
+        if (transactionService == null) {
             synchronized (LoginManager.class) {
-                result = transactionService;
-                if (result == null) {
-                    result = new com.finance.service.impl.TransactionServiceImpl();
-                    result.switchUser(currentUsername, false);
-                    transactionService = result;
+                if (transactionService == null) {
+                    transactionService = new com.finance.service.impl.TransactionServiceImpl();
+                    transactionService.switchUser(currentUsername, false);
                 }
             }
         }
@@ -71,18 +59,15 @@ public class LoginManager {
                         // Clear cache before switching user
                         getTransactionService().clearCache();              
                         currentUsername = username;
+                        currentPassword = password;
                         // Switch to current user's transaction data
                         getTransactionService().switchUser(username, false);
-                        // 确保加载当前用户的预算数据
-                        // 注意：这里不需要重命名文件，只需确保加载正确的用户数据
-                        // 重新加载当前用户的预算数据，确保数据隔离
-                        com.finance.util.BudgetDataManager.loadBudgets();
                         return true;
                     }
                 }
             }
         } catch (IOException e) {
-            logger.error("登录验证失败: {}", e.getMessage(), e);
+            e.printStackTrace();
         }
         return false;
     }
@@ -151,12 +136,14 @@ public class LoginManager {
             getTransactionService().clearCache();
             // Update current username
             currentUsername = username;
+
+            // Update budget data file name
+            com.finance.util.BudgetDataManager.handleUsernameChange(oldUsername, username);
+
             // Switch to current user's transaction data
             getTransactionService().switchUser(username, true);
-            // 重命名预算数据文件
-            com.finance.util.BudgetDataManager.renameUserBudgetFile(oldUsername, username);
         } catch (IOException e) {
-            logger.error("更改用户名失败: {}", e.getMessage(), e);
+            e.printStackTrace();
         }
     }
     
@@ -203,12 +190,12 @@ public class LoginManager {
             }
             
             // Update current password
-            // currentPassword = newPassword;
+            currentPassword = newPassword;
             
             // Remove saved credentials for this user
             com.finance.util.UserCredentialManager.removeCredentials(currentUsername);
         } catch (IOException e) {
-            logger.error("更新密码失败: {}", e.getMessage(), e);
+            e.printStackTrace();
         }
     }
     
@@ -228,7 +215,7 @@ public class LoginManager {
             }
             return hexString.toString();
         } catch (NoSuchAlgorithmException e) {
-            logger.error("密码哈希计算失败: {}", e.getMessage(), e);
+            e.printStackTrace();
             return null;
         }
     }

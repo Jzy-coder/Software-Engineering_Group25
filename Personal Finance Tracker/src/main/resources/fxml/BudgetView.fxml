@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
 <?import javafx.geometry.Insets?>
 
 <VBox spacing="20" alignment="CENTER" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.BudgetController">
@@ -10,21 +10,17 @@
     </padding>
     
     <Label text="Budget Management" style="-fx-font-size: 24px;"/>
-    
     <VBox spacing="10" alignment="CENTER">
         <Button fx:id="addButton" text="Add Budget" onAction="#handleAddBudget" styleClass="primary-button"/>
         
         <GridPane fx:id="inputGrid" visible="false" vgap="10" hgap="10" alignment="CENTER">
-            <Label text="Budget Name:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-            <TextField fx:id="budgetNameField" GridPane.columnIndex="1" GridPane.rowIndex="0" promptText="Enter budget name"/>
+            <Label text="Planned Amount:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <TextField fx:id="plannedAmountField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
             
-            <Label text="Planned Amount:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-            <TextField fx:id="plannedAmountField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+            <Label text="Current Amount:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+            <TextField fx:id="actualAmountField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
             
-            <Label text="Current Amount:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-            <TextField fx:id="actualAmountField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-            
-            <HBox spacing="10" alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="3">
+            <HBox spacing="10" alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="2">
                 <Button text="Confirm" onAction="#handleConfirm"/>
                 <Button text="Cancel" onAction="#handleCancel"/>
             </HBox>
