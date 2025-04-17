@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,6 +111,26 @@ public class IncomeExpenseController implements Initializable {
     @FXML
     private Label balanceLabel;
     
+    // 日期范围选择器
+    @FXML
+    private DatePicker fromDatePicker;
+    
+    @FXML
+    private DatePicker toDatePicker;
+    
+    @FXML
+    private Button filterButton;
+    
+    // 时间段统计标签
+    @FXML
+    private Label periodIncomeLabel;
+    
+    @FXML
+    private Label periodExpenseLabel;
+    
+    @FXML
+    private Label periodBalanceLabel;
+    
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         
@@ -148,38 +169,46 @@ public class IncomeExpenseController implements Initializable {
         setupEditColumn();
         setupDeleteColumn();
         
-      // 设置默认日期为今天
-      datePicker.setValue(LocalDate.now());
+        // 设置默认日期为今天
+        datePicker.setValue(LocalDate.now());
 
-      // 限制可选日期范围为过去一个月内
-      datePicker.setDayCellFactory(picker -> new DateCell() {
-          @Override
-          public void updateItem(LocalDate date, boolean empty) {
-              super.updateItem(date, empty);
-              LocalDate minDate = LocalDate.now().minusMonths(1);
-              setDisable(date.isBefore(minDate) || date.isAfter(LocalDate.now()));
-          }
-      });
+        // 限制可选日期范围为过去一个月内
+        datePicker.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                LocalDate minDate = LocalDate.now().minusMonths(1);
+                setDisable(date.isBefore(minDate) || date.isAfter(LocalDate.now()));
+            }
+        });
 
-       // 添加下拉框联动 
-       categoryComboBox.setItems(FXCollections.observableArrayList("Income", "Expense"));
-      
-       categoryComboBox.getSelectionModel().selectedItemProperty().addListener(
-           (ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
-               if ("Income".equals(newValue)) {
-                   typeComboBox.setItems(incomeTypes);
-               } else if ("Expense".equals(newValue)) {
-                   typeComboBox.setItems(expenseTypes);
-               }
-               typeComboBox.getSelectionModel().selectFirst();
-           }
-       );
-       categoryComboBox.getSelectionModel().selectFirst();
-      
+        // 初始化日期范围选择器
+        LocalDate today = LocalDate.now();
+        LocalDate oneMonthAgo = today.minusMonths(1);
         
+        // 设置默认日期范围：从一个月前到今天
+        fromDatePicker.setValue(oneMonthAgo);
+        toDatePicker.setValue(today);
+        
+        // 添加下拉框联动 
+        categoryComboBox.setItems(FXCollections.observableArrayList("Income", "Expense"));
+      
+        categoryComboBox.getSelectionModel().selectedItemProperty().addListener(
+            (ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
+                if ("Income".equals(newValue)) {
+                    typeComboBox.setItems(incomeTypes);
+                } else if ("Expense".equals(newValue)) {
+                    typeComboBox.setItems(expenseTypes);
+                }
+                typeComboBox.getSelectionModel().selectFirst();
+            }
+        );
+        categoryComboBox.getSelectionModel().selectFirst();
+      
         // Load data
         loadTransactions();
         updateSummary();
+        updatePeriodSummary(); // 初始化时间段统计
     }
     
     /**
@@ -254,6 +283,66 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
         totalIncomeLabel.setText(String.format("¥%.2f", income));
         totalExpenseLabel.setText(String.format("¥%.2f", expense));
         balanceLabel.setText(String.format("¥%.2f", balance));
+    }
+    
+    /**
+     * 处理日期范围筛选
+     */
+    @FXML
+    private void handleFilterByDateRange() {
+        updatePeriodSummary();
+    }
+    
+    /**
+     * 更新时间段统计信息
+     */
+    private void updatePeriodSummary() {
+        LocalDate startDate = fromDatePicker.getValue();
+        LocalDate endDate = toDatePicker.getValue();
+        
+        if (startDate == null || endDate == null) {
+            showAlert("请选择有效的日期范围");
+            return;
+        }
+        
+        // 确保开始日期不晚于结束日期
+        if (startDate.isAfter(endDate)) {
+            LocalDate temp = startDate;
+            startDate = endDate;
+            endDate = temp;
+            fromDatePicker.setValue(startDate);
+            toDatePicker.setValue(endDate);
+        }
+        
+        // 转换为LocalDateTime，开始日期为当天0点，结束日期为当天23:59:59
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+        
+        // 筛选指定日期范围内的交易记录
+        List<Transaction> filteredTransactions = transactionService.getAllTransactions().stream()
+                .filter(t -> {
+                    LocalDateTime transactionDate = t.getDate();
+                    return !transactionDate.isBefore(startDateTime) && !transactionDate.isAfter(endDateTime);
+                })
+                .collect(Collectors.toList());
+        
+        // 计算时间段内的收入和支出
+        double periodIncome = filteredTransactions.stream()
+                .filter(t -> "Income".equals(t.getCategory()))
+                .mapToDouble(Transaction::getAmount)
+                .sum();
+        
+        double periodExpense = filteredTransactions.stream()
+                .filter(t -> "Expense".equals(t.getCategory()))
+                .mapToDouble(Transaction::getAmount)
+                .sum();
+        
+        double periodBalance = periodIncome - periodExpense;
+        
+        // 更新UI显示
+        periodIncomeLabel.setText(String.format("¥%.2f", periodIncome));
+        periodExpenseLabel.setText(String.format("¥%.2f", periodExpense));
+        periodBalanceLabel.setText(String.format("¥%.2f", periodBalance));
     }
     
     /**

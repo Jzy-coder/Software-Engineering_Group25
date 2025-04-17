@@ -1,16 +1,39 @@
 package com.finance.gui;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Properties;
 
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class NameChangeDialog extends JDialog {
+    private static final Logger logger = LoggerFactory.getLogger(NameChangeDialog.class);
     private JTextField usernameField;
-    private Properties userProps;
-    private File configFile;
-    private JLabel welcomeLabel;
+    private final Properties userProps;
+    private final File configFile;
+    private final JLabel welcomeLabel;
 
     public NameChangeDialog(JFrame parent, JLabel welcomeLabel) {
         super(parent, "修改用户名", true);
@@ -26,7 +49,7 @@ public class NameChangeDialog extends JDialog {
             try (FileInputStream in = new FileInputStream(configFile)) {
                 userProps.load(in);
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("无法加载配置文件", e);
                 JOptionPane.showMessageDialog(this, "无法加载配置文件", "错误", JOptionPane.ERROR_MESSAGE);
             }
         }
@@ -36,7 +59,7 @@ public class NameChangeDialog extends JDialog {
         try (FileOutputStream out = new FileOutputStream(configFile)) {
             userProps.store(out, "User Configuration");
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("无法保存配置文件", e);
             JOptionPane.showMessageDialog(this, "无法保存配置文件", "错误", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -233,7 +256,7 @@ public class NameChangeDialog extends JDialog {
                 
                 JOptionPane.showMessageDialog(this, "用户名修改成功", "成功", JOptionPane.INFORMATION_MESSAGE);
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("修改用户名时发生错误", e);
                 JOptionPane.showMessageDialog(this, "修改用户名时发生错误", "错误", JOptionPane.ERROR_MESSAGE);
             }
         } else {

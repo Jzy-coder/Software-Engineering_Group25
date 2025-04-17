@@ -43,7 +43,7 @@ public class MainController implements Initializable {
      */
     @FXML
     private void showBudgetView() {
-        showUnderDevelopmentMessage("Budget");
+        loadView("/fxml/BudgetView.fxml");
     }
     
     /**
@@ -59,7 +59,7 @@ public class MainController implements Initializable {
      */
     @FXML
     private void showInvestmentView() {
-        loadView("/fxml/InvestmentView.fxml");
+        showUnderDevelopmentMessage("Investment Portfolio");
     }
     
     /**

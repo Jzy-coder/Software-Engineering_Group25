@@ -30,7 +30,11 @@ import com.google.gson.reflect.TypeToken;
  * Transaction Data Access Object, responsible for data persistence operations
  */
 public class TransactionDAO {
-    private static final String DATA_DIR = "target/data";
+
+    public void clearCache() {
+        initializeDataFile();
+    }
+    private static final String DATA_DIR = "data";
     private static final String FILE_NAME_TEMPLATE = "%s_transactions.json";
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final Gson gson;
@@ -93,10 +97,6 @@ public class TransactionDAO {
     /**
      * Update current user and switch data file
      */
-    public void clearCache() {
-        // Clear any cached data if needed
-    }
-    
     public void switchUser(String username, boolean isRename) {
         String oldUsername = this.currentUsername;
         this.currentUsername = username;
@@ -117,10 +117,11 @@ public class TransactionDAO {
                     this.currentUsername = oldUsername; // 回滚用户名
                 }
             }
-        } else {
-            // 账户切换场景：直接加载新用户文件
-            initializeDataFile();
         }
+        
+        // 无论是重命名还是切换账户，都需要重新初始化数据文件
+        // 这确保了每个用户只能访问自己的数据
+        initializeDataFile();
     }
     
     /**

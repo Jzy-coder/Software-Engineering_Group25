@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.Properties;
 
 public class UserInfoManager {
-    private static final String USER_INFO_DIR = "target/UserInfo";
+    private static final String USER_INFO_DIR = "UserInfo";
     private static final String USER_INFO_FILE_TEMPLATE = "%s_info.properties";
     private static Properties properties;
     
