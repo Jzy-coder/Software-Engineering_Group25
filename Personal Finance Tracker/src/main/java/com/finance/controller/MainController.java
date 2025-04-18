@@ -27,7 +27,8 @@ public class MainController implements Initializable {
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Default view is empty, user needs to select from sidebar
+        // 启动时默认加载欢迎界面
+        showWelcomeView();
     }
     
     /**

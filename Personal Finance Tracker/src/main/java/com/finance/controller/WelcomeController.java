@@ -100,8 +100,8 @@ public class WelcomeController implements Initializable {
         double balance = calculateBalance();
 
         totalTodayExpenditureLabel.setText("Today's total expenditure is: " + totalTodayExpenditure);
-        balanceLabel.setText("Your balance is: " + balance + " yuan short of your deposit target.");
-    }
+        balanceLabel.setText("Today's income/expense difference is: " + balance + " yuan"); 
+    }    
 
 
     /**
@@ -117,10 +117,30 @@ public class WelcomeController implements Initializable {
         return total;
     }
 
+
+    /**
+     * 计算当日收支差额（收入-支出）
+     */
+    private double calculateBalance() {
+        double totalIncome = 0.0;
+        double totalExpense = 0.0;
+        
+        for (Transaction transaction : todayExpenditureList) {
+            if ("Income".equals(transaction.getCategory())) {
+                totalIncome += transaction.getAmount();
+            } else if ("Expense".equals(transaction.getCategory())) {
+                totalExpense += transaction.getAmount();
+            }
+        }
+        
+        return totalIncome - totalExpense;
+    }
+
+
     /**
          * Calculate the balance (assuming a target deposit of 5000)
          */
-    private double calculateBalance() {
+    private double calculateBalance1() {
 
         //获取所有条目的budget
         List<Budget> budgets = BudgetDataManager.loadBudgets();
@@ -134,5 +154,7 @@ public class WelcomeController implements Initializable {
     
         return totalPlanned - totalActual;
     }
+}    
 
-}
+
+

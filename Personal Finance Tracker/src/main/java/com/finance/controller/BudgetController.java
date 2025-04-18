@@ -27,6 +27,9 @@ public class BudgetController implements Initializable {
     
     @FXML
     private VBox budgetListContainer;
+
+    @FXML
+    private Label budgetBalanceLabel; // 新增的预算差额标签
     
     private int currentEditingIndex = -1;
     private List<Budget> budgets = new ArrayList<>();
@@ -42,6 +45,11 @@ public class BudgetController implements Initializable {
     private void handleCancel() {
         inputGrid.setVisible(false);
         resetInputFields();
+    }
+
+    @FXML
+    private void handleRefresh() {
+        updateBudgetBalance();//刷新balance
     }
     
     @FXML
@@ -79,6 +87,9 @@ public class BudgetController implements Initializable {
         HBox budgetItem = createBudgetItem(plannedAmount, actualAmount);
         budgetListContainer.getChildren().add(budgetItem);
         BudgetDataManager.saveBudgets(budgets);
+        // 新增：重新加载数据并更新差额
+        budgets = BudgetDataManager.loadBudgets(); // 重新加载最新数据
+        updateBudgetBalance(); // 立即更新差额显示
     }
     
     private void updateBudgetItem(int index, double plannedAmount, double actualAmount) {
@@ -88,6 +99,10 @@ public class BudgetController implements Initializable {
         HBox budgetItem = (HBox) budgetListContainer.getChildren().get(index);
         updateBudgetItemContent(budgetItem, plannedAmount, actualAmount);
         BudgetDataManager.saveBudgets(budgets);
+         // 新增：重新加载数据并更新差额
+        budgets = BudgetDataManager.loadBudgets(); // 重新加载最新数据
+        updateBudgetBalance(); // 立即更新差额显示
+        
     }
     
     private HBox createBudgetItem(double plannedAmount, double actualAmount) {
@@ -123,6 +138,9 @@ public class BudgetController implements Initializable {
             budgets.remove(index);
             budgetListContainer.getChildren().remove(index);
             BudgetDataManager.saveBudgets(budgets);
+            // 新增：重新加载数据并更新差额
+            budgets = BudgetDataManager.loadBudgets(); // 重新加载最新数据
+            updateBudgetBalance(); // 立即更新差额显示
         });
         
         container.getChildren().addAll(progressBox, editButton, deleteButton);
@@ -156,6 +174,26 @@ public class BudgetController implements Initializable {
         alert.showAndWait();
     }
 
+
+    /**
+     * 计算并显示预算差额
+     */
+    private void updateBudgetBalance() {
+        // 确保每次计算时都加载最新数据
+        List<Budget> latestBudgets = BudgetDataManager.loadBudgets();
+        double totalPlanned = 0.0;
+        double totalActual = 0.0;
+        
+        for (Budget budget : latestBudgets) {
+            totalPlanned += budget.getPlannedAmount();
+            totalActual += budget.getActualAmount();
+        }
+        
+        double balance = totalPlanned - totalActual;
+        budgetBalanceLabel.setText(String.format("Budget Balance: %.2f yuan", balance));
+    }
+
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         budgets = BudgetDataManager.loadBudgets();
@@ -163,5 +201,6 @@ public class BudgetController implements Initializable {
             HBox budgetItem = createBudgetItem(budget.getPlannedAmount(), budget.getActualAmount());
             budgetListContainer.getChildren().add(budgetItem);
         }
+        updateBudgetBalance(); // 初始化时更新预算差额
     }
 }
