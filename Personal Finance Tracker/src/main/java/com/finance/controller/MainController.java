@@ -27,7 +27,16 @@ public class MainController implements Initializable {
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Default view is empty, user needs to select from sidebar
+        // 启动时默认加载欢迎界面
+        showWelcomeView();
+    }
+    
+    /**
+     * Show Welcome view
+     */
+    @FXML
+    private void showWelcomeView() {
+        loadView("/fxml/WelcomeView.fxml");
     }
     
     /**
@@ -59,7 +68,7 @@ public class MainController implements Initializable {
      */
     @FXML
     private void showInvestmentView() {
-        showUnderDevelopmentMessage("Investment Portfolio");
+        loadView("/fxml/InvestmentView.fxml");
     }
     
     /**
@@ -69,6 +78,7 @@ public class MainController implements Initializable {
     private void showSettingsView() {
         loadView("/fxml/SettingsView.fxml");
     }
+
     
     /**
      * Load view into content area

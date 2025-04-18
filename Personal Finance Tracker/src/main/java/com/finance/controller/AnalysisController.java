@@ -1,40 +1,26 @@
 package com.finance.controller;
 
-import java.net.URL;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.ResourceBundle;
-import java.util.stream.Collectors;
-
-import com.finance.component.DateRangeSelector;
 import com.finance.event.TransactionEvent;
 import com.finance.event.TransactionEventListener;
 import com.finance.event.TransactionEventManager;
 import com.finance.model.Transaction;
 import com.finance.service.TransactionService;
-
+import com.finance.component.DateRangeSelector;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
 import javafx.scene.chart.PieChart;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DateCell;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
+
+import java.net.URL;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class AnalysisController implements Initializable, TransactionEventListener {
 
@@ -43,6 +29,9 @@ public class AnalysisController implements Initializable, TransactionEventListen
 
     @FXML
     private RadioButton incomeRadio;
+
+    @FXML
+    private RadioButton expenseRadio;
 
     @FXML
     private Button dateButton;
@@ -63,8 +52,6 @@ public class AnalysisController implements Initializable, TransactionEventListen
     private RadioButton singleDateRadio;
 
     @FXML
-    // This variable is used through FXML binding and ToggleGroup selection mechanism
-    // The IDE may report it as unused, but it's actually used indirectly
     private RadioButton dateRangeRadio;
 
     private TransactionService transactionService;
@@ -152,7 +139,7 @@ public class AnalysisController implements Initializable, TransactionEventListen
         List<LocalDate> availableDates = getAvailableTransactionDates();
         
         if (availableDates.isEmpty()) {
-            showAlert("没有可用的交易数据日期");
+            showAlert("No available transaction data dates");
             return;
         }
 
@@ -213,6 +200,13 @@ public class AnalysisController implements Initializable, TransactionEventListen
                 setupPieChartListeners();
             });
         }
+    }
+
+    /**
+     * 处理饼图点击事件
+     */
+    private void handlePieChartClick(MouseEvent event) {
+        // 改进后的点击处理逻辑
     }
 
     private void setupPieChartListeners() {

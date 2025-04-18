@@ -1,7 +1,9 @@
 package com.finance.util;
 
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -28,16 +30,16 @@ public class CSVParser {
     private static final DateTimeFormatter WECHAT_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     
     private static String mapChineseType(String chineseType) {
-        return switch(chineseType) {
-            case "餐饮" -> "Food";
-            case "购物" -> "Shopping";
-            case "交通" -> "Transportation";
-            case "住房" -> "Housing";
-            case "娱乐" -> "Entertainment";
-            case "工资" -> "Salary";
-            case "奖金" -> "Bonus";
-            default -> "Others";
-        };
+        switch(chineseType) {
+            case "餐饮": return "Food";
+            case "购物": return "Shopping";
+            case "交通": return "Transportation";
+            case "住房": return "Housing";
+            case "娱乐": return "Entertainment";
+            case "工资": return "Salary";
+            case "奖金": return "Bonus";
+            default: return "Others";
+        }
     }
 
     private static final Set<String> VALID_INCOME_TYPES = Set.of("Salary", "Bonus", "Others");
@@ -56,7 +58,7 @@ public class CSVParser {
         List<Transaction> transactions = new ArrayList<>();
         long maxExistingId = transactionService.getAllTransactions().stream().mapToLong(Transaction::getId).max().orElse(0L);
 
-        try (CSVReader reader = new CSVReader(new FileReader(file))) {
+        try (CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
             // 跳过微信CSV文件头（前17行）
             for (int i = 0; i < 17; i++) {
                 reader.readNext();
@@ -88,7 +90,7 @@ public class CSVParser {
                     String dateStr = nextLine[2].trim();
                     // 只保留日期部分（前10个字符），忽略时间
                     String dateOnlyStr = dateStr.length() >= 10 ? dateStr.substring(0, 10) : dateStr;
-                    LocalDateTime date = LocalDate.parse(dateOnlyStr, WECHAT_FORMATTER).atStartOfDay();
+                    LocalDateTime date = LocalDate.parse(dateOnlyStr, DateTimeFormatter.ofPattern("yyyy-MM-dd")).atStartOfDay();
 
                     logger.debug("解析成功: type={}, amount={}, date={}", type, amount, date);
 

@@ -13,6 +13,14 @@ public class Budget implements Serializable {
         this.actualAmount = actualAmount;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+    
     public double getPlannedAmount() {
         return plannedAmount;
     }
@@ -27,13 +35,5 @@ public class Budget implements Serializable {
 
     public void setActualAmount(double actualAmount) {
         this.actualAmount = actualAmount;
-    }
-    
-    public String getName() {
-        return name;
-    }
-    
-    public void setName(String name) {
-        this.name = name;
     }
 }

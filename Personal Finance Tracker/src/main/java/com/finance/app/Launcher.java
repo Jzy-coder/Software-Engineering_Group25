@@ -36,37 +36,43 @@ public class Launcher {
      */
     private static void setupJavaFXModules() {
         try {
-            // Try to find the lib directory relative to the executable
+            // Try to find the lib directory in target/lib first
             File executableDir = new File(System.getProperty("user.dir"));
-            File libDir = new File(executableDir, "lib");
+            File targetLibDir = new File(executableDir, "target/lib");
+            File libDir = targetLibDir;
             
-            if (!libDir.exists()) {
-                // If lib directory doesn't exist at the executable location,
-                // check if we're running from the target directory
-                File targetDir = new File(executableDir.getParentFile(), "lib");
-                if (targetDir.exists()) {
-                    libDir = targetDir;
-                }
+            // If target/lib doesn't exist, check lib directory
+            if (!targetLibDir.exists()) {
+                libDir = new File(executableDir, "lib");
             }
             
             if (libDir.exists()) {
                 // Set the module path to the lib directory
                 System.setProperty("javafx.module.path", libDir.getAbsolutePath());
                 
-                // Add JavaFX modules
-                List<String> jvmArgs = new ArrayList<>();
-                jvmArgs.add("--module-path");
-                jvmArgs.add(libDir.getAbsolutePath());
-                jvmArgs.add("--add-modules=javafx.controls,javafx.fxml,javafx.graphics");
+                // Add JavaFX modules to system properties
+                System.setProperty("java.library.path", libDir.getAbsolutePath());
+                System.setProperty("path.separator", File.pathSeparator);
                 
-                // Log the module path for debugging
-                System.out.println("JavaFX module path: " + libDir.getAbsolutePath());
+                // Set up module arguments
+                StringBuilder modulePath = new StringBuilder();
+                modulePath.append("--module-path=").append(libDir.getAbsolutePath());
+                System.setProperty("jdk.module.path", modulePath.toString());
+                System.setProperty("javafx.modules", "javafx.controls,javafx.fxml,javafx.graphics");
+                
+                // Log the configuration for debugging
+                System.out.println("JavaFX Configuration:");
+                System.out.println("Module Path: " + libDir.getAbsolutePath());
+                System.out.println("Library Path: " + System.getProperty("java.library.path"));
+                System.out.println("Modules: " + System.getProperty("javafx.modules"));
             } else {
-                System.out.println("JavaFX lib directory not found. Using default module path.");
+                throw new RuntimeException("JavaFX libraries not found in expected locations: " + 
+                    targetLibDir.getAbsolutePath() + " or " + libDir.getAbsolutePath());
             }
         } catch (Exception e) {
-            System.err.println("Error setting up JavaFX modules: " + e.getMessage());
+            System.err.println("Failed to setup JavaFX modules: " + e.getMessage());
             e.printStackTrace();
+            System.exit(1);
         }
     }
 }

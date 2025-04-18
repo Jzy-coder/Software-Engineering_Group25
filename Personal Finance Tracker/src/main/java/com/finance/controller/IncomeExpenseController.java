@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,17 +110,16 @@ public class IncomeExpenseController implements Initializable {
     @FXML
     private Label balanceLabel;
     
-    // 日期范围选择器
+    // 日期范围筛选相关控件
     @FXML
-    private DatePicker fromDatePicker;
+    private DatePicker startDatePicker;
     
     @FXML
-    private DatePicker toDatePicker;
+    private DatePicker endDatePicker;
     
     @FXML
     private Button filterButton;
     
-    // 时间段统计标签
     @FXML
     private Label periodIncomeLabel;
     
@@ -130,6 +128,7 @@ public class IncomeExpenseController implements Initializable {
     
     @FXML
     private Label periodBalanceLabel;
+
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -186,10 +185,49 @@ public class IncomeExpenseController implements Initializable {
         LocalDate today = LocalDate.now();
         LocalDate oneMonthAgo = today.minusMonths(1);
         
-        // 设置默认日期范围：从一个月前到今天
-        fromDatePicker.setValue(oneMonthAgo);
-        toDatePicker.setValue(today);
+        // 设置默认的日期范围（过去一个月）
+        startDatePicker.setValue(oneMonthAgo);
+        endDatePicker.setValue(today);
         
+        // 限制开始日期不能超过今天
+        startDatePicker.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                setDisable(date.isAfter(LocalDate.now()));
+            }
+        });
+        
+        // 限制结束日期不能超过今天，且不能早于开始日期
+        endDatePicker.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                LocalDate startDate = startDatePicker.getValue();
+                setDisable(date.isAfter(LocalDate.now()) || 
+                          (startDate != null && date.isBefore(startDate)));
+            }
+        });
+        
+        // 当开始日期变化时，更新结束日期的可选范围
+        startDatePicker.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                // 更新结束日期选择器
+                endDatePicker.setDayCellFactory(picker -> new DateCell() {
+                    @Override
+                    public void updateItem(LocalDate date, boolean empty) {
+                        super.updateItem(date, empty);
+                        setDisable(date.isAfter(LocalDate.now()) || date.isBefore(newValue));
+                    }
+                });
+                
+                // 如果当前选择的结束日期早于新的开始日期，则更新结束日期
+                if (endDatePicker.getValue() != null && endDatePicker.getValue().isBefore(newValue)) {
+                    endDatePicker.setValue(newValue);
+                }
+            }
+        });
+
         // 添加下拉框联动 
         categoryComboBox.setItems(FXCollections.observableArrayList("Income", "Expense"));
       
@@ -208,7 +246,9 @@ public class IncomeExpenseController implements Initializable {
         // Load data
         loadTransactions();
         updateSummary();
-        updatePeriodSummary(); // 初始化时间段统计
+        
+        // 初始化时间段统计信息
+        updatePeriodSummary(startDatePicker.getValue(), endDatePicker.getValue());
     }
     
     /**
@@ -272,17 +312,46 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
         }
     }
     
-    /**
-     * Update summary information
+     /**
+     * 更新总结信息，包括今天的总支出。
      */
     private void updateSummary() {
         double income = transactionService.calculateTotalByCategory("Income");
         double expense = transactionService.calculateTotalByCategory("Expense");
         double balance = income - expense;
-        
+
         totalIncomeLabel.setText(String.format("¥%.2f", income));
         totalExpenseLabel.setText(String.format("¥%.2f", expense));
         balanceLabel.setText(String.format("¥%.2f", balance));
+    }
+    
+    /**
+     * 更新指定时间段的统计信息
+     * @param startDate 开始日期
+     * @param endDate 结束日期
+     */
+    private void updatePeriodSummary(LocalDate startDate, LocalDate endDate) {
+        if (startDate == null || endDate == null) {
+            return;
+        }
+        
+        try {
+            double periodIncome = transactionService.calculateTotalByCategoryAndDateRange("Income", startDate, endDate);
+            double periodExpense = transactionService.calculateTotalByCategoryAndDateRange("Expense", startDate, endDate);
+            double periodBalance = periodIncome - periodExpense;
+            
+            periodIncomeLabel.setText(String.format("¥%.2f", periodIncome));
+            periodExpenseLabel.setText(String.format("¥%.2f", periodExpense));
+            periodBalanceLabel.setText(String.format("¥%.2f", periodBalance));
+            
+            // 更新表格显示，只显示该时间段内的交易记录
+            transactionList.clear();
+            transactionList.addAll(transactionService.getTransactionsByDateRange(startDate, endDate));
+            transactionTable.setItems(transactionList);
+        } catch (Exception e) {
+            logger.error("更新时间段统计信息失败", e);
+            showAlert("更新时间段统计信息失败: " + e.getMessage());
+        }
     }
     
     /**
@@ -290,60 +359,27 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
      */
     @FXML
     private void handleFilterByDateRange() {
-        updatePeriodSummary();
-    }
-    
-    /**
-     * 更新时间段统计信息
-     */
-    private void updatePeriodSummary() {
-        LocalDate startDate = fromDatePicker.getValue();
-        LocalDate endDate = toDatePicker.getValue();
+        LocalDate startDate = startDatePicker.getValue();
+        LocalDate endDate = endDatePicker.getValue();
         
         if (startDate == null || endDate == null) {
-            showAlert("请选择有效的日期范围");
+            showAlert("请选择开始日期和结束日期");
             return;
         }
         
-        // 确保开始日期不晚于结束日期
-        if (startDate.isAfter(endDate)) {
-            LocalDate temp = startDate;
-            startDate = endDate;
-            endDate = temp;
-            fromDatePicker.setValue(startDate);
-            toDatePicker.setValue(endDate);
+        if (endDate.isBefore(startDate)) {
+            showAlert("结束日期不能早于开始日期");
+            return;
         }
         
-        // 转换为LocalDateTime，开始日期为当天0点，结束日期为当天23:59:59
-        LocalDateTime startDateTime = startDate.atStartOfDay();
-        LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+        if (startDate.isAfter(LocalDate.now()) || endDate.isAfter(LocalDate.now())) {
+            showAlert("筛选的时间不能超过当前日期");
+            return;
+        }
         
-        // 筛选指定日期范围内的交易记录
-        List<Transaction> filteredTransactions = transactionService.getAllTransactions().stream()
-                .filter(t -> {
-                    LocalDateTime transactionDate = t.getDate();
-                    return !transactionDate.isBefore(startDateTime) && !transactionDate.isAfter(endDateTime);
-                })
-                .collect(Collectors.toList());
-        
-        // 计算时间段内的收入和支出
-        double periodIncome = filteredTransactions.stream()
-                .filter(t -> "Income".equals(t.getCategory()))
-                .mapToDouble(Transaction::getAmount)
-                .sum();
-        
-        double periodExpense = filteredTransactions.stream()
-                .filter(t -> "Expense".equals(t.getCategory()))
-                .mapToDouble(Transaction::getAmount)
-                .sum();
-        
-        double periodBalance = periodIncome - periodExpense;
-        
-        // 更新UI显示
-        periodIncomeLabel.setText(String.format("¥%.2f", periodIncome));
-        periodExpenseLabel.setText(String.format("¥%.2f", periodExpense));
-        periodBalanceLabel.setText(String.format("¥%.2f", periodBalance));
+        updatePeriodSummary(startDate, endDate);
     }
+
     
     /**
      * Show alert dialog
@@ -585,4 +621,6 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
         
         return previewTable;
     }
+
+   
 }

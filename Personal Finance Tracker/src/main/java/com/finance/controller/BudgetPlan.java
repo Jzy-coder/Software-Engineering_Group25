@@ -21,6 +21,7 @@ public class BudgetPlan {
         this.doneAmount = 0.0; // 初始已完成金额为0
     }
 
+    
     // Getters and Setters
     public String getPlanName() {
         return planName;
