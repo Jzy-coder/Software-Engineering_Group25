@@ -137,23 +137,6 @@ public class WelcomeController implements Initializable {
     }
 
 
-    /**
-         * Calculate the balance (assuming a target deposit of 5000)
-         */
-    private double calculateBalance1() {
-
-        //获取所有条目的budget
-        List<Budget> budgets = BudgetDataManager.loadBudgets();
-        double totalPlanned = 0.0;
-        double totalActual = 0.0;
-    
-        for (Budget budget : budgets) {
-            totalPlanned += budget.getPlannedAmount();
-            totalActual += budget.getActualAmount();
-        }
-    
-        return totalPlanned - totalActual;
-    }
 }    
 
 
