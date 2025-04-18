@@ -8,6 +8,10 @@
     <left>
         <!-- Navigation Sidebar -->
         <VBox style="-fx-background-color: #333333; -fx-padding: 10;" prefWidth="200">
+
+            <Button text="Welcome" style="-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 10 15;" 
+                    prefWidth="180" prefHeight="40" onAction="#showWelcomeView" />
+
             <Button text="Income/Expense" style="-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 10 15;" 
                     prefWidth="180" prefHeight="40" onAction="#showIncomeExpenseView" />
             <Button text="Budget" style="-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 10 15;" 
@@ -22,7 +26,7 @@
     </left>
     
     <center>
-        <!-- Content Area -->
+    <!-- Content Area -->
         <StackPane fx:id="contentArea">
             <!-- Default welcome screen -->
             <VBox alignment="CENTER" spacing="20" style="-fx-padding: 20;">
@@ -31,5 +35,6 @@
                 <Label text="Please select a function from the sidebar." style="-fx-font-size: 14;" />
             </VBox>
         </StackPane>
-    </center>
+
+  </center>
 </BorderPane>
