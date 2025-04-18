@@ -10,19 +10,22 @@
     </padding>
     
     <Label text="Budget Management" style="-fx-font-size: 24px;"/>
-    <!-- ÐÂÔöÔ¤Ëã²î¶îÏÔÊ¾ -->
+    <!-- ï¿½ï¿½ï¿½ï¿½Ô¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ -->
     <Label fx:id="budgetBalanceLabel" text="Budget Balance: 0.00" style="-fx-font-size: 16px;"/>
     <VBox spacing="10" alignment="CENTER">
         <Button fx:id="addButton" text="Add Budget" onAction="#handleAddBudget" styleClass="primary-button"/>
         
         <GridPane fx:id="inputGrid" visible="false" vgap="10" hgap="10" alignment="CENTER">
-            <Label text="Planned Amount:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-            <TextField fx:id="plannedAmountField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+            <Label text="Budget Name:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <TextField fx:id="budgetNameField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
             
-            <Label text="Current Amount:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-            <TextField fx:id="actualAmountField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+            <Label text="Planned Amount:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+            <TextField fx:id="plannedAmountField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
             
-            <HBox spacing="10" alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="2">
+            <Label text="Current Amount:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+            <TextField fx:id="actualAmountField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+            
+            <HBox spacing="10" alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="3">
                 <Button text="Confirm" onAction="#handleConfirm"/>
                 <Button text="Cancel" onAction="#handleCancel"/>
             </HBox>

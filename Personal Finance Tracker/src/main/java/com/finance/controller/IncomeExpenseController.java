@@ -109,6 +109,25 @@ public class IncomeExpenseController implements Initializable {
     
     @FXML
     private Label balanceLabel;
+    
+    // 日期范围筛选相关控件
+    @FXML
+    private DatePicker startDatePicker;
+    
+    @FXML
+    private DatePicker endDatePicker;
+    
+    @FXML
+    private Button filterButton;
+    
+    @FXML
+    private Label periodIncomeLabel;
+    
+    @FXML
+    private Label periodExpenseLabel;
+    
+    @FXML
+    private Label periodBalanceLabel;
 
     
     @Override
@@ -149,38 +168,87 @@ public class IncomeExpenseController implements Initializable {
         setupEditColumn();
         setupDeleteColumn();
         
-      // 设置默认日期为今天
-      datePicker.setValue(LocalDate.now());
+        // 设置默认日期为今天
+        datePicker.setValue(LocalDate.now());
 
-      // 限制可选日期范围为过去一个月内
-      datePicker.setDayCellFactory(picker -> new DateCell() {
-          @Override
-          public void updateItem(LocalDate date, boolean empty) {
-              super.updateItem(date, empty);
-              LocalDate minDate = LocalDate.now().minusMonths(1);
-              setDisable(date.isBefore(minDate) || date.isAfter(LocalDate.now()));
-          }
-      });
+        // 限制可选日期范围为过去一个月内
+        datePicker.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                LocalDate minDate = LocalDate.now().minusMonths(1);
+                setDisable(date.isBefore(minDate) || date.isAfter(LocalDate.now()));
+            }
+        });
 
-       // 添加下拉框联动 
-       categoryComboBox.setItems(FXCollections.observableArrayList("Income", "Expense"));
-      
-       categoryComboBox.getSelectionModel().selectedItemProperty().addListener(
-           (ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
-               if ("Income".equals(newValue)) {
-                   typeComboBox.setItems(incomeTypes);
-               } else if ("Expense".equals(newValue)) {
-                   typeComboBox.setItems(expenseTypes);
-               }
-               typeComboBox.getSelectionModel().selectFirst();
-           }
-       );
-       categoryComboBox.getSelectionModel().selectFirst();
-      
+        // 初始化日期范围选择器
+        LocalDate today = LocalDate.now();
+        LocalDate oneMonthAgo = today.minusMonths(1);
         
+        // 设置默认的日期范围（过去一个月）
+        startDatePicker.setValue(oneMonthAgo);
+        endDatePicker.setValue(today);
+        
+        // 限制开始日期不能超过今天
+        startDatePicker.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                setDisable(date.isAfter(LocalDate.now()));
+            }
+        });
+        
+        // 限制结束日期不能超过今天，且不能早于开始日期
+        endDatePicker.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                LocalDate startDate = startDatePicker.getValue();
+                setDisable(date.isAfter(LocalDate.now()) || 
+                          (startDate != null && date.isBefore(startDate)));
+            }
+        });
+        
+        // 当开始日期变化时，更新结束日期的可选范围
+        startDatePicker.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                // 更新结束日期选择器
+                endDatePicker.setDayCellFactory(picker -> new DateCell() {
+                    @Override
+                    public void updateItem(LocalDate date, boolean empty) {
+                        super.updateItem(date, empty);
+                        setDisable(date.isAfter(LocalDate.now()) || date.isBefore(newValue));
+                    }
+                });
+                
+                // 如果当前选择的结束日期早于新的开始日期，则更新结束日期
+                if (endDatePicker.getValue() != null && endDatePicker.getValue().isBefore(newValue)) {
+                    endDatePicker.setValue(newValue);
+                }
+            }
+        });
+
+        // 添加下拉框联动 
+        categoryComboBox.setItems(FXCollections.observableArrayList("Income", "Expense"));
+      
+        categoryComboBox.getSelectionModel().selectedItemProperty().addListener(
+            (ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
+                if ("Income".equals(newValue)) {
+                    typeComboBox.setItems(incomeTypes);
+                } else if ("Expense".equals(newValue)) {
+                    typeComboBox.setItems(expenseTypes);
+                }
+                typeComboBox.getSelectionModel().selectFirst();
+            }
+        );
+        categoryComboBox.getSelectionModel().selectFirst();
+      
         // Load data
         loadTransactions();
         updateSummary();
+        
+        // 初始化时间段统计信息
+        updatePeriodSummary(startDatePicker.getValue(), endDatePicker.getValue());
     }
     
     /**
@@ -255,6 +323,61 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
         totalIncomeLabel.setText(String.format("¥%.2f", income));
         totalExpenseLabel.setText(String.format("¥%.2f", expense));
         balanceLabel.setText(String.format("¥%.2f", balance));
+    }
+    
+    /**
+     * 更新指定时间段的统计信息
+     * @param startDate 开始日期
+     * @param endDate 结束日期
+     */
+    private void updatePeriodSummary(LocalDate startDate, LocalDate endDate) {
+        if (startDate == null || endDate == null) {
+            return;
+        }
+        
+        try {
+            double periodIncome = transactionService.calculateTotalByCategoryAndDateRange("Income", startDate, endDate);
+            double periodExpense = transactionService.calculateTotalByCategoryAndDateRange("Expense", startDate, endDate);
+            double periodBalance = periodIncome - periodExpense;
+            
+            periodIncomeLabel.setText(String.format("¥%.2f", periodIncome));
+            periodExpenseLabel.setText(String.format("¥%.2f", periodExpense));
+            periodBalanceLabel.setText(String.format("¥%.2f", periodBalance));
+            
+            // 更新表格显示，只显示该时间段内的交易记录
+            transactionList.clear();
+            transactionList.addAll(transactionService.getTransactionsByDateRange(startDate, endDate));
+            transactionTable.setItems(transactionList);
+        } catch (Exception e) {
+            logger.error("更新时间段统计信息失败", e);
+            showAlert("更新时间段统计信息失败: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 处理日期范围筛选
+     */
+    @FXML
+    private void handleFilterByDateRange() {
+        LocalDate startDate = startDatePicker.getValue();
+        LocalDate endDate = endDatePicker.getValue();
+        
+        if (startDate == null || endDate == null) {
+            showAlert("请选择开始日期和结束日期");
+            return;
+        }
+        
+        if (endDate.isBefore(startDate)) {
+            showAlert("结束日期不能早于开始日期");
+            return;
+        }
+        
+        if (startDate.isAfter(LocalDate.now()) || endDate.isAfter(LocalDate.now())) {
+            showAlert("筛选的时间不能超过当前日期");
+            return;
+        }
+        
+        updatePeriodSummary(startDate, endDate);
     }
 
     
