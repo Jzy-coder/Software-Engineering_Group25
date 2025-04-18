@@ -3,7 +3,7 @@
 ## Project Introduction
 This project is a personal financial management system, aiming to help users manage their personal income and expenditure ledgers efficiently. It enables the import, classification, statistics, and visualization of bills, thereby improving the efficiency of financial management.
 
-## 主要功能
+## Main Functions
 - User registration and login (supports remembering passwords)
 - Bill import, supporting CSV import and manual entry
 - Bill classification management, supporting multiple classification methods
@@ -19,12 +19,12 @@ This project is a personal financial management system, aiming to help users man
 - Classification statistics and data visualization
 - Data security and local storage
 
-## 运行环境
+## Operating Environment
 - JDK 17 and above
 - JavaFX 17
 - Maven 3.6+
 
-## 快速开始
+## Quick Start
 1. Clone this project:
    ```
    git clone <https://github.com/Jzy-coder/Software-Engineering_Group25>
