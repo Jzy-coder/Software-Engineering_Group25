@@ -84,9 +84,11 @@ public class LoginController implements Initializable {
         
         // Sync text between field and combo and filter items
         usernameField.textProperty().addListener((obs, oldVal, newVal) -> {
-            usernameCombo.getEditor().setText(newVal);
+            // 只在ComboBox未显示或未获得焦点时同步ComboBox编辑器内容，避免覆盖用户输入
+            if (!usernameCombo.isShowing() && !usernameCombo.getEditor().isFocused()) {
+                usernameCombo.getEditor().setText(newVal);
+            }
             checkSavedPassword(newVal);
-            
             if (usernameField.isFocused() && newVal != null && !newVal.isEmpty()) {
                 updateComboBoxItems(newVal);
                 if (!usernameCombo.getItems().isEmpty()) {
@@ -118,11 +120,19 @@ public class LoginController implements Initializable {
 
         // Handle text field changes
         usernameField.textProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal == null || newVal.isEmpty()) {
-                passwordField.clear();
-                rememberPasswordBox.setSelected(false);
-            }
+            // 实时更新文本框内容
             usernameCombo.getEditor().setText(newVal);
+            // 检查是否有匹配的已保存用户名
+            updateComboBoxItems(newVal);
+            if (!usernameCombo.getItems().isEmpty() && usernameField.isFocused()) {
+                usernameCombo.setManaged(true);
+                usernameCombo.setVisible(true);
+                usernameCombo.show();
+            } else {
+                usernameCombo.setManaged(false);
+                usernameCombo.setVisible(false);
+                usernameCombo.hide();
+            }
             checkSavedPassword(newVal);
         });
     }
