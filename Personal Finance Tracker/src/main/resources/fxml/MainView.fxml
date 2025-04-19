@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.MainController">
+    <left>
+        <!-- Navigation Sidebar -->
+        <VBox style="-fx-background-color: #333333; -fx-padding: 10;" prefWidth="200">
+
+            <Button text="Welcome" style="-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 10 15;" 
+                    prefWidth="180" prefHeight="40" onAction="#showWelcomeView" />
+
+            <Button text="Income/Expense" style="-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 10 15;" 
+                    prefWidth="180" prefHeight="40" onAction="#showIncomeExpenseView" />
+            <Button text="Budget" style="-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 10 15;" 
+                    prefWidth="180" prefHeight="40" onAction="#showBudgetView" />
+            <Button text="Financial Analysis" style="-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 10 15;" 
+                    prefWidth="180" prefHeight="40" onAction="#showAnalysisView" />
+            <Button text="Investment Portfolio" style="-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 10 15;" 
+                    prefWidth="180" prefHeight="40" onAction="#showInvestmentView" />
+            <Button text="Settings" style="-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 10 15;" 
+                    prefWidth="180" prefHeight="40" onAction="#showSettingsView" />
+        </VBox>
+    </left>
+    <center>
+        <!-- Content Area -->
+        <StackPane fx:id="contentArea" />
+    </center>
+</BorderPane>
