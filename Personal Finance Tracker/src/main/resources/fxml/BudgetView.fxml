@@ -9,29 +9,29 @@
         <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
     
-    <Label text="Budget Management" style="-fx-font-size: 24px;"/>
+    <Label text="Budget Management" styleClass="label-heading"/>
     <!-- ����Ԥ������ʾ -->
-    <Label fx:id="budgetBalanceLabel" text="Budget Balance: 0.00" style="-fx-font-size: 16px;"/>
+    <Label fx:id="budgetBalanceLabel" text="Budget Balance: 0.00"/>
     <VBox spacing="10" alignment="CENTER">
-        <Button fx:id="addButton" text="Add Budget" onAction="#handleAddBudget" styleClass="primary-button"/>
+        <Button fx:id="addButton" text="Add Budget" styleClass="button" onAction="#handleAddBudget"/>
         
-        <GridPane fx:id="inputGrid" visible="false" vgap="10" hgap="10" alignment="CENTER">
+        <GridPane fx:id="inputGrid" visible="false" vgap="10" hgap="10" alignment="CENTER" styleClass="card">
             <Label text="Budget Name:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-            <TextField fx:id="budgetNameField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+            <TextField fx:id="budgetNameField" styleClass="text-field" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
             
             <Label text="Planned Amount:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-            <TextField fx:id="plannedAmountField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+            <TextField fx:id="plannedAmountField" styleClass="text-field" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
             
             <Label text="Current Amount:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-            <TextField fx:id="actualAmountField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+            <TextField fx:id="actualAmountField" styleClass="text-field" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
             
             <HBox spacing="10" alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="3">
-                <Button text="Confirm" onAction="#handleConfirm"/>
-                <Button text="Cancel" onAction="#handleCancel"/>
+                <Button text="Confirm" styleClass="button" onAction="#handleConfirm"/>
+                <Button text="Cancel" styleClass="button" onAction="#handleCancel"/>
             </HBox>
         </GridPane>
         
-        <VBox fx:id="budgetListContainer" spacing="10" alignment="CENTER" style="-fx-alignment: CENTER;"/>
+        <VBox fx:id="budgetListContainer" spacing="10" alignment="CENTER" styleClass="card"/>
 
     </VBox>
 </VBox>

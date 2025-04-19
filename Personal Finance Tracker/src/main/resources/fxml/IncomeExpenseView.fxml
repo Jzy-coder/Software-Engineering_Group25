@@ -7,13 +7,13 @@
 <BorderPane xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.IncomeExpenseController">
     <center>
         <VBox spacing="10" style="-fx-padding: 10;">
-            <Label text="Income/Expense Management" style="-fx-font-size: 18; -fx-font-weight: bold;" />
+            <Label text="Income/Expense Management" styleClass="label-heading" />
             
             <HBox spacing="20">
                 <!-- Left side - Transaction Form -->
                 <VBox spacing="10" minWidth="300">
-                    <Label text="Add New Transaction" style="-fx-font-size: 14; -fx-font-weight: bold;" />
-                    <GridPane hgap="10" vgap="10">
+                    <Label text="Add New Transaction" styleClass="label-heading" style="-fx-font-size: 14;" />
+                    <GridPane hgap="10" vgap="10" styleClass="card">
                         <columnConstraints>
                             <ColumnConstraints hgrow="SOMETIMES" minWidth="100" prefWidth="100" />
                             <ColumnConstraints hgrow="SOMETIMES" minWidth="200" prefWidth="200" />
@@ -31,29 +31,29 @@
                         <DatePicker fx:id="datePicker" GridPane.rowIndex="0" GridPane.columnIndex="1" />
 
                         <Label text="Category:" GridPane.rowIndex="1" GridPane.columnIndex="0" />
-                        <ComboBox fx:id="categoryComboBox" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+                        <ComboBox fx:id="categoryComboBox" styleClass="text-field" GridPane.rowIndex="1" GridPane.columnIndex="1" />
 
                         <Label text="Type:" GridPane.rowIndex="2" GridPane.columnIndex="0" />
-                        <ComboBox fx:id="typeComboBox" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+                        <ComboBox fx:id="typeComboBox" styleClass="text-field" GridPane.rowIndex="2" GridPane.columnIndex="1" />
 
                         <Label text="Amount:" GridPane.rowIndex="3" GridPane.columnIndex="0" />
-                        <TextField fx:id="amountField" GridPane.rowIndex="3" GridPane.columnIndex="1" />
+                        <TextField fx:id="amountField" styleClass="text-field" GridPane.rowIndex="3" GridPane.columnIndex="1" />
 
                         <Label text="Description:" GridPane.rowIndex="4" GridPane.columnIndex="0" />
-                        <TextArea fx:id="descriptionArea" GridPane.rowIndex="4" GridPane.columnIndex="1" />
+                        <TextArea fx:id="descriptionArea" styleClass="text-field" GridPane.rowIndex="4" GridPane.columnIndex="1" />
 
-                        <Button fx:id="addButton" text="Add New Transaction" onAction="#handleAddTransaction" 
+                        <Button fx:id="addButton" text="Add New Transaction" styleClass="button" onAction="#handleAddTransaction" 
                                 GridPane.rowIndex="5" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
 
-                        <Button text="importCSV" onAction="#handleImportCSV" style="-fx-background-color: #2196F3; -fx-text-fill: white;"
+                        <Button text="importCSV" styleClass="button" onAction="#handleImportCSV"
                                 GridPane.rowIndex="6" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
                     </GridPane>
                 </VBox>
                 
                 <!-- Right side - Transaction Table -->
                 <VBox spacing="10" HBox.hgrow="ALWAYS">
-                    <Label text="Transaction History" style="-fx-font-size: 14; -fx-font-weight: bold;" />
-                    <TableView fx:id="transactionTable" VBox.vgrow="ALWAYS">
+                    <Label text="Transaction History" styleClass="label-heading" style="-fx-font-size: 14;" />
+                    <TableView fx:id="transactionTable" styleClass="table-view" VBox.vgrow="ALWAYS">
                         <columns>
                             <TableColumn fx:id="dateColumn" text="Date" prefWidth="120" />
                             <TableColumn fx:id="categoryColumn" text="Category" prefWidth="80" />
@@ -68,7 +68,7 @@
             </HBox>
             
             <!-- Summary Section -->
-            <HBox spacing="20" style="-fx-padding: 10; -fx-border-color: #cccccc; -fx-border-radius: 5;">
+            <HBox spacing="20" styleClass="card">
                 <VBox spacing="5" style="-fx-padding: 5;" HBox.hgrow="ALWAYS">
                     <Label text="Total Income:" />
                     <Label fx:id="totalIncomeLabel" text="¥0.00" style="-fx-font-size: 16; -fx-text-fill: green;" />
@@ -84,14 +84,14 @@
             </HBox>
             
             <!-- Period Filter Section -->
-            <VBox spacing="10" style="-fx-padding: 10; -fx-border-color: #cccccc; -fx-border-radius: 5;">
+            <VBox spacing="10" styleClass="card">
                 <Label text="Period Filter" style="-fx-font-size: 14; -fx-font-weight: bold;" />
                 <HBox spacing="10" alignment="CENTER_LEFT">
                     <Label text="Period From:" />
                     <DatePicker fx:id="startDatePicker" />
                     <Label text="To:" />
                     <DatePicker fx:id="endDatePicker" />
-                    <Button fx:id="filterButton" text="Filter" onAction="#handleFilterByDateRange" style="-fx-background-color: #2196F3; -fx-text-fill: white;" />
+                    <Button fx:id="filterButton" text="Filter" styleClass="button" onAction="#handleFilterByDateRange" />
                 </HBox>
                 
                 <!-- Period Summary Section -->

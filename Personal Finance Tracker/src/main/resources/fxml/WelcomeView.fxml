@@ -10,23 +10,22 @@
 
 <AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.finance.controller.WelcomeController">
     <VBox spacing="20" alignment="CENTER" layoutX="50" layoutY="50" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50">
-        <!-- 用户欢迎语 -->
-        <Label fx:id="userNameLabel" text="Hi, User's Name ~" style="-fx-font-size: 24px; -fx-font-weight: bold;" />
+        <!-- ???????? -->
+        <Label fx:id="userNameLabel" text="Hi, User's Name ~" styleClass="label-heading" />
 
-        <!-- 总支出 -->
-        <Label fx:id="totalTodayExpenditureLabel" text="Today's total expenditure is: 0.00 yuan" style="-fx-font-size: 18px;" />
+        <!-- ????? -->
+        <Label fx:id="totalTodayExpenditureLabel" text="Today's total expenditure is: 0.00 yuan" />
 
-        <!-- 余额 -->
-        <Label fx:id="balanceLabel" text="Your balance is: 0.00 yuan short of your deposit target." style="-fx-font-size: 18px;" />
+        <!-- ??? -->
+        <Label fx:id="balanceLabel" text="Your balance is: 0.00 yuan short of your deposit target." />
 
-        <!-- 添加标题文本 -->
-        <Label text="This is your transaction record for today" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+        <!-- ?????????? -->
+        <Label text="This is your transaction record for today" styleClass="label-heading" style="-fx-font-size: 16px;" />
 
-        <!-- 支出明细（包裹在HBox中居中） -->
+        <!-- ??????????????HBox?о??У? -->
         <HBox alignment="CENTER">
-            <TableView fx:id="expenditureDetailsTable" prefWidth="500" style="-fx-font-size: 16px;">
+            <TableView fx:id="expenditureDetailsTable" prefWidth="500" styleClass="table-view">
                 <columns>
-                    <!-- 固定列宽并禁止调整 -->
                     <TableColumn fx:id="amountColumn" text="Amount" prefWidth="150" resizable="false" style="-fx-alignment: CENTER;"/>
                     <TableColumn fx:id="categoryColumn" text="Category" prefWidth="150" resizable="false" style="-fx-alignment: CENTER;"/>
                     <TableColumn fx:id="typeColumn" text="Type" prefWidth="200" resizable="false" style="-fx-alignment: CENTER;"/>
