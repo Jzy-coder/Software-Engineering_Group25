@@ -1,58 +1,174 @@
-# Software-Engineering_Group25
+# Personal Finance Assistant
 
-## Project Introduction
-This project is a personal financial management system, aiming to help users manage their personal income and expenditure ledgers efficiently. It enables the import, classification, statistics, and visualization of bills, thereby improving the efficiency of financial management.
+## Project Overview
+A comprehensive personal finance management application built with JavaFX, helping users track income, expenses, budgets, and analyze their financial status.
 
-## Main Functions
-- User registration and login (supports remembering passwords)
-- Bill import, supporting CSV import and manual entry
-- Bill classification management, supporting multiple classification methods
-- Bill statistics and visualization, allowing users to view income, expenditure, and surplus statistics within custom time periods, as well as statistical comparisons across different time periods
-- Bill management, supporting the addition, modification, and deletion of bills
-- Financial goals, supporting the addition, modification, and deletion of goals, as well as viewing the difference from the daily goal
-- Account management, supporting the addition and modification of accounts
-- Password management, supporting password modification
+## Core Features
 
-## Data Structure
-- User information management
-- Income and expenditure data management
-- Classification statistics and data visualization
-- Data security and local storage
+### 1. User Authentication
+- Secure login/registration system
+- Encrypted password storage
+- Remember password function
+- Multi-user support with data isolation
 
-## Operating Environment
-- JDK 17 and above
+### 2. Income & Expense Management
+- Record daily transactions
+- Transaction category management
+- Multiple transaction type support
+- CSV file import functionality
+- Date range filtering
+- Transaction history (with edit/delete support)
+- Real-time balance calculation
+
+### 3. Budget Management
+- Create and manage budget goals
+- Visual progress tracking
+- Budget vs. actual spending comparison
+- Budget balance calculation
+- Budget item editing/deletion
+
+### 4. Financial Analysis
+- Income/Expense distribution pie charts
+- Period analysis
+- Category statistics details
+- Interactive data visualization
+- Custom date range selection
+
+### 5. Investment Portfolio
+- Investment tracking
+- Multiple view types (single/comparative)
+- Trend analysis
+- Period comparison
+- Chart visualization
+
+### 6. Dashboard
+- Welcome screen with daily summary
+- Today's transaction overview
+- Current balance display
+- Quick access to all features
+
+## Technical Details
+
+### Technologies Used
+- Java 17
 - JavaFX 17
-- Maven 3.6+
+- Maven
+- SQLite/JSON (Data Storage)
+- CSS (Interface Styling)
+- JFreeChart (Chart Display)
+- OpenCSV (CSV Operations)
+- SLF4J & Logback (Logging)
+- GSON (JSON Processing)
 
-## Quick Start
-1. Clone this project:
-   ```
-   git clone <https://github.com/Jzy-coder/Software-Engineering_Group25>
-   ```
-2. Enter the project directory and build it using Maven:
-   ```
-   cd "Personal Finance Tracker"
-   mvn clean javafx:run
-   ```
-3. After starting, register a new user or log in with an existing account.
-
-## Directory Structure
+### Project Structure
 ```
-├── Personal Finance Tracker
-│   ├── src
-│   │   └── main
-│   │       ├── java
-│   │       └── resources
-│   │           └── fxml
-│   ├── pom.xml
-│   └── ...
-├── UserInfo
-├── data
-├── README.md
+src/
+  main/
+    java/
+      com.finance/
+        app/          # Application entry
+        controller/   # MVC controllers
+        model/       # Data models
+        service/     # Business logic
+        dao/         # Data access
+        util/        # Utility classes
+        gui/         # GUI components
+    resources/
+      fxml/         # JavaFX layout files
+      css/          # Stylesheets
+      config/       # Configuration files
 ```
 
-## Contribution Instructions
-You are welcome to submit issues and pull requests. It is recommended to fork the repository before starting development.
+### Build and Run
+```bash
+# Build project
+mvn clean package
 
-## Contact Information
-If you have any questions, please contact the project leader or leave a message in the issue section.
+# Run application
+java -jar target/finance-manager-1.0-SNAPSHOT.jar
+```
+
+## System Requirements
+- Java 17 or higher
+- Supports Windows/Linux/MacOS
+- Recommended minimum 4GB RAM
+- Screen resolution: 1024x768 or higher
+
+## Configuration Details
+The application uses the following configuration files:
+- `app.properties`: Application settings
+- `logback.xml`: Logging configuration
+- User-specific configurations stored in user home directory
+
+## Data Storage
+- Transaction data: Separate JSON files per user
+- User credentials: Encrypted storage
+- Budget data: Serialized objects
+- Application settings: Property files
+
+## Security Features
+- Password hashing
+- User data isolation
+- Session management
+- Secure file operations
+
+## Key Features
+1. Simple and intuitive user interface
+2. Real-time data updates and calculations
+3. Multi-dimensional financial analysis
+4. Flexible data import/export
+5. Secure data storage
+6. Complete error handling
+7. Multiple currency support
+8. Responsive layout design
+
+## Development Notes
+1. Maven dependency management
+2. MVC architecture pattern
+3. Modular design
+4. Comprehensive logging
+5. Unified exception handling
+6. Well-documented source code
+7. Unit test coverage
+
+## Deployment Instructions
+1. Ensure Java 17 is installed
+2. Download release package
+3. Extract to target directory
+4. Run startup script
+5. First run will automatically create necessary configuration files and data directories
+
+## User Guide
+1. Start by registering new user or logging in
+2. Access all core features from main interface
+3. Use income/expense management to record daily transactions
+4. Set financial goals in budget management
+5. Use analysis tools to view financial status
+6. Regularly backup important data
+
+## Future Plans
+1. Mobile support
+2. Cloud synchronization
+3. Multi-language support
+4. More data analysis tools
+5. Custom report generation
+6. API integration support
+
+## FAQ
+1. How to backup data
+2. Password reset process
+3. Data import format requirements
+4. System performance optimization tips
+5. Security measures
+
+## Acknowledgments
+- JavaFX community
+- Maven Central Repository
+- Open source contributors
+
+## Change Log
+### Version 2.0.0 (2025-04-21)
+- Initial release
+- Core functionality implementation
+- Basic interface design
+- Data storage functionality
