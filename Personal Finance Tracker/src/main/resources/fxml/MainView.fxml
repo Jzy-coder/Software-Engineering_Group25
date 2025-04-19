@@ -24,17 +24,8 @@
                     prefWidth="180" prefHeight="40" onAction="#showSettingsView" />
         </VBox>
     </left>
-    
     <center>
-    <!-- Content Area -->
-        <StackPane fx:id="contentArea">
-            <!-- Default welcome screen -->
-            <VBox alignment="CENTER" spacing="20" style="-fx-padding: 20;">
-                <Label text="个人理财助手" style="-fx-font-size: 28; -fx-font-weight: bold;" />
-                <Label text="Welcome to Personal Finance Management System!" style="-fx-font-size: 16;" />
-                <Label text="Please select a function from the sidebar." style="-fx-font-size: 14;" />
-            </VBox>
-        </StackPane>
-
-  </center>
+        <!-- Content Area -->
+        <StackPane fx:id="contentArea" />
+    </center>
 </BorderPane>

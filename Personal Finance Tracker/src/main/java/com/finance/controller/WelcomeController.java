@@ -53,6 +53,8 @@ public class WelcomeController implements Initializable {
         transactionService = com.finance.gui.LoginManager.getTransactionService(); // Assuming it's initialized in LoginManager
 
         todayExpenditureList = FXCollections.observableArrayList();
+        // Set placeholder text for the table
+        expenditureDetailsTable.setPlaceholder(new Label("No Data"));
         loadUserName();
         loadExpenditureDetails();
         updateSummary();
@@ -62,10 +64,10 @@ public class WelcomeController implements Initializable {
      * Load the user's name (hardcoded or fetched from a service)
      */
     private void loadUserName() {
-        // »ñÈ¡µ±Ç°µÇÂ¼µÄÓÃ»§Ãû
+        // ï¿½ï¿½È¡ï¿½ï¿½Ç°ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½
         String currentUsername = LoginManager.getCurrentUsername();
         
-        // ÉèÖÃ»¶Ó­±êÇ©Îªµ±Ç°ÓÃ»§Ãû
+        // ï¿½ï¿½ï¿½Ã»ï¿½Ó­ï¿½ï¿½Ç©Îªï¿½ï¿½Ç°ï¿½Ã»ï¿½ï¿½ï¿½
         userNameLabel.setText("Hi, " + currentUsername + " ~");
     }
 
@@ -119,7 +121,7 @@ public class WelcomeController implements Initializable {
 
 
     /**
-     * ¼ÆËãµ±ÈÕÊÕÖ§²î¶î£¨ÊÕÈë-Ö§³ö£©
+     * ï¿½ï¿½ï¿½ãµ±ï¿½ï¿½ï¿½ï¿½Ö§ï¿½ï¿½î£¨ï¿½ï¿½ï¿½ï¿½-Ö§ï¿½ï¿½ï¿½ï¿½
      */
     private double calculateBalance() {
         double totalIncome = 0.0;
@@ -137,7 +139,7 @@ public class WelcomeController implements Initializable {
     }
 
 
-}    
+}
 
 
 
