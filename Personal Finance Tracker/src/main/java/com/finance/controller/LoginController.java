@@ -30,6 +30,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.scene.layout.HBox;
 import javafx.scene.control.ComboBox;
+import javafx.application.Platform;
 
 /**
  * Login Interface Controller
@@ -37,7 +38,10 @@ import javafx.scene.control.ComboBox;
 public class LoginController implements Initializable {
 
     @FXML
-    private ComboBox<String> usernameField;
+    private TextField usernameField;
+    
+    @FXML 
+    private ComboBox<String> usernameCombo;
     
     @FXML
     private PasswordField passwordField;
@@ -57,32 +61,69 @@ public class LoginController implements Initializable {
         createUserInfoDirectory();
         
         // Initialize username ComboBox with saved usernames
-        usernameField.getItems().addAll(com.finance.util.UserCredentialManager.getSavedUsernames());
-        usernameField.setEditable(true);
+        usernameCombo.getItems().addAll(com.finance.util.UserCredentialManager.getSavedUsernames());
         
-        // Add listener for username selection
-        usernameField.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                String savedPassword = com.finance.util.UserCredentialManager.getSavedPassword(newVal);
-                if (savedPassword != null) {
-                    passwordField.setText(savedPassword);
-                    rememberPasswordBox.setSelected(true);
+        // Setup focus listeners for username field
+        usernameField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal) {
+                String currentText = usernameField.getText();
+                if (currentText != null && !currentText.isEmpty()) {
+                    updateComboBoxItems(currentText);
+                    if (!usernameCombo.getItems().isEmpty()) {
+                        usernameCombo.setManaged(true);
+                        usernameCombo.setVisible(true);
+                        usernameCombo.show();
+                        return;
+                    }
                 }
+            }
+            usernameCombo.setManaged(false);
+            usernameCombo.setVisible(false);
+            usernameCombo.hide();
+        });
+        
+        // Sync text between field and combo and filter items
+        usernameField.textProperty().addListener((obs, oldVal, newVal) -> {
+            usernameCombo.getEditor().setText(newVal);
+            checkSavedPassword(newVal);
+            
+            if (usernameField.isFocused() && newVal != null && !newVal.isEmpty()) {
+                updateComboBoxItems(newVal);
+                if (!usernameCombo.getItems().isEmpty()) {
+                    usernameCombo.setManaged(true);
+                    usernameCombo.setVisible(true);
+                    usernameCombo.show();
+                } else {
+                    usernameCombo.hide();
+                }
+            } else {
+                usernameCombo.hide();
             }
         });
         
-        // Add listener for manual username input
-        usernameField.getEditor().textProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null && !newVal.equals(oldVal)) {
-                String savedPassword = com.finance.util.UserCredentialManager.getSavedPassword(newVal);
-                if (savedPassword != null) {
-                    passwordField.setText(savedPassword);
-                    rememberPasswordBox.setSelected(true);
-                } else {
-                    passwordField.clear();
-                    rememberPasswordBox.setSelected(false);
-                }
+        // Handle combo selection
+        usernameCombo.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                usernameField.setText(newVal);
+                checkSavedPassword(newVal);
+                usernameCombo.hide();
+                usernameCombo.setVisible(false);
+                usernameCombo.setManaged(false);
+                Platform.runLater(() -> {
+                    usernameField.requestFocus();
+                    passwordField.requestFocus();
+                });
             }
+        });
+
+        // Handle text field changes
+        usernameField.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == null || newVal.isEmpty()) {
+                passwordField.clear();
+                rememberPasswordBox.setSelected(false);
+            }
+            usernameCombo.getEditor().setText(newVal);
+            checkSavedPassword(newVal);
         });
     }
     
@@ -91,7 +132,7 @@ public class LoginController implements Initializable {
      */
     @FXML
     private void handleLogin() {
-        String username = usernameField.getValue();
+        String username = usernameField.getText();
         String password = passwordField.getText();
         
         if (username == null || username.isEmpty() || password.isEmpty()) {
@@ -275,6 +316,32 @@ public class LoginController implements Initializable {
         alert.showAndWait();
     }
     
+    /**
+     * Check if password is saved for given username
+     */
+    private void updateComboBoxItems(String filter) {
+        usernameCombo.getItems().clear();
+        usernameCombo.getItems().addAll(
+            com.finance.util.UserCredentialManager.getSavedUsernames()
+                .stream()
+                .filter(name -> name.toLowerCase().contains(filter.toLowerCase()))
+                .toList()
+        );
+    }
+
+    private void checkSavedPassword(String username) {
+        if (username != null && !username.isEmpty()) {
+            String savedPassword = com.finance.util.UserCredentialManager.getSavedPassword(username);
+            if (savedPassword != null) {
+                passwordField.setText(savedPassword);
+                rememberPasswordBox.setSelected(true);
+            } else {
+                passwordField.clear();
+                rememberPasswordBox.setSelected(false);
+            }
+        }
+    }
+
     /**
      * Open main view after successful login
      */

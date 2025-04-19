@@ -7,10 +7,10 @@
 <BorderPane xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.LoginController">
     <center>
         <VBox alignment="CENTER" spacing="15" style="-fx-padding: 20;">
-            <Label text="Personal Finance Tracker" style="-fx-font-size: 24; -fx-font-weight: bold;" />
-            <Label text="Login to your account" style="-fx-font-size: 14;" />
+            <Label text="Personal Finance Tracker" styleClass="label-heading" />
+            <Label text="Login to your account" />
             
-            <GridPane hgap="10" vgap="10" alignment="CENTER">
+            <GridPane hgap="10" vgap="10" alignment="CENTER" styleClass="card">
                 <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
                 
                 <columnConstraints>
@@ -19,17 +19,21 @@
                 </columnConstraints>
                 
                 <Label text="Username:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
-                <ComboBox fx:id="usernameField" GridPane.rowIndex="0" GridPane.columnIndex="1" editable="true" maxWidth="Infinity" />
+                <StackPane GridPane.rowIndex="0" GridPane.columnIndex="1">
+                    <TextField fx:id="usernameField" styleClass="text-field" maxWidth="Infinity" />
+                    <ComboBox fx:id="usernameCombo" styleClass="floating-combo-box" visible="false" maxWidth="Infinity" 
+                              translateY="30" managed="false" mouseTransparent="true" />
+                </StackPane>
                 
                 <Label text="Password:" GridPane.rowIndex="1" GridPane.columnIndex="0" />
-                <PasswordField fx:id="passwordField" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+                <PasswordField fx:id="passwordField" styleClass="text-field" GridPane.rowIndex="1" GridPane.columnIndex="1" />
                 
                 <CheckBox fx:id="rememberPasswordBox" text="Remember Password" 
                           GridPane.rowIndex="2" GridPane.columnIndex="1" />
                 
                 <HBox spacing="10" alignment="CENTER_RIGHT" GridPane.rowIndex="3" GridPane.columnIndex="1">
-                    <Button fx:id="loginButton" text="Login" onAction="#handleLogin" prefWidth="80" />
-                    <Button fx:id="registerButton" text="Register" onAction="#showRegisterDialog" prefWidth="80" />
+                    <Button fx:id="loginButton" text="Login" styleClass="button" onAction="#handleLogin" prefWidth="80" />
+                    <Button fx:id="registerButton" text="Register" styleClass="button" onAction="#showRegisterDialog" prefWidth="80" />
                 </HBox>
             </GridPane>
         </VBox>

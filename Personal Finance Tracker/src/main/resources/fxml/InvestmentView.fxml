@@ -10,10 +10,10 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.InvestmentController">
     <top>
-        <VBox spacing="10" style="-fx-padding: 10;">
+        <VBox spacing="10" styleClass="card">
             <HBox spacing="10" alignment="CENTER_LEFT">
-                <Label text="View Type:" style="-fx-font-size: 14;"/>
-                <ComboBox fx:id="viewTypeComboBox" prefWidth="150">
+                <Label text="View Type:" styleClass="label-heading" style="-fx-font-size: 14;"/>
+                <ComboBox fx:id="viewTypeComboBox" styleClass="combo-box" prefWidth="150">
                     <items>
                         <FXCollections fx:factory="observableArrayList">
                             <String fx:value="Tendency" />
@@ -27,12 +27,12 @@
     
     <center>
         <StackPane fx:id="contentPane">
-            <VBox fx:id="bothView" spacing="10" visible="false">
-                <VBox fx:id="tendencyView" VBox.vgrow="ALWAYS" style="-fx-background-color: white;" maxHeight="350">
+            <VBox fx:id="bothView" spacing="10" visible="false" styleClass="card">
+                <VBox fx:id="tendencyView" VBox.vgrow="ALWAYS" styleClass="card" maxHeight="350" style="-fx-padding: 10;">
                     <VBox spacing="10" style="-fx-padding: 10;">
                         <HBox spacing="20" alignment="CENTER_LEFT">
-                            <Label text="Time Period:" style="-fx-font-size: 14;"/>
-                            <ComboBox fx:id="timePeriodComboBox" prefWidth="200">
+                            <Label text="Time Period:" styleClass="label-heading" style="-fx-font-size: 14;"/>
+                <ComboBox fx:id="timePeriodComboBox" styleClass="combo-box" prefWidth="200">
                                 <items>
                                     <FXCollections fx:factory="observableArrayList">
                                         <String fx:value="The recent week" />
@@ -45,14 +45,14 @@
                                 </items>
                             </ComboBox>
                             <HBox spacing="10">
-                                <RadioButton fx:id="incomeRadio" text="Income" selected="true">
+                                <RadioButton fx:id="incomeRadio" text="Income" selected="true" styleClass="radio-button">
                                     <toggleGroup>
                                         <ToggleGroup fx:id="dataTypeToggle" />
                                     </toggleGroup>
                                 </RadioButton>
-                                <RadioButton fx:id="expenseRadio" text="Expense" toggleGroup="$dataTypeToggle" />
-                                <RadioButton fx:id="balanceRadio" text="Balance" toggleGroup="$dataTypeToggle" />
-                                <ComboBox fx:id="categoryComboBox" prefWidth="150" disable="false">
+                                <RadioButton fx:id="expenseRadio" text="Expense" toggleGroup="$dataTypeToggle" styleClass="radio-button" />
+                                <RadioButton fx:id="balanceRadio" text="Balance" toggleGroup="$dataTypeToggle" styleClass="radio-button" />
+                                <ComboBox fx:id="categoryComboBox" styleClass="combo-box" prefWidth="150" disable="false">
                                     <items>
                                         <FXCollections fx:factory="observableArrayList">
                                             <String fx:value="All" />
@@ -62,7 +62,7 @@
                             </HBox>
                         </HBox>
                     </VBox>
-                    <LineChart fx:id="tendencyLineChart" VBox.vgrow="ALWAYS">
+                    <LineChart fx:id="tendencyLineChart" VBox.vgrow="ALWAYS" styleClass="chart">
                         <xAxis>
                             <CategoryAxis label="Date" />
                         </xAxis>
@@ -72,11 +72,11 @@
                     </LineChart>
                 </VBox>
             </VBox>
-            <VBox fx:id="singleTendencyView" visible="false" style="-fx-background-color: white;">
+            <VBox fx:id="singleTendencyView" visible="false" styleClass="card" style="-fx-padding: 10;">
                 <VBox spacing="10" style="-fx-padding: 10;">
                     <HBox spacing="20" alignment="CENTER_LEFT">
-                        <Label text="Time Period:" style="-fx-font-size: 14;"/>
-                        <ComboBox fx:id="singleTimePeriodComboBox" prefWidth="200">
+                        <Label text="Time Period:" styleClass="label-heading" style="-fx-font-size: 14;"/>
+                        <ComboBox fx:id="singleTimePeriodComboBox" styleClass="combo-box" prefWidth="200">
                             <items>
                                 <FXCollections fx:factory="observableArrayList">
                                     <String fx:value="The recent week" />
@@ -89,14 +89,14 @@
                             </items>
                         </ComboBox>
                         <HBox spacing="10">
-                            <RadioButton fx:id="singleIncomeRadio" text="Income" selected="true">
+                            <RadioButton fx:id="singleIncomeRadio" text="Income" selected="true" styleClass="radio-button">
                                 <toggleGroup>
                                     <ToggleGroup fx:id="singleDataTypeToggle" />
                                 </toggleGroup>
                             </RadioButton>
-                            <RadioButton fx:id="singleExpenseRadio" text="Expense" toggleGroup="$singleDataTypeToggle" />
-                            <RadioButton fx:id="singleBalanceRadio" text="Balance" toggleGroup="$singleDataTypeToggle" />
-                            <ComboBox fx:id="singleCategoryComboBox" prefWidth="150" disable="false">
+                            <RadioButton fx:id="singleExpenseRadio" text="Expense" toggleGroup="$singleDataTypeToggle" styleClass="radio-button" />
+                            <RadioButton fx:id="singleBalanceRadio" text="Balance" toggleGroup="$singleDataTypeToggle" styleClass="radio-button" />
+                            <ComboBox fx:id="singleCategoryComboBox" styleClass="combo-box" prefWidth="150" disable="false">
                                 <items>
                                     <FXCollections fx:factory="observableArrayList">
                                         <String fx:value="All" />
@@ -106,7 +106,7 @@
                         </HBox>
                     </HBox>
                 </VBox>
-                <LineChart fx:id="singleTendencyLineChart" VBox.vgrow="ALWAYS">
+                <LineChart fx:id="singleTendencyLineChart" VBox.vgrow="ALWAYS" styleClass="chart">
                     <xAxis>
                         <CategoryAxis label="Date" />
                     </xAxis>
@@ -115,34 +115,35 @@
                     </yAxis>
                 </LineChart>
             </VBox>
-            <VBox fx:id="singleComparisonView" visible="false" style="-fx-background-color: white;" spacing="10">
+            <VBox fx:id="singleComparisonView" visible="false" styleClass="card" spacing="10" style="-fx-padding: 10;">
                 <VBox spacing="10" style="-fx-padding: 10;">
                     <HBox spacing="20" alignment="CENTER_LEFT">
-                        <Label text="Comparison Mode:" style="-fx-font-size: 14;"/>
-                        <RadioButton fx:id="comparisonIncomeRadio" text="Income" selected="true">
+                        <Label text="Comparison Mode:" styleClass="label-heading" style="-fx-font-size: 14;"/>
+                        <RadioButton fx:id="comparisonIncomeRadio" text="Income" selected="true" styleClass="radio-button">
                             <toggleGroup>
                                 <ToggleGroup fx:id="comparisonDataTypeToggle" />
                             </toggleGroup>
                         </RadioButton>
-                        <RadioButton fx:id="comparisonExpenseRadio" text="Expense" toggleGroup="$comparisonDataTypeToggle" />
+                        <RadioButton fx:id="comparisonExpenseRadio" text="Expense" toggleGroup="$comparisonDataTypeToggle" styleClass="radio-button" />
                     </HBox>
                 </VBox>
                 <HBox alignment="CENTER" spacing="50" VBox.vgrow="ALWAYS" style="-fx-padding: 10;">
                     <!-- Left Comparison Panel -->
                     <VBox spacing="10" style="-fx-padding: 10;" HBox.hgrow="ALWAYS">
                         <HBox spacing="20" alignment="CENTER_LEFT">
-                            <Label text="From:" style="-fx-font-size: 14;"/>
-                            <DatePicker fx:id="leftStartDatePicker" prefWidth="150"/>
-                            <Label text="To:" style="-fx-font-size: 14;"/>
-                            <DatePicker fx:id="leftEndDatePicker" prefWidth="150"/>
+                            <Label text="From:" styleClass="label-heading" style="-fx-font-size: 14;"/>
+                            <DatePicker fx:id="leftStartDatePicker" styleClass="date-picker" prefWidth="150"/>
+                            <Label text="To:" styleClass="label-heading" style="-fx-font-size: 14;"/>
+                            <DatePicker fx:id="leftEndDatePicker" styleClass="date-picker" prefWidth="150"/>
                         </HBox>
                         <PieChart fx:id="leftPieChart"
                             title=""
-                            minWidth="350" prefWidth="350" maxWidth="350"
+                            minWidth="350" prefWidth="350" maxWidth="350" 
                             minHeight="350" prefHeight="350" maxHeight="350" 
                             legendVisible="false"
                             labelsVisible="false"
                             animated="true"
+                            styleClass="chart"
                             style="-fx-padding: 10 10 10 10; -fx-title-side: TOP; -fx-title-gap: 10;">
                         </PieChart>
                     </VBox>
@@ -150,10 +151,10 @@
                     <!-- Right Comparison Panel -->
                     <VBox spacing="10" style="-fx-padding: 10;" HBox.hgrow="ALWAYS">
                         <HBox spacing="20" alignment="CENTER_LEFT">
-                            <Label text="From:" style="-fx-font-size: 14;"/>
-                            <DatePicker fx:id="rightStartDatePicker" prefWidth="150"/>
-                            <Label text="To:" style="-fx-font-size: 14;"/>
-                            <DatePicker fx:id="rightEndDatePicker" prefWidth="150"/>
+                            <Label text="From:" styleClass="label-heading" style="-fx-font-size: 14;"/>
+                            <DatePicker fx:id="rightStartDatePicker" styleClass="date-picker" prefWidth="150"/>
+                            <Label text="To:" styleClass="label-heading" style="-fx-font-size: 14;"/>
+                            <DatePicker fx:id="rightEndDatePicker" styleClass="date-picker" prefWidth="150"/>
                         </HBox>
                         <PieChart fx:id="rightPieChart"
                             title=""
@@ -162,6 +163,7 @@
                             legendVisible="false"
                             labelsVisible="false"
                             animated="true"
+                            styleClass="chart"
                             style="-fx-padding: 10 10 10 10; -fx-title-side: TOP; -fx-title-gap: 10;">
                         </PieChart>
                     </VBox>

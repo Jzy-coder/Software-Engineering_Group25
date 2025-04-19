@@ -7,20 +7,20 @@
 <BorderPane xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.MainController">
     <left>
         <!-- Navigation Sidebar -->
-        <VBox style="-fx-background-color: #333333; -fx-padding: 10;" prefWidth="200">
+        <VBox styleClass="sidebar" prefWidth="200">
 
-            <Button text="Welcome" style="-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 10 15;" 
+            <Button text="Welcome" styleClass="sidebar-button" 
                     prefWidth="180" prefHeight="40" onAction="#showWelcomeView" />
 
-            <Button text="Income/Expense" style="-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 10 15;" 
+            <Button text="Income/Expense" styleClass="sidebar-button" 
                     prefWidth="180" prefHeight="40" onAction="#showIncomeExpenseView" />
-            <Button text="Budget" style="-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 10 15;" 
+            <Button text="Budget" styleClass="sidebar-button" 
                     prefWidth="180" prefHeight="40" onAction="#showBudgetView" />
-            <Button text="Financial Analysis" style="-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 10 15;" 
+            <Button text="Financial Analysis" styleClass="sidebar-button" 
                     prefWidth="180" prefHeight="40" onAction="#showAnalysisView" />
-            <Button text="Investment Portfolio" style="-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 10 15;" 
+            <Button text="Investment Portfolio" styleClass="sidebar-button" 
                     prefWidth="180" prefHeight="40" onAction="#showInvestmentView" />
-            <Button text="Settings" style="-fx-background-color: #333333; -fx-text-fill: white; -fx-font-size: 14px; -fx-alignment: CENTER_LEFT; -fx-padding: 10 15;" 
+            <Button text="Settings" styleClass="sidebar-button" 
                     prefWidth="180" prefHeight="40" onAction="#showSettingsView" />
         </VBox>
     </left>
