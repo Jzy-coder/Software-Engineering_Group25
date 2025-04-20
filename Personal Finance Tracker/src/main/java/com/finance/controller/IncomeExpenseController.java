@@ -269,7 +269,7 @@ public class IncomeExpenseController implements Initializable {
             
              // 获取用户选择的日期
              if (datePicker.getValue() == null) {
-                showAlert("请选择交易日期");
+                showAlert("Please select a date range.");
                 return;
             }
             LocalDate selectedDate = datePicker.getValue();
@@ -282,11 +282,11 @@ public class IncomeExpenseController implements Initializable {
             
             // 非空校验
 if (category == null || type == null) {
-    showAlert("请选择收支类别和类型");
+    showAlert("Please select a type of Income or Expense.");
     return;
 }
 if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
-    showAlert("金额不能为空");
+    showAlert("The amount cannot be empty.");
     return;
 }
 
@@ -305,10 +305,10 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
             updateSummary();
             
         } catch (NumberFormatException e) {
-            showAlert("金额格式错误，请输入有效数字（示例：199.99）");
+            showAlert("The amount format is incorrect,Please enter valid digits(like:199.99)");
         } catch (Exception e) {
-            logger.error("添加交易记录失败", e);
-            showAlert("添加交易失败: " + e.getMessage());
+            logger.error("Fail to add the transcation.", e);
+            showAlert("Fail to add the transcation: " + e.getMessage());
         }
     }
     
@@ -349,8 +349,8 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
             transactionList.addAll(transactionService.getTransactionsByDateRange(startDate, endDate));
             transactionTable.setItems(transactionList);
         } catch (Exception e) {
-            logger.error("更新时间段统计信息失败", e);
-            showAlert("更新时间段统计信息失败: " + e.getMessage());
+            logger.error("Failed to update the time period statistics information.", e);
+            showAlert("Failed to update the time period statistics information.: " + e.getMessage());
         }
     }
     
@@ -363,17 +363,17 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
         LocalDate endDate = endDatePicker.getValue();
         
         if (startDate == null || endDate == null) {
-            showAlert("请选择开始日期和结束日期");
+            showAlert("Please select the start date and end date.");
             return;
         }
         
         if (endDate.isBefore(startDate)) {
-            showAlert("结束日期不能早于开始日期");
+            showAlert("The end date cannot be earlier than the start date");
             return;
         }
         
         if (startDate.isAfter(LocalDate.now()) || endDate.isAfter(LocalDate.now())) {
-            showAlert("筛选的时间不能超过当前日期");
+            showAlert("The screening time cannot exceed the current date");
             return;
         }
         
@@ -494,7 +494,7 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
                 updateSummary();
                 
             } catch (NumberFormatException e) {
-                showAlert("金额格式错误，请输入有效数字（示例：199.99）");
+                showAlert("The amount format is incorrect. Please enter significant figures (example: 199.99).");
             } catch (Exception e) {
                 showAlert("Failed to update transaction: " + e.getMessage());
             }
@@ -550,7 +550,7 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
     @FXML
     private void handleImportCSV() {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("选择CSV文件");
+        fileChooser.setTitle("Chose the csv file");
         
         // 设置微信默认路径
         Path wechatPath = Paths.get(System.getProperty("user.home"), "Documents", "WeChat Files");
@@ -559,7 +559,7 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
         } else {
             fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
         }
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV文件", "*.csv"));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV file", "*.csv"));
         File file = fileChooser.showOpenDialog(transactionTable.getScene().getWindow());
 
         if (file != null) {
@@ -569,8 +569,8 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
                 
                 // 创建预览对话框
                 Dialog<ButtonType> dialog = new Dialog<>();
-                dialog.setTitle("导入预览");
-                dialog.setHeaderText(String.format("共发现%d条待导入记录", importedTransactions.size()));
+                dialog.setTitle("Import preview");
+                dialog.setHeaderText(String.format("A total of %d records to be imported were found", importedTransactions.size()));
                 
                 // 添加预览表格
                 TableView<Transaction> previewTable = createPreviewTable(importedTransactions);
@@ -581,11 +581,11 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
                     transactionService.batchImport(importedTransactions);
                     loadTransactions();
                     updateSummary();
-                    showAlert("成功导入" + importedTransactions.size() + "条记录");
+                    showAlert("Import" + importedTransactions.size() + "records successfully.");
 
                 }
             } catch (Exception e) {
-                showAlert("CSV文件解析失败: " + e.getMessage());
+                showAlert("CSV failed to import: " + e.getMessage());
             }
         }
     }
