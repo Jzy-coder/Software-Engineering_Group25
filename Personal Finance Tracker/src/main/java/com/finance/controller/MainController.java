@@ -27,7 +27,7 @@ public class MainController implements Initializable {
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // 启动时默认加载欢迎界面
+        // ?????????????????
         showWelcomeView();
     }
     
@@ -77,6 +77,14 @@ public class MainController implements Initializable {
     @FXML
     private void showSettingsView() {
         loadView("/fxml/SettingsView.fxml");
+    }
+
+    /**
+     * Show AI Chat view
+     */
+    @FXML
+    private void showAIChatView() {
+        loadView("/fxml/AIChatView.fxml");
     }
 
     
