@@ -1,4 +1,4 @@
-# Personal Finance Assistant
+# Personal Finance Tracker
 
 ## Project Overview
 A comprehensive personal finance management application built with JavaFX, helping users track income, expenses, budgets, and analyze their financial status.
