@@ -20,6 +20,8 @@
                     prefWidth="180" prefHeight="40" onAction="#showAnalysisView" />
             <Button text="Investment Portfolio" styleClass="sidebar-button" 
                     prefWidth="180" prefHeight="40" onAction="#showInvestmentView" />
+            <Button text="AI Chat" styleClass="sidebar-button" 
+                    prefWidth="180" prefHeight="40" onAction="#showAIChatView" />
             <Button text="Settings" styleClass="sidebar-button" 
                     prefWidth="180" prefHeight="40" onAction="#showSettingsView" />
         </VBox>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.AIChatController">
+    <top>
+        <HBox styleClass="header" alignment="CENTER" spacing="10">
+            <Label text="AI Financial Assistant" styleClass="header-title"/>
+            <Label fx:id="statusLabel" text="Ready" styleClass="status-label"/>
+        </HBox>
+    </top>
+    
+    <center>
+        <ScrollPane fx:id="chatScrollPane" fitToWidth="true">
+            <VBox fx:id="chatContainer" spacing="10" styleClass="chat-container"/>
+        </ScrollPane>
+    </center>
+    
+    <bottom>
+        <VBox spacing="10" styleClass="input-container">
+            <HBox spacing="10" alignment="CENTER_RIGHT">
+                <Button text="Clear" onAction="#handleClearChat" styleClass="clear-button"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER">
+                <TextArea fx:id="messageInput" promptText="Type your financial question here..." styleClass="message-input" wrapText="true"/>
+                <Button text="Send" onAction="#handleSendMessage" styleClass="send-button"/>
+            </HBox>
+        </VBox>
+    </bottom>
+</BorderPane>
