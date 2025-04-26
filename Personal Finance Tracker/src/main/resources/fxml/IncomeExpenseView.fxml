@@ -56,6 +56,7 @@
                         <Label text="Transaction History" styleClass="label-heading" style="-fx-font-size: 14;" />
                         <DatePicker fx:id="filterDatePicker" />
                         <Button fx:id="filterByDateButton" text="Filter" styleClass="button" onAction="#handleFilterByDate" />
+                        <Button fx:id="showAllButton" text="Show All" styleClass="button" onAction="#handleShowAll" />
                     </HBox>
                     <TableView fx:id="transactionTable" styleClass="table-view" VBox.vgrow="ALWAYS">
                         <columns>

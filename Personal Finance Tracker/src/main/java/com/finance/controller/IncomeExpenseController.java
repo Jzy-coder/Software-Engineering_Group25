@@ -134,6 +134,9 @@ public class IncomeExpenseController implements Initializable {
     
     @FXML
     private Button filterByDateButton;
+    
+    @FXML
+    private Button showAllButton;
 
     
     @Override
@@ -288,6 +291,13 @@ public class IncomeExpenseController implements Initializable {
             transactionTable.setItems(transactionList);
             updateSummary();
         }
+    }
+    
+    @FXML
+    private void handleShowAll() {
+        transactionList.setAll(transactionService.getAllTransactions());
+        updateSummary();
+        updatePeriodSummary(startDatePicker.getValue(), endDatePicker.getValue());
     }
     
     /**
