@@ -128,6 +128,12 @@ public class IncomeExpenseController implements Initializable {
     
     @FXML
     private Label periodBalanceLabel;
+    
+    @FXML
+    private DatePicker filterDatePicker;
+    
+    @FXML
+    private Button filterByDateButton;
 
     
     @Override
@@ -188,6 +194,16 @@ public class IncomeExpenseController implements Initializable {
         // 设置默认的日期范围（过去一个月）
         startDatePicker.setValue(oneMonthAgo);
         endDatePicker.setValue(today);
+        
+        // 设置单日筛选的日期选择器
+        filterDatePicker.setValue(today);
+        filterDatePicker.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                setDisable(date.isAfter(LocalDate.now()));
+            }
+        });
         
         // 限制开始日期不能超过今天
         startDatePicker.setDayCellFactory(picker -> new DateCell() {
@@ -258,6 +274,20 @@ public class IncomeExpenseController implements Initializable {
         transactionList.clear();
         transactionList.addAll(transactionService.getAllTransactions());
         transactionTable.setItems(transactionList);
+    }
+    
+    @FXML
+    private void handleFilterByDate() {
+        LocalDate selectedDate = filterDatePicker.getValue();
+        if (selectedDate != null) {
+            transactionList.clear();
+            List<Transaction> filteredTransactions = transactionService.getAllTransactions().stream()
+                .filter(transaction -> transaction.getDate().toLocalDate().equals(selectedDate))
+                .toList();
+            transactionList.addAll(filteredTransactions);
+            transactionTable.setItems(transactionList);
+            updateSummary();
+        }
     }
     
     /**

@@ -52,7 +52,11 @@
                 
                 <!-- Right side - Transaction Table -->
                 <VBox spacing="10" HBox.hgrow="ALWAYS">
-                    <Label text="Transaction History" styleClass="label-heading" style="-fx-font-size: 14;" />
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="Transaction History" styleClass="label-heading" style="-fx-font-size: 14;" />
+                        <DatePicker fx:id="filterDatePicker" />
+                        <Button fx:id="filterByDateButton" text="Filter" styleClass="button" onAction="#handleFilterByDate" />
+                    </HBox>
                     <TableView fx:id="transactionTable" styleClass="table-view" VBox.vgrow="ALWAYS">
                         <columns>
                             <TableColumn fx:id="dateColumn" text="Date" prefWidth="120" />
