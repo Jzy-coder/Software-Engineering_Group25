@@ -679,47 +679,11 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
                         showAlert("CSV import failed: " + e.getMessage());
                     }
                 }
+            } else {
+                // 用户取消或关闭对话框时直接返回
+                return;
             }
-                // 原文件选择器逻辑保持不变
-                FileChooser fileChooser = new FileChooser();
-                fileChooser.setTitle("Select CSV File");
-                
-                fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
-                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV file", "*.csv"));
-                File file = fileChooser.showOpenDialog(transactionTable.getScene().getWindow());
-
-                if (file != null) {
-                    try {
-                        // CSV解析逻辑
-                        List<Transaction> importedTransactions = CsvUtil.parseCSV(file);
-                
-                // 创建预览对话框
-                Dialog<ButtonType> dialog = new Dialog<>();
-                dialog.setTitle("Import preview");
-                dialog.setHeaderText(String.format("Found %d records ready for import", importedTransactions.size()));
-                
-                // 添加预览表格
-                TableView<Transaction> previewTable = createPreviewTable(importedTransactions);
-                dialog.getDialogPane().setContent(previewTable);
-                dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-                
-                if (dialog.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
-                    transactionService.batchImport(importedTransactions);
-                    loadTransactions();
-                    updateSummary();
-                    Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
-        successAlert.setTitle("Success");
-        successAlert.setHeaderText(String.format("Successfully imported %d records", importedTransactions.size()));
-        successAlert.showAndWait();
-
-                }
-            } catch (Exception e) {
-                showAlert("CSV import failed: " + e.getMessage());
-            }
-        } else {
-            // 这里可以添加当用户选择取消时的逻辑
-        }
-    });
+        });
 }
 
     private TableView<Transaction> createPreviewTable(List<Transaction> transactions) {
