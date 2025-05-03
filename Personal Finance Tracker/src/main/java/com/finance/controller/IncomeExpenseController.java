@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import com.finance.model.Transaction;
 import com.finance.service.TransactionService;
-import com.finance.util.CSVParser;
+
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
@@ -516,6 +516,12 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
         confirmAlert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 try {
+                    // Check if transaction ID is null
+                    if (transaction.getId() == null) {
+                        showAlert("Cannot delete transaction: Invalid transaction ID");
+                        return;
+                    }
+                    
                     // Delete from database
                     transactionService.deleteTransaction(transaction.getId());
                     
@@ -580,20 +586,14 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Chose the csv file");
         
-        // 设置微信默认路径
-        Path wechatPath = Paths.get(System.getProperty("user.home"), "Documents", "WeChat Files");
-        if (wechatPath.toFile().exists()) {
-            fileChooser.setInitialDirectory(wechatPath.toFile());
-        } else {
-            fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
-        }
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV file", "*.csv"));
         File file = fileChooser.showOpenDialog(transactionTable.getScene().getWindow());
 
         if (file != null) {
             try {
                 // CSV解析逻辑
-                List<Transaction> importedTransactions = new CSVParser(transactionService).parseWeChatCSV(file, transactionService.getAllTransactions());
+                List<Transaction> importedTransactions = CsvUtil.parseCSV(file);
                 
                 // 创建预览对话框
                 Dialog<ButtonType> dialog = new Dialog<>();
@@ -611,7 +611,7 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
                     updateSummary();
                     Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
         successAlert.setTitle("Success");
-        successAlert.setHeaderText("Successfully import " + importedTransactions.size() + " records");
+        successAlert.setHeaderText(String.format("Successfully import %d records", importedTransactions.size()));
         successAlert.showAndWait();
 
                 }
