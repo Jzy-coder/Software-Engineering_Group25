@@ -14,6 +14,9 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public void addTransaction(Transaction transaction) {
+        if (transaction.getId() == null) {
+            transaction.setId(getNextTransactionId());
+        }
         transactionDAO.save(transaction);
     }
 
@@ -27,9 +30,12 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public void batchImport(List<Transaction> transactions) {
-        List<Transaction> existing = transactionDAO.getAllTransactions();
-        existing.addAll(transactions);
-        transactionDAO.batchInsert(existing);
+        transactions.forEach(transaction -> {
+            if (transaction.getId() == null) {
+                transaction.setId(getNextTransactionId());
+            }
+            transactionDAO.save(transaction);
+        });
     }
 
     @Override
