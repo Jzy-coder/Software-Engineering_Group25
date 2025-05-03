@@ -1,5 +1,8 @@
 package com.finance.controller;
 
+import com.finance.util.CsvUtil;
+import java.io.IOException;
+
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Path;
@@ -547,6 +550,31 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
         addButton.setOnAction((event) -> handleAddTransaction());
     }
     
+    @FXML
+    private void handleExportCSV(javafx.event.ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save CSV File");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+        File file = fileChooser.showSaveDialog(transactionTable.getScene().getWindow());
+    
+        if (file != null) {
+            try {
+                CsvUtil.exportTableToCSV(transactionTable, file.getAbsolutePath());
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Export Success");
+                alert.setHeaderText(null);
+                alert.setContentText("Data exported successfully!");
+                alert.showAndWait();
+            } catch (IOException e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Export Error");
+                alert.setHeaderText("Export Failed");
+                alert.setContentText("Error exporting data: " + e.getMessage());
+                alert.showAndWait();
+            }
+        }
+    }
+
     @FXML
     private void handleImportCSV() {
         FileChooser fileChooser = new FileChooser();
