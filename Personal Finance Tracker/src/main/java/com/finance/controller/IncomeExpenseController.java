@@ -581,7 +581,10 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
                     transactionService.batchImport(importedTransactions);
                     loadTransactions();
                     updateSummary();
-                    showAlert("Import" + importedTransactions.size() + "records successfully.");
+                    Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
+        successAlert.setTitle("Success");
+        successAlert.setHeaderText("Successfully import " + importedTransactions.size() + " records");
+        successAlert.showAndWait();
 
                 }
             } catch (Exception e) {
