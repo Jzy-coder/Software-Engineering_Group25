@@ -319,11 +319,12 @@
 }
 
 .user-message {
-    -fx-background-color: #4e73df;
+    -fx-background-color: #95ec69;     
     -fx-background-radius: 10px 10px 0 10px;
     -fx-padding: 10px 15px;
-    -fx-text-fill: white;
+    -fx-text-fill: #222;          
     -fx-alignment: CENTER_RIGHT;
+    -fx-font-size: 16px
 }
 
 .ai-message {
@@ -333,6 +334,7 @@
     -fx-text-fill: #5a5c69;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 3, 0, 0, 1);
     -fx-alignment: CENTER_LEFT;
+    -fx-font-size: 16px
 }
 
 .input-container {
@@ -348,6 +350,7 @@
     -fx-border-radius: 4px;
     -fx-padding: 10px;
     -fx-pref-height: 60px;
+    -fx-font-size: 16px;
 }
 
 .send-button {

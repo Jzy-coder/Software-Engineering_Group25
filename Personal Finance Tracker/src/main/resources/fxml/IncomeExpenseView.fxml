@@ -45,8 +45,11 @@
                         <Button fx:id="addButton" text="Add New Transaction" styleClass="button" onAction="#handleAddTransaction" 
                                 GridPane.rowIndex="5" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
 
-                        <Button text="importCSV" styleClass="button" onAction="#handleImportCSV"
+                        <Button text="Import CSV" styleClass="button" onAction="#handleImportCSV"
                                 GridPane.rowIndex="6" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
+
+                        <Button text="Export CSV" styleClass="button" onAction="#handleExportCSV"
+                                GridPane.rowIndex="7" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
                     </GridPane>
                 </VBox>
                 

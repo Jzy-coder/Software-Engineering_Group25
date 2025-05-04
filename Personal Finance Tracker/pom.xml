@@ -47,7 +47,14 @@
             <version>1.5.4</version>
         </dependency>
         
-        <!-- JSON处理 -->
+        <!-- OpenCSV依赖 -->
+<dependency>
+    <groupId>com.opencsv</groupId>
+    <artifactId>opencsv</artifactId>
+    <version>5.6</version>
+</dependency>
+
+<!-- JSON处理 -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
