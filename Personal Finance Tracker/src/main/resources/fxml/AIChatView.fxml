@@ -5,12 +5,28 @@
 <?import javafx.scene.text.*?>
 <?import javafx.geometry.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.AIChatController">
+<BorderPane xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.AIChatController">
     <top>
-        <HBox styleClass="header" alignment="CENTER" spacing="10">
-            <Label text="AI Financial Assistant" styleClass="header-title"/>
-            <Label fx:id="statusLabel" text="Ready" styleClass="status-label"/>
-        </HBox>
+        <VBox spacing="5" styleClass="header-container">
+            <HBox styleClass="header" alignment="CENTER" spacing="10">
+                <Label text="AI Financial Assistant" styleClass="header-title"/>
+                <Label fx:id="statusLabel" text="Ready" styleClass="status-label"/>
+            </HBox>
+            <HBox fx:id="styleButtonsContainer" alignment="CENTER_LEFT" spacing="5" styleClass="style-buttons-container">
+                <padding>
+                    <Insets left="10" right="10"/>
+                </padding>
+                <Label text="Assistant Style:"/>
+                <Button text="Humorous" onAction="#handleStyleButtonClick" userData="Act as a humorous financial assistant."/>
+                <Button text="Direct" onAction="#handleStyleButtonClick" userData="Act as a direct and concise financial assistant."/>
+                <Button text="Empathetic" onAction="#handleStyleButtonClick" userData="Act as an empathetic and understanding financial assistant."/>
+                <Button text="+" onAction="#handleAddCustomStyle">
+                    <tooltip>
+                        <Tooltip text="Add Custom Style"/>
+                    </tooltip>
+                </Button>
+            </HBox>
+        </VBox>
     </top>
     
     <center>
