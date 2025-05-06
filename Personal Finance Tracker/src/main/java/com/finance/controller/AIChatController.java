@@ -1,26 +1,35 @@
 package com.finance.controller;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.TextFlow;
 import com.finance.service.AIChatService;
+
+import java.util.Optional;
 
 public class AIChatController {
     @FXML private VBox chatContainer;
     @FXML private ScrollPane chatScrollPane;
     @FXML private TextArea messageInput;
     @FXML private Label statusLabel;
-    
+    @FXML private HBox styleButtonsContainer; // Added reference for the style buttons HBox
+
     private final AIChatService chatService = new AIChatService();
-    
+
     @FXML
     private void initialize() {
+        // Add tooltips to predefined buttons (if not set in FXML)
+        for (javafx.scene.Node node : styleButtonsContainer.getChildren()) {
+            if (node instanceof Button && ((Button) node).getUserData() != null) {
+                Tooltip.install(node, new Tooltip((String) ((Button) node).getUserData()));
+            }
+        }
+
         // Auto-scroll to bottom when new messages are added
         chatContainer.heightProperty().addListener((obs, oldVal, newVal) -> {
             chatScrollPane.setVvalue(1.0);
@@ -78,27 +87,129 @@ public class AIChatController {
         chatContainer.getChildren().clear();
     }
     
+    // --- New methods for handling style buttons --- 
+
+    @FXML
+    private void handleStyleButtonClick(ActionEvent event) {
+        Button clickedButton = (Button) event.getSource();
+        String systemPrompt = (String) clickedButton.getUserData();
+        if (systemPrompt != null && !systemPrompt.isEmpty()) {
+            statusLabel.setText("Setting style...");
+            System.out.println("Setting system prompt: " + systemPrompt); // Debug log
+            // Call service method to set the system prompt
+            chatService.setSystemPrompt(systemPrompt, (String response) -> {
+                javafx.application.Platform.runLater(() -> {
+                    System.out.println("Received style confirmation: " + response); // Debug log
+                    if (response.startsWith("API Error:") || response.startsWith("Error:")) {
+                        statusLabel.setText("Error setting style");
+                        addMessageToChat("System", "Error setting style: " + response, false);
+                    } else {
+                        statusLabel.setText("Style set: " + clickedButton.getText());
+                        // Display confirmation message from AI in the chat
+                        addMessageToChat("AI Assistant", response, false);
+                    }
+                });
+            });
+        }
+    }
+
+    @FXML
+    private void handleAddCustomStyle() {
+        // Dialog for custom style name
+        TextInputDialog nameDialog = new TextInputDialog("Custom");
+        nameDialog.setTitle("Add Custom Style");
+        nameDialog.setHeaderText("Enter a short name for the style button (e.g., 'Analytical').");
+        nameDialog.setContentText("Button Name:");
+
+        Optional<String> nameResult = nameDialog.showAndWait();
+        if (nameResult.isPresent() && !nameResult.get().trim().isEmpty()) {
+            String buttonName = nameResult.get().trim();
+
+            // Dialog for custom style prompt
+            TextArea promptArea = new TextArea();
+            promptArea.setPromptText("Enter the system prompt for the AI (e.g., 'Act as a detailed financial analyst.')");
+            promptArea.setWrapText(true);
+
+            Dialog<String> promptDialog = new Dialog<>();
+            promptDialog.setTitle("Add Custom Style Prompt");
+            promptDialog.setHeaderText("Enter the system prompt for the '" + buttonName + "' style.");
+            promptDialog.getDialogPane().setContent(promptArea);
+            promptDialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+            // Set result converter
+            promptDialog.setResultConverter(dialogButton -> {
+                if (dialogButton == ButtonType.OK) {
+                    return promptArea.getText();
+                }
+                return null;
+            });
+
+            Optional<String> promptResult = promptDialog.showAndWait();
+            if (promptResult.isPresent() && !promptResult.get().trim().isEmpty()) {
+                String prompt = promptResult.get().trim();
+
+                // Create and add the new button
+                Button newStyleButton = new Button(buttonName);
+                newStyleButton.setUserData(prompt);
+                newStyleButton.setOnAction(this::handleStyleButtonClick);
+                Tooltip.install(newStyleButton, new Tooltip(prompt)); // Add tooltip
+                
+                // Insert before the '+' button
+                int plusButtonIndex = -1;
+                for(int i=0; i<styleButtonsContainer.getChildren().size(); i++){
+                    if(styleButtonsContainer.getChildren().get(i) instanceof Button && ((Button)styleButtonsContainer.getChildren().get(i)).getText().equals("+")){
+                        plusButtonIndex = i;
+                        break;
+                    }
+                }
+                if(plusButtonIndex != -1){
+                    styleButtonsContainer.getChildren().add(plusButtonIndex, newStyleButton);
+                } else {
+                    styleButtonsContainer.getChildren().add(newStyleButton); // Fallback add to end
+                }
+                
+                statusLabel.setText("Custom style '" + buttonName + "' added.");
+            }
+        }
+    }
+
+    // --- End of new methods ---
+
     private void addMessageToChat(String sender, String message, boolean isUser) {
-        TextFlow messageBubble = new TextFlow();
-        Label senderLabel = new Label(sender + ": ");
+        Label senderLabel = new Label(sender + ":");
         Label messageLabel = new Label(message);
         senderLabel.setStyle("-fx-font-weight: bold;");
         senderLabel.setWrapText(true);
         messageLabel.setWrapText(true);
-        double maxBubbleWidth = chatScrollPane.getWidth() > 0 ? chatScrollPane.getWidth() - 80 : 400;
-        messageBubble.setMaxWidth(maxBubbleWidth);
-        messageLabel.setMaxWidth(maxBubbleWidth - 60);
-        senderLabel.setMaxWidth(60);
-        messageBubble.getChildren().addAll(senderLabel, messageLabel);
-        messageBubble.getStyleClass().add(isUser ? "user-message" : "ai-message");
 
-        HBox messageBox = new HBox(messageBubble);
+        double maxBubbleWidth = chatScrollPane.getWidth() > 0 ? chatScrollPane.getWidth() - 80 : 400;
+
+        HBox messageBox = new HBox();
         messageBox.setPadding(new Insets(5, 10, 5, 10));
+
         if (isUser) {
+            TextFlow messageBubble = new TextFlow();
+            messageBubble.setMaxWidth(maxBubbleWidth);
+            messageLabel.setMaxWidth(maxBubbleWidth - 60); // Adjust width if needed
+            senderLabel.setMaxWidth(60); // Adjust width if needed
+            messageBubble.getChildren().addAll(senderLabel, new Label(" "), messageLabel); // Add space for inline display
+            messageBubble.getStyleClass().add("user-message");
+            messageBox.getChildren().add(messageBubble);
             messageBox.setAlignment(Pos.CENTER_RIGHT);
         } else {
+            VBox messageBubbleContent = new VBox(); // Use VBox for AI messages
+            messageBubbleContent.setMaxWidth(maxBubbleWidth);
+            senderLabel.setMaxWidth(maxBubbleWidth); // Allow sender label full width
+            messageLabel.setMaxWidth(maxBubbleWidth); // Allow message label full width
+            messageBubbleContent.getChildren().addAll(senderLabel, messageLabel);
+            messageBubbleContent.getStyleClass().add("ai-message"); // Apply style to VBox or individual labels
+            // Add a background/border to the VBox to mimic the bubble appearance if needed
+            messageBubbleContent.setStyle("-fx-background-color: #e1f5fe; -fx-background-radius: 10; -fx-padding: 10;"); // Example styling
+
+            messageBox.getChildren().add(messageBubbleContent);
             messageBox.setAlignment(Pos.CENTER_LEFT);
         }
+
         chatContainer.getChildren().add(messageBox);
     }
 }
