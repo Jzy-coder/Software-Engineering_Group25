@@ -363,6 +363,8 @@
 .clear-button {
     -fx-background-color: #e74a3b;
     -fx-text-fill: white;
+    -fx-pref-width: 80px;
+    -fx-pref-height: 60px;
 }
 
 /* Scrollbar styling */

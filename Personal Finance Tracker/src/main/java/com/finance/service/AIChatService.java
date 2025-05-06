@@ -23,10 +23,18 @@ public class AIChatService {
             requestBody.addProperty("max_tokens", 1000);
             
             JsonArray messagesArray = new JsonArray();
-            JsonObject messageObj = new JsonObject();
-            messageObj.addProperty("role", "user");
-            messageObj.addProperty("content", message);
-            messagesArray.add(messageObj);
+
+            // Add system prompt for personal finance assistant role
+            JsonObject systemMessageObj = new JsonObject();
+            systemMessageObj.addProperty("role", "system");
+            systemMessageObj.addProperty("content", "You are a helpful personal finance assistant. Your goal is to provide accurate and relevant financial advice and information based on the user's queries.");
+            messagesArray.add(systemMessageObj);
+
+            // Add user message
+            JsonObject userMessageObj = new JsonObject();
+            userMessageObj.addProperty("role", "user");
+            userMessageObj.addProperty("content", message);
+            messagesArray.add(userMessageObj);
             
             requestBody.add("messages", messagesArray);
             

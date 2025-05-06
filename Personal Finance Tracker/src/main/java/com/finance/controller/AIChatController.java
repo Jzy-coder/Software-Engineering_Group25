@@ -79,26 +79,40 @@ public class AIChatController {
     }
     
     private void addMessageToChat(String sender, String message, boolean isUser) {
-        TextFlow messageBubble = new TextFlow();
-        Label senderLabel = new Label(sender + ": ");
+        Label senderLabel = new Label(sender + ":");
         Label messageLabel = new Label(message);
         senderLabel.setStyle("-fx-font-weight: bold;");
         senderLabel.setWrapText(true);
         messageLabel.setWrapText(true);
-        double maxBubbleWidth = chatScrollPane.getWidth() > 0 ? chatScrollPane.getWidth() - 80 : 400;
-        messageBubble.setMaxWidth(maxBubbleWidth);
-        messageLabel.setMaxWidth(maxBubbleWidth - 60);
-        senderLabel.setMaxWidth(60);
-        messageBubble.getChildren().addAll(senderLabel, messageLabel);
-        messageBubble.getStyleClass().add(isUser ? "user-message" : "ai-message");
 
-        HBox messageBox = new HBox(messageBubble);
+        double maxBubbleWidth = chatScrollPane.getWidth() > 0 ? chatScrollPane.getWidth() - 80 : 400;
+
+        HBox messageBox = new HBox();
         messageBox.setPadding(new Insets(5, 10, 5, 10));
+
         if (isUser) {
+            TextFlow messageBubble = new TextFlow();
+            messageBubble.setMaxWidth(maxBubbleWidth);
+            messageLabel.setMaxWidth(maxBubbleWidth - 60); // Adjust width if needed
+            senderLabel.setMaxWidth(60); // Adjust width if needed
+            messageBubble.getChildren().addAll(senderLabel, new Label(" "), messageLabel); // Add space for inline display
+            messageBubble.getStyleClass().add("user-message");
+            messageBox.getChildren().add(messageBubble);
             messageBox.setAlignment(Pos.CENTER_RIGHT);
         } else {
+            VBox messageBubbleContent = new VBox(); // Use VBox for AI messages
+            messageBubbleContent.setMaxWidth(maxBubbleWidth);
+            senderLabel.setMaxWidth(maxBubbleWidth); // Allow sender label full width
+            messageLabel.setMaxWidth(maxBubbleWidth); // Allow message label full width
+            messageBubbleContent.getChildren().addAll(senderLabel, messageLabel);
+            messageBubbleContent.getStyleClass().add("ai-message"); // Apply style to VBox or individual labels
+            // Add a background/border to the VBox to mimic the bubble appearance if needed
+            messageBubbleContent.setStyle("-fx-background-color: #e1f5fe; -fx-background-radius: 10; -fx-padding: 10;"); // Example styling
+
+            messageBox.getChildren().add(messageBubbleContent);
             messageBox.setAlignment(Pos.CENTER_LEFT);
         }
+
         chatContainer.getChildren().add(messageBox);
     }
 }

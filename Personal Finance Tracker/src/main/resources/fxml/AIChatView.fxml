@@ -21,12 +21,11 @@
     
     <bottom>
         <VBox spacing="10" styleClass="input-container">
-            <HBox spacing="10" alignment="CENTER_RIGHT">
-                <Button text="Clear" onAction="#handleClearChat" styleClass="clear-button"/>
-            </HBox>
+
             <HBox spacing="10" alignment="CENTER">
-                <TextArea fx:id="messageInput" promptText="Type your financial question here..." styleClass="message-input" wrapText="true"/>
+                <TextArea fx:id="messageInput" promptText="Type your financial question here..." styleClass="message-input" wrapText="true" HBox.hgrow="ALWAYS"/>
                 <Button text="Send" onAction="#handleSendMessage" styleClass="send-button"/>
+                <Button text="Clear" onAction="#handleClearChat" styleClass="clear-button"/>
             </HBox>
         </VBox>
     </bottom>
