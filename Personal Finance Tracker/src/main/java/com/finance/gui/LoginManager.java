@@ -203,6 +203,45 @@ public class LoginManager {
      * Save password to configuration file
      * @param password password to save
      */
+    /**
+     * Register a new user
+     * @param username username
+     * @param password password
+     * @return whether registration is successful
+     */
+    public static boolean registerUser(String username, String password) {
+        try {
+            // Check if username already exists
+            File userFile = new File(System.getProperty("user.dir") + File.separator + "UserInfo" + File.separator + username + ".txt");
+            if (userFile.exists()) {
+                return false; // Username already exists
+            }
+            
+            // Hash the password
+            String hashedPassword = hashPassword(password);
+            if (hashedPassword == null) {
+                return false;
+            }
+            
+            // Ensure UserInfo directory exists
+            File userInfoDir = new File(System.getProperty("user.dir") + File.separator + "UserInfo");
+            if (!userInfoDir.exists()) {
+                userInfoDir.mkdirs();
+            }
+            
+            // Create new user file
+            try (PrintWriter writer = new PrintWriter(new FileWriter(userFile))) {
+                writer.println("Username: " + username);
+                writer.println("Password: " + hashedPassword);
+            }
+            
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
     private static String hashPassword(String password) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");

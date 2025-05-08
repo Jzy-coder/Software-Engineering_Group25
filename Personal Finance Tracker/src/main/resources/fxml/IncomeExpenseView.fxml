@@ -28,7 +28,7 @@
                             <RowConstraints minHeight="30" prefHeight="30" vgrow="SOMETIMES" />
                         </rowConstraints>
                          <Label text="Date:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
-                        <DatePicker fx:id="datePicker" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+                        <DatePicker fx:id="datePicker" GridPane.rowIndex="0" GridPane.columnIndex="1" styleClass="date-picker" />
 
                         <Label text="Category:" GridPane.rowIndex="1" GridPane.columnIndex="0" />
                         <ComboBox fx:id="categoryComboBox" styleClass="text-field" GridPane.rowIndex="1" GridPane.columnIndex="1" />
@@ -91,9 +91,9 @@
                 <Label text="Period Filter" style="-fx-font-size: 14; -fx-font-weight: bold;" />
                 <HBox spacing="10" alignment="CENTER_LEFT">
                     <Label text="Period From:" />
-                    <DatePicker fx:id="startDatePicker" />
+                    <DatePicker fx:id="startDatePicker" styleClass="date-picker" />
                     <Label text="To:" />
-                    <DatePicker fx:id="endDatePicker" />
+                    <DatePicker fx:id="endDatePicker" styleClass="date-picker" />
                     <Button fx:id="filterButton" text="Filter" styleClass="button" onAction="#handleFilterByDateRange" />
                 </HBox>
                 

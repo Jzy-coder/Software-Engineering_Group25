@@ -50,20 +50,20 @@ public class IncomeExpenseController implements Initializable {
 
     private static final Logger logger = LoggerFactory.getLogger(IncomeExpenseController.class);
 
-    // ▼▼▼▼▼▼▼▼▼ 新增代码：定义分类选项 ▼▼▼▼▼▼▼▼▼
+  
     private final ObservableList<String> incomeTypes = 
         FXCollections.observableArrayList("Salary", "Bonus", "Others");
     private final ObservableList<String> expenseTypes = 
         FXCollections.observableArrayList("Food", "Shopping", "Transportation", "Housing", "Entertainment", "Others");
-    // ▲▲▲▲▲▲▲▲▲▲ 新增结束 ▲▲▲▲▲▲▲▲▲▲
+   
 
     private TransactionService transactionService;
     private ObservableList<Transaction> transactionList;
 
-    // ▼▼▼▼▼▼▼▼▼▼ 新增代码 ▼▼▼▼▼▼▼▼▼▼
+ 
     @FXML
     private DatePicker datePicker;
-    // ▲▲▲▲▲▲▲▲▲▲ 新增结束 ▲▲▲▲▲▲▲▲▲▲
+   
     
     @FXML
     private TableView<Transaction> transactionTable;

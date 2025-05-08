@@ -13,7 +13,7 @@ public class NameChangeDialog extends JDialog {
     private JLabel welcomeLabel;
 
     public NameChangeDialog(JFrame parent, JLabel welcomeLabel) {
-        super(parent, "修改用户名", true);
+        super(parent, "Change Username", true);
         this.welcomeLabel = welcomeLabel;
         this.configFile = new File(System.getProperty("user.home") + File.separator + ".finance_tracker_config");
         this.userProps = new Properties();
@@ -27,7 +27,7 @@ public class NameChangeDialog extends JDialog {
                 userProps.load(in);
             } catch (IOException e) {
                 e.printStackTrace();
-                JOptionPane.showMessageDialog(this, "无法加载配置文件", "错误", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Unable to load configuration file", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -37,7 +37,7 @@ public class NameChangeDialog extends JDialog {
             userProps.store(out, "User Configuration");
         } catch (IOException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "无法保存配置文件", "错误", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Unable to save configuration file", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -53,7 +53,7 @@ public class NameChangeDialog extends JDialog {
         gbc.weighty = 1.0;
 
         // 添加输入框
-        JLabel label = new JLabel("新用户名:");
+        JLabel label = new JLabel("New Username:");
         label.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
         usernameField = new JTextField(20);
         usernameField.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
@@ -70,8 +70,8 @@ public class NameChangeDialog extends JDialog {
 
         // 创建按钮面板
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JButton applyButton = new JButton("应用");
-        JButton cancelButton = new JButton("返回");
+        JButton applyButton = new JButton("Apply");
+        JButton cancelButton = new JButton("Back");
 
         // 设置按钮样式
         Dimension buttonSize = new Dimension(80, 30);
@@ -109,23 +109,23 @@ public class NameChangeDialog extends JDialog {
 
     private boolean validateUsername(String username) {
         if (username.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "用户名不能为空", "错误", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Username cannot be empty", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
         if (username.length() > 20) {
-            JOptionPane.showMessageDialog(this, "用户名不能超过20个字符", "错误", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Username cannot exceed 20 characters", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
         // 验证用户名只能包含字母、数字和下划线
         if (!username.matches("^[a-zA-Z0-9_]+$")) {
-            JOptionPane.showMessageDialog(this, "用户名只能包含字母、数字和下划线", "错误", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Username can only contain letters, numbers, and underscores", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
         
         // 检查新用户名是否已存在
         File targetUserFile = new File(System.getProperty("user.dir") + File.separator + "target" + File.separator + "UserInfo" + File.separator + username + ".txt");
         if (targetUserFile.exists() && !username.equals(LoginManager.getCurrentUsername())) {
-            JOptionPane.showMessageDialog(this, "用户名已存在，请使用其他用户名", "错误", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Username already exists, please use a different username", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
         
@@ -231,14 +231,14 @@ public class NameChangeDialog extends JDialog {
                 // 更新欢迎标签
                 welcomeLabel.setText("Hi~ " + newUsername);
                 
-                JOptionPane.showMessageDialog(this, "用户名修改成功", "成功", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Username changed successfully", "Success", JOptionPane.INFORMATION_MESSAGE);
             } catch (IOException e) {
                 e.printStackTrace();
-                JOptionPane.showMessageDialog(this, "修改用户名时发生错误", "错误", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Error occurred while changing username", "Error", JOptionPane.ERROR_MESSAGE);
             }
         } else {
             // 用户名没有变化，直接返回
-            JOptionPane.showMessageDialog(this, "新用户名与当前用户名相同，未进行修改", "提示", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "New username is the same as current username, no changes made", "Information", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 }

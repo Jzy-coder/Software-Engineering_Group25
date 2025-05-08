@@ -1,0 +1,138 @@
+.root {
+    -fx-font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+    -fx-background-color: #f5f5f5;
+}
+
+.card {
+    -fx-background-color: white;
+    -fx-background-radius: 5px;
+    -fx-padding: 15px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 3);
+}
+
+.label-heading {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+.text-field {
+    -fx-background-color: #f8f9fa;
+    -fx-background-radius: 4px;
+    -fx-border-color: #dee2e6;
+    -fx-border-radius: 4px;
+    -fx-padding: 5px 10px;
+}
+
+.text-field:focused {
+    -fx-border-color: #4CAF50;
+    -fx-background-color: white;
+}
+
+.button {
+    -fx-background-color: #4CAF50;
+    -fx-text-fill: white;
+    -fx-background-radius: 4px;
+    -fx-padding: 8px 16px;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #45a049;
+}
+
+.date-button {
+    -fx-background-color: #2196F3;
+}
+
+.date-button:hover {
+    -fx-background-color: #1976D2;
+}
+
+.date-label {
+    -fx-text-fill: #2c3e50;
+}
+
+/* 日期选择器样式 */
+.date-picker {
+    -fx-background-color: transparent;
+}
+
+.date-picker .arrow-button {
+    -fx-background-color: #2196F3;
+    -fx-background-radius: 0 4px 4px 0;
+}
+
+.date-picker .arrow-button:hover {
+    -fx-background-color: #1976D2;
+}
+
+.date-picker .arrow-button .arrow {
+    -fx-background-color: white;
+}
+
+.date-picker .cell {
+    -fx-background-color: white;
+    -fx-text-fill: #2c3e50;
+    -fx-padding: 4px;
+}
+
+.date-picker .cell:hover {
+    -fx-background-color: #e3f2fd;
+}
+
+.date-picker .cell:focused {
+    -fx-background-color: #bbdefb;
+}
+
+.date-picker .selected {
+    -fx-background-color: #2196F3;
+    -fx-text-fill: white;
+}
+
+.date-picker .selected:focused {
+    -fx-background-color: #1976D2;
+}
+
+.date-picker .today {
+    -fx-border-color: #2196F3;
+}
+
+/* 对话框样式 */
+.dialog-pane {
+    -fx-background-color: white;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: #2196F3;
+    -fx-padding: 15px;
+}
+
+.dialog-pane .header-panel .label {
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.dialog-pane .content {
+    -fx-padding: 15px;
+}
+
+.dialog-pane .button-bar .button {
+    -fx-background-color: #2196F3;
+    -fx-text-fill: white;
+    -fx-background-radius: 4px;
+    -fx-padding: 8px 16px;
+}
+
+.dialog-pane .button-bar .button:hover {
+    -fx-background-color: #1976D2;
+}
+
+.dialog-pane .button-bar .button:default {
+    -fx-background-color: #4CAF50;
+}
+
+.dialog-pane .button-bar .button:default:hover {
+    -fx-background-color: #45a049;
+}

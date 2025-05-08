@@ -7,7 +7,7 @@ public class OccupationDialog extends JDialog {
     private JTextField occupationField;
     
     public OccupationDialog(JFrame parent) {
-        super(parent, "输入职业", true);
+        super(parent, "Enter the occupation", true);
         initComponents();
         setupLayout();
         setLocationRelativeTo(parent);
@@ -29,15 +29,15 @@ public class OccupationDialog extends JDialog {
         
         // 创建输入面板
         JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        JLabel label = new JLabel("职业：");
+        JLabel label = new JLabel("Occupation:");
         label.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
         inputPanel.add(label);
         inputPanel.add(occupationField);
         
         // 创建按钮面板
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
-        JButton applyButton = new JButton("应用");
-        JButton cancelButton = new JButton("返回");
+        JButton applyButton = new JButton("Apply");
+        JButton cancelButton = new JButton("Return");
         
         // 设置按钮字体和大小
         Font buttonFont = new Font("Microsoft YaHei", Font.PLAIN, 14);

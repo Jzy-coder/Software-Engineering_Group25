@@ -42,11 +42,11 @@ public class TransactionServiceImpl implements TransactionService {
     public double calculateBalance() {
         List<Transaction> transactions = getAllTransactions();
         double totalIncome = transactions.stream()
-            .filter(t -> "收入".equals(t.getCategory()))
+            .filter(t -> "Income".equals(t.getCategory()))
             .mapToDouble(Transaction::getAmount)
             .sum();
         double totalExpense = transactions.stream()
-            .filter(t -> "支出".equals(t.getCategory()))
+            .filter(t -> "Expense".equals(t.getCategory()))
             .mapToDouble(Transaction::getAmount)
             .sum();
         return totalIncome - totalExpense;

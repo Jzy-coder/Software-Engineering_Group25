@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 
-<BorderPane xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.AnalysisController">
+<BorderPane xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.AnalysisController" stylesheets="@../css/styles.css">
     <top>
         <VBox spacing="10" styleClass="card">
             <HBox spacing="10" alignment="CENTER_LEFT">
@@ -23,8 +23,8 @@
                     </toggleGroup>
                 </RadioButton>
                 <RadioButton fx:id="dateRangeRadio" text="Date Range" toggleGroup="$dateSelectionGroup" />
-                <Button fx:id="dateButton" text="Select Date" styleClass="button" onAction="#handleDateSelection" />
-                <Label fx:id="dateLabel" styleClass="label-heading" style="-fx-font-size: 14;" />
+                <Button fx:id="dateButton" text="Select Date" styleClass="button,date-button" onAction="#handleDateSelection" />
+                <Label fx:id="dateLabel" styleClass="label-heading,date-label" style="-fx-font-size: 14;" />
             </HBox>
         </VBox>
     </top>
