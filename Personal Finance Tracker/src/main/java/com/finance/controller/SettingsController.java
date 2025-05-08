@@ -328,6 +328,9 @@ public class SettingsController implements Initializable {
     @FXML
     private void handleSwitchAccount() {
         try {
+            // 重新加载用户信息
+            UserInfoManager.reloadUserInfo();
+            
             // Load login view
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/LoginView.fxml"));
             Parent root = loader.load();

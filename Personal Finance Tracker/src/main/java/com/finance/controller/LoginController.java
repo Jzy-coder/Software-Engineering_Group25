@@ -12,6 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ResourceBundle;
 
 import com.finance.gui.LoginManager;
+import com.finance.gui.RegisterDialog;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -170,104 +171,23 @@ public class LoginController implements Initializable {
      */
     @FXML
     private void showRegisterDialog() {
-        // Create custom dialog
-        Stage dialogStage = new Stage();
-        dialogStage.setTitle("Register New User");
-        dialogStage.initModality(javafx.stage.Modality.WINDOW_MODAL);
-        dialogStage.initOwner(loginButton.getScene().getWindow());
-        dialogStage.initStyle(StageStyle.UTILITY);
+        Stage stage = (Stage) loginButton.getScene().getWindow();
+        RegisterDialog dialog = new RegisterDialog(stage);
         
-        // Create registration form
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new javafx.geometry.Insets(20, 20, 20, 20));
-        
-        TextField newUsernameField = new TextField();
-        PasswordField newPasswordField = new PasswordField();
-        PasswordField confirmPasswordField = new PasswordField();
-        
-        grid.add(new Label("Username:"), 0, 0);
-        grid.add(newUsernameField, 1, 0);
-        grid.add(new Label("Password:"), 0, 1);
-        grid.add(newPasswordField, 1, 1);
-        grid.add(new Label("Confirm Password:"), 0, 2);
-        grid.add(confirmPasswordField, 1, 2);
-        grid.add(new Label("Password must contain at least two types of: uppercase letters, lowercase letters, numbers, underscores"), 0, 3, 2, 1);
-        
-        // Create buttons
-        Button registerButton = new Button("Register");
-        Button cancelButton = new Button("Cancel");
-        
-        HBox buttonBox = new HBox(10);
-        buttonBox.setAlignment(javafx.geometry.Pos.CENTER);
-        buttonBox.getChildren().addAll(registerButton, cancelButton);
-        
-        grid.add(buttonBox, 0, 4, 2, 1);
-        
-        // Set register button action
-        registerButton.setOnAction(e -> {
-            String username = newUsernameField.getText();
-            String password = newPasswordField.getText();
-            String confirmPassword = confirmPasswordField.getText();
-            
-            // Validate input
-            if (username.isEmpty() || password.isEmpty()) {
-                showAlert(AlertType.ERROR, "Error", "Username and password cannot be empty");
-                return; // Return to form without closing dialog
+        dialog.showAndWait().ifPresent(result -> {
+            if (result != null) {
+                String[] parts = result.split("#");
+                String username = parts[0];
+                String password = parts[1];
+                
+                // 注册新用户
+                if (LoginManager.registerUser(username, password)) {
+                    showAlert(AlertType.INFORMATION, "Success", "Registration is successful! Please log in with the new account.");
+                } else {
+                    showAlert(AlertType.ERROR, "Error", "The username already exists.");
+                }
             }
-            
-            // Validate username can only contain letters, numbers and underscores
-            if (!username.matches("^[a-zA-Z0-9_]+$")) {
-                showAlert(AlertType.ERROR, "Error", "Username can only contain letters, numbers and underscores");
-                return; // Return to form without closing dialog
-            }
-            
-            // Check if username already exists
-            File userFile = new File("UserInfo" + File.separator + username + ".txt");
-            if (userFile.exists()) {
-                showAlert(AlertType.ERROR, "Error", "Username already exists, please use a different one");
-                return; // Return to form without closing dialog
-            }
-            
-            // First validate if passwords match
-            if (!password.equals(confirmPassword)) {
-                showAlert(AlertType.ERROR, "Error", "Passwords do not match");
-                return; // Return to form without closing dialog
-            }
-            
-            // Then validate if password contains at least two types of characters
-            boolean hasUpperCase = password.matches(".*[A-Z].*");
-            boolean hasLowerCase = password.matches(".*[a-z].*");
-            boolean hasDigit = password.matches(".*\\d.*");
-            boolean hasUnderscore = password.matches(".*_.*");
-            
-            int characterTypeCount = (hasUpperCase ? 1 : 0) + 
-                                     (hasLowerCase ? 1 : 0) + 
-                                     (hasDigit ? 1 : 0) + 
-                                     (hasUnderscore ? 1 : 0);
-            
-            if (characterTypeCount < 2) {
-                showAlert(AlertType.ERROR, "Error", "Password must contain at least two types of: uppercase letters, lowercase letters, numbers, underscores");
-                return; // Return to form without closing dialog
-            }
-            
-            // All validations passed, save user information
-            String hashedPassword = hashPassword(password);
-            saveUserToFile(username, hashedPassword);
-            showAlert(AlertType.INFORMATION, "Success", "Registration successful!");
-            
-            // Close dialog
-            dialogStage.close();
         });
-        
-        // Set cancel button action
-        cancelButton.setOnAction(e -> dialogStage.close());
-        
-        // Create scene and display
-        Scene scene = new Scene(grid);
-        dialogStage.setScene(scene);
-        dialogStage.showAndWait();
     }
     
     /**

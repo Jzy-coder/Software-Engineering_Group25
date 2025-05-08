@@ -147,6 +147,7 @@ public class AnalysisController implements Initializable, TransactionEventListen
             // 创建日期选择器
             DatePicker datePicker = new DatePicker();
             datePicker.setValue(selectedDate);
+            datePicker.getStyleClass().add("date-picker");
             
             // 设置日期选择器只显示有交易数据的日期
             datePicker.setDayCellFactory(picker -> new DateCell() {
@@ -159,15 +160,21 @@ public class AnalysisController implements Initializable, TransactionEventListen
             
             // 创建对话框
             Dialog<LocalDate> dialog = new Dialog<>();
-            dialog.setTitle("选择日期");
-            dialog.setHeaderText("请选择一个有交易数据的日期");
+            dialog.setTitle("Select a date");
+            dialog.setHeaderText("Please choose a date with transaction data");
             
             // 设置按钮
-            ButtonType selectButtonType = new ButtonType("选择", ButtonBar.ButtonData.OK_DONE);
-            dialog.getDialogPane().getButtonTypes().addAll(selectButtonType, ButtonType.CANCEL);
+            ButtonType selectButtonType = new ButtonType("Select", ButtonBar.ButtonData.OK_DONE);
+            ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+            dialog.getDialogPane().getButtonTypes().addAll(selectButtonType,cancelButtonType);
+            
+            // 应用CSS样式
+            DialogPane dialogPane = dialog.getDialogPane();
+            dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+            dialogPane.getStyleClass().add("dialog-pane");
             
             // 设置对话框内容
-            dialog.getDialogPane().setContent(datePicker);
+            dialogPane.setContent(datePicker);
             
             // 转换结果
             dialog.setResultConverter(dialogButton -> {

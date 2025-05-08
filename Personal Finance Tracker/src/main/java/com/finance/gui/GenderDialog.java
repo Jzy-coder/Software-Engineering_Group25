@@ -9,7 +9,7 @@ public class GenderDialog extends JDialog {
     private JRadioButton femaleButton;
     
     public GenderDialog(JFrame parent) {
-        super(parent, "选择性别", true);
+        super(parent, "Select the gender", true);
         initComponents();
         setupLayout();
         setLocationRelativeTo(parent);
@@ -18,8 +18,8 @@ public class GenderDialog extends JDialog {
     private void initComponents() {
         // 创建性别选择按钮组
         genderGroup = new ButtonGroup();
-        maleButton = new JRadioButton("男");
-        femaleButton = new JRadioButton("女");
+        maleButton = new JRadioButton("Man");
+        femaleButton = new JRadioButton("Female");
         
         // 设置按钮字体
         Font buttonFont = new Font("Microsoft YaHei", Font.PLAIN, 14);
@@ -32,9 +32,9 @@ public class GenderDialog extends JDialog {
         
         // 根据已保存的性别设置选中状态
         String currentGender = UserInfoManager.getGender();
-        if ("男".equals(currentGender)) {
+        if ("Man".equals(currentGender)) {
             maleButton.setSelected(true);
-        } else if ("女".equals(currentGender)) {
+        } else if ("Female".equals(currentGender)) {
             femaleButton.setSelected(true);
         }
     }
@@ -49,8 +49,8 @@ public class GenderDialog extends JDialog {
         
         // 创建按钮面板
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
-        JButton applyButton = new JButton("应用");
-        JButton cancelButton = new JButton("返回");
+        JButton applyButton = new JButton("Apply");
+        JButton cancelButton = new JButton("Return");
         
         // 设置按钮字体和大小
         Font buttonFont = new Font("Microsoft YaHei", Font.PLAIN, 14);
@@ -64,9 +64,9 @@ public class GenderDialog extends JDialog {
         // 添加按钮事件
         applyButton.addActionListener(e -> {
             if (maleButton.isSelected()) {
-                UserInfoManager.setGender("男");
+                UserInfoManager.setGender("Man");
             } else if (femaleButton.isSelected()) {
-                UserInfoManager.setGender("女");
+                UserInfoManager.setGender("Female");
             }
             dispose();
         });
