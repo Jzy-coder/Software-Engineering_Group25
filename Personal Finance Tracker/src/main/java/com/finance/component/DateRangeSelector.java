@@ -44,6 +44,10 @@ public class DateRangeSelector extends Dialog<DateRangeSelector.DateRange> {
         // Create date pickers
         startDatePicker = new DatePicker(initialStartDate);
         endDatePicker = new DatePicker(initialEndDate);
+        
+        // Apply CSS styles
+        startDatePicker.getStyleClass().add("date-picker");
+        endDatePicker.getStyleClass().add("date-picker");
 
         // Set date cell factory to only enable dates with transactions
         Callback<DatePicker, DateCell> dayCellFactory = picker -> new DateCell() {
@@ -78,13 +82,18 @@ public class DateRangeSelector extends Dialog<DateRangeSelector.DateRange> {
             new Label("End Date:"),
             endDatePicker
         );
+        
+        // Apply CSS styles to dialog
+        getDialogPane().getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+        getDialogPane().getStyleClass().add("dialog-pane");
 
         // Set dialog content
         getDialogPane().setContent(content);
 
         // Add buttons
         ButtonType selectButtonType = new ButtonType("Select", ButtonBar.ButtonData.OK_DONE);
-        getDialogPane().getButtonTypes().addAll(selectButtonType, ButtonType.CANCEL);
+        ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        getDialogPane().getButtonTypes().addAll(selectButtonType, cancelButtonType);
 
         // Convert result
         setResultConverter(dialogButton -> {

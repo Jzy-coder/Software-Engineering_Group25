@@ -255,6 +255,164 @@
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 2);
 }
 
+/* 弹窗样式 */
+.dialog-pane {
+    -fx-background-color: white;
+    -fx-background-radius: 8px;
+    -fx-border-color: #e3e6f0;
+    -fx-border-radius: 8px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 8, 0, 0, 2);
+    -fx-padding: 20px;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: #4e73df;
+    -fx-background-radius: 8px 8px 0 0;
+    -fx-padding: 15px 20px;
+}
+
+.dialog-pane .header-panel .label {
+    -fx-text-fill: white;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.dialog-pane .content {
+    -fx-padding: 20px 10px;
+}
+
+.dialog-pane .button-bar {
+    -fx-padding: 10px 0 0 0;
+}
+
+.dialog-pane .button-bar .button {
+    -fx-min-width: 80px;
+    -fx-pref-height: 35px;
+    -fx-background-color: #4e73df;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.dialog-pane .button-bar .button:hover {
+    -fx-background-color: #2e59d9;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 8, 0, 0, 3);
+}
+
+.dialog-pane .button-bar .button:pressed {
+    -fx-background-color: #1c3faa;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 1);
+}
+
+.dialog-pane .button-bar .container {
+    -fx-spacing: 10px;
+}
+
+/* Alert样式 */
+.alert {
+    -fx-background-color: white;
+    -fx-background-radius: 8px;
+    -fx-border-color: #e3e6f0;
+    -fx-border-radius: 8px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 8, 0, 0, 2);
+}
+
+.alert .dialog-pane {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-effect: none;
+}
+
+.alert.confirmation {
+    -fx-graphic: none;
+}
+
+.alert.confirmation .header-panel {
+    -fx-background-color: #1cc88a;
+}
+
+.alert.error {
+    -fx-graphic: none;
+}
+
+.alert.error .header-panel {
+    -fx-background-color: #e74a3b;
+}
+
+.alert.information {
+    -fx-graphic: none;
+}
+
+.alert.information .header-panel {
+    -fx-background-color: #4e73df;
+}
+
+.alert.warning {
+    -fx-graphic: none;
+}
+
+.alert.warning .header-panel {
+    -fx-background-color: #f6c23e;
+}
+
+/* 日期选择器弹窗样式 */
+.date-picker-popup {
+    -fx-background-color: white;
+    -fx-background-radius: 4px;
+    -fx-border-color: #d1d3e2;
+    -fx-border-radius: 4px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);
+}
+
+.date-picker-popup .month-year-pane {
+    -fx-background-color: #4e73df;
+    -fx-padding: 10px;
+}
+
+.date-picker-popup .month-year-pane .label {
+    -fx-text-fill: white;
+}
+
+.date-picker-popup .week-number-cell {
+    -fx-text-fill: #5a5c69;
+}
+
+.date-picker-popup .calendar-grid {
+    -fx-background-color: white;
+    -fx-padding: 5px;
+}
+
+.date-picker-popup .spinner-label {
+    -fx-text-fill: white;
+}
+
+.date-picker-popup .spinner .button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.date-picker-popup .spinner .button:hover {
+    -fx-background-color: rgba(255,255,255,0.2);
+}
+
+.date-picker-popup .day-cell {
+    -fx-background-color: white;
+    -fx-border-color: transparent;
+    -fx-text-fill: #5a5c69;
+}
+
+.date-picker-popup .day-cell:hover {
+    -fx-background-color: #eaecf4;
+}
+
+.date-picker-popup .selected {
+    -fx-background-color: #4e73df;
+    -fx-text-fill: white;
+}
+
+.date-picker-popup .today {
+    -fx-border-color: #4e73df;
+}
+
 /* 图表样式 */
 .chart {
     -fx-background-color: transparent;
@@ -319,11 +477,12 @@
 }
 
 .user-message {
-    -fx-background-color: #4e73df;
+    -fx-background-color: #95ec69;     
     -fx-background-radius: 10px 10px 0 10px;
     -fx-padding: 10px 15px;
-    -fx-text-fill: white;
+    -fx-text-fill: #222;          
     -fx-alignment: CENTER_RIGHT;
+    -fx-font-size: 16px
 }
 
 .ai-message {
@@ -333,6 +492,7 @@
     -fx-text-fill: #5a5c69;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 3, 0, 0, 1);
     -fx-alignment: CENTER_LEFT;
+    -fx-font-size: 16px
 }
 
 .input-container {
@@ -348,6 +508,7 @@
     -fx-border-radius: 4px;
     -fx-padding: 10px;
     -fx-pref-height: 60px;
+    -fx-font-size: 16px;
 }
 
 .send-button {
@@ -360,6 +521,8 @@
 .clear-button {
     -fx-background-color: #e74a3b;
     -fx-text-fill: white;
+    -fx-pref-width: 80px;
+    -fx-pref-height: 60px;
 }
 
 /* Scrollbar styling */

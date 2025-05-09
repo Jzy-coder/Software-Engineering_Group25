@@ -1,5 +1,8 @@
 package com.finance.controller;
 
+import com.finance.util.CsvUtil;
+import java.io.IOException;
+
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Path;
@@ -15,7 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import com.finance.model.Transaction;
 import com.finance.service.TransactionService;
-import com.finance.util.CSVParser;
+
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
@@ -47,20 +50,20 @@ public class IncomeExpenseController implements Initializable {
 
     private static final Logger logger = LoggerFactory.getLogger(IncomeExpenseController.class);
 
-    // ▼▼▼▼▼▼▼▼▼ 新增代码：定义分类选项 ▼▼▼▼▼▼▼▼▼
+  
     private final ObservableList<String> incomeTypes = 
         FXCollections.observableArrayList("Salary", "Bonus", "Others");
     private final ObservableList<String> expenseTypes = 
         FXCollections.observableArrayList("Food", "Shopping", "Transportation", "Housing", "Entertainment", "Others");
-    // ▲▲▲▲▲▲▲▲▲▲ 新增结束 ▲▲▲▲▲▲▲▲▲▲
+   
 
     private TransactionService transactionService;
     private ObservableList<Transaction> transactionList;
 
-    // ▼▼▼▼▼▼▼▼▼▼ 新增代码 ▼▼▼▼▼▼▼▼▼▼
+ 
     @FXML
     private DatePicker datePicker;
-    // ▲▲▲▲▲▲▲▲▲▲ 新增结束 ▲▲▲▲▲▲▲▲▲▲
+   
     
     @FXML
     private TableView<Transaction> transactionTable;
@@ -128,15 +131,6 @@ public class IncomeExpenseController implements Initializable {
     
     @FXML
     private Label periodBalanceLabel;
-    
-    @FXML
-    private DatePicker filterDatePicker;
-    
-    @FXML
-    private Button filterByDateButton;
-    
-    @FXML
-    private Button showAllButton;
 
     
     @Override
@@ -197,16 +191,6 @@ public class IncomeExpenseController implements Initializable {
         // 设置默认的日期范围（过去一个月）
         startDatePicker.setValue(oneMonthAgo);
         endDatePicker.setValue(today);
-        
-        // 设置单日筛选的日期选择器
-        filterDatePicker.setValue(today);
-        filterDatePicker.setDayCellFactory(picker -> new DateCell() {
-            @Override
-            public void updateItem(LocalDate date, boolean empty) {
-                super.updateItem(date, empty);
-                setDisable(date.isAfter(LocalDate.now()));
-            }
-        });
         
         // 限制开始日期不能超过今天
         startDatePicker.setDayCellFactory(picker -> new DateCell() {
@@ -277,27 +261,6 @@ public class IncomeExpenseController implements Initializable {
         transactionList.clear();
         transactionList.addAll(transactionService.getAllTransactions());
         transactionTable.setItems(transactionList);
-    }
-    
-    @FXML
-    private void handleFilterByDate() {
-        LocalDate selectedDate = filterDatePicker.getValue();
-        if (selectedDate != null) {
-            transactionList.clear();
-            List<Transaction> filteredTransactions = transactionService.getAllTransactions().stream()
-                .filter(transaction -> transaction.getDate().toLocalDate().equals(selectedDate))
-                .toList();
-            transactionList.addAll(filteredTransactions);
-            transactionTable.setItems(transactionList);
-            updateSummary();
-        }
-    }
-    
-    @FXML
-    private void handleShowAll() {
-        transactionList.setAll(transactionService.getAllTransactions());
-        updateSummary();
-        updatePeriodSummary(startDatePicker.getValue(), endDatePicker.getValue());
     }
     
     /**
@@ -550,9 +513,54 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
         confirmAlert.setHeaderText(null);
         confirmAlert.setContentText("Are you sure you want to delete this transaction?");
         
+        // 修正语法错误，去掉多余的右括号并添加分号
         confirmAlert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                try {
+                // 原文件选择器逻辑保持不变
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Select CSV File");
+                
+                fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV file", "*.csv"));
+                File file = fileChooser.showOpenDialog(transactionTable.getScene().getWindow());
+
+                if (file != null) {
+                    try {
+                        // CSV解析逻辑
+                        List<Transaction> importedTransactions = CsvUtil.parseCSV(file);
+
+                        // 创建预览对话框
+                        Dialog<ButtonType> dialog = new Dialog<>();
+                        dialog.setTitle("Import preview");
+                        dialog.setHeaderText(String.format("Found %d records ready for import", importedTransactions.size()));
+                        
+                        // 添加预览表格
+                        TableView<Transaction> previewTable = createPreviewTable(importedTransactions);
+                        dialog.getDialogPane().setContent(previewTable);
+                        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+                        
+                        if (dialog.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+                            transactionService.batchImport(importedTransactions);
+                            loadTransactions();
+                            updateSummary();
+                            Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
+                            successAlert.setTitle("Success");
+                            successAlert.setHeaderText(String.format("Successfully imported %d records", importedTransactions.size()));
+                            successAlert.showAndWait();
+                        }
+                    } catch (Exception e) {
+                        showAlert("CSV import failed: " + e.getMessage());
+                    }
+                }
+            }
+            
+            try {
+                    // Check if transaction ID is null
+                    if (transaction.getId() == null) {
+                        showAlert("Cannot delete transaction: Invalid transaction ID");
+                        return;
+                    }
+                    
                     // Delete from database
                     transactionService.deleteTransaction(transaction.getId());
                     
@@ -563,9 +571,8 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
                 } catch (Exception e) {
                     showAlert("Failed to delete transaction: " + e.getMessage());
                 }
-            }
-        });
-    }
+            });
+        }
     
     /**
      * Reset form to add mode
@@ -588,47 +595,96 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
     }
     
     @FXML
-    private void handleImportCSV() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Chose the csv file");
-        
-        // 设置微信默认路径
-        Path wechatPath = Paths.get(System.getProperty("user.home"), "Documents", "WeChat Files");
-        if (wechatPath.toFile().exists()) {
-            fileChooser.setInitialDirectory(wechatPath.toFile());
-        } else {
-            fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
-        }
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV file", "*.csv"));
-        File file = fileChooser.showOpenDialog(transactionTable.getScene().getWindow());
-
+    private void handleExportCSV(javafx.event.ActionEvent event) {
+        // 原文件选择器逻辑保持不变
+                FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save CSV File");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+        File file = fileChooser.showSaveDialog(transactionTable.getScene().getWindow());
+    
         if (file != null) {
             try {
-                // CSV解析逻辑
-                List<Transaction> importedTransactions = new CSVParser(transactionService).parseWeChatCSV(file, transactionService.getAllTransactions());
-                
-                // 创建预览对话框
-                Dialog<ButtonType> dialog = new Dialog<>();
-                dialog.setTitle("Import preview");
-                dialog.setHeaderText(String.format("A total of %d records to be imported were found", importedTransactions.size()));
-                
-                // 添加预览表格
-                TableView<Transaction> previewTable = createPreviewTable(importedTransactions);
-                dialog.getDialogPane().setContent(previewTable);
-                dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-                
-                if (dialog.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
-                    transactionService.batchImport(importedTransactions);
-                    loadTransactions();
-                    updateSummary();
-                    showAlert("Import" + importedTransactions.size() + "records successfully.");
-
-                }
-            } catch (Exception e) {
-                showAlert("CSV failed to import: " + e.getMessage());
+                CsvUtil.exportTableToCSV(transactionTable, file.getAbsolutePath());
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Export Success");
+                alert.setHeaderText(null);
+                alert.setContentText("Data exported successfully!");
+                alert.showAndWait();
+            } catch (IOException e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Export Error");
+                alert.setHeaderText("Export Failed");
+                alert.setContentText("Error exporting data: " + e.getMessage());
+                alert.showAndWait();
             }
         }
     }
+
+    @FXML
+    private void handleImportCSV() {
+        // 添加CSV格式提示弹窗
+        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmAlert.setTitle("CSV Format Requirements");
+        confirmAlert.setHeaderText("Please ensure the CSV file contains the following columns in the correct order");
+        
+        // 创建示例文本区域
+        TextArea exampleText = new TextArea(
+            "Category,Type,Amount,Description,Date\n" +
+            "Income,Salary,5000.00,Monthly salary,2023-08-01\n" +
+            "Expense,Food,35.50,Lunch at restaurant,2023-08-02"
+        );
+        exampleText.setEditable(false);
+        exampleText.setWrapText(true);
+        exampleText.setMaxWidth(Double.MAX_VALUE);
+        exampleText.setPrefRowCount(5);
+        
+        confirmAlert.getDialogPane().setContent(exampleText);
+        confirmAlert.getButtonTypes().setAll(ButtonType.OK, ButtonType.CANCEL);
+        
+        confirmAlert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                // 原文件选择器逻辑保持不变
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Select CSV File");
+                
+                fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV file", "*.csv"));
+                File file = fileChooser.showOpenDialog(transactionTable.getScene().getWindow());
+
+                if (file != null) {
+                    try {
+                        // CSV解析逻辑
+                        List<Transaction> importedTransactions = CsvUtil.parseCSV(file);
+
+                        // 创建预览对话框
+                        Dialog<ButtonType> dialog = new Dialog<>();
+                        dialog.setTitle("Import preview");
+                        dialog.setHeaderText(String.format("Found %d records ready for import", importedTransactions.size()));
+                        
+                        // 添加预览表格
+                        TableView<Transaction> previewTable = createPreviewTable(importedTransactions);
+                        dialog.getDialogPane().setContent(previewTable);
+                        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+                        
+                        if (dialog.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+                            transactionService.batchImport(importedTransactions);
+                            loadTransactions();
+                            updateSummary();
+                            Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
+                            successAlert.setTitle("Success");
+                            successAlert.setHeaderText(String.format("Successfully imported %d records", importedTransactions.size()));
+                            successAlert.showAndWait();
+                        }
+                    } catch (Exception e) {
+                        showAlert("CSV import failed: " + e.getMessage());
+                    }
+                }
+            } else {
+                // 用户取消或关闭对话框时直接返回
+                return;
+            }
+        });
+}
 
     private TableView<Transaction> createPreviewTable(List<Transaction> transactions) {
         TableView<Transaction> previewTable = new TableView<>();

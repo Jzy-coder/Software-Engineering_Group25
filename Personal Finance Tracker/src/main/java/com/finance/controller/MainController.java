@@ -109,8 +109,16 @@ public class MainController implements Initializable {
             contentArea.getChildren().clear();
             contentArea.getChildren().add(view);
         } catch (IOException e) {
+            e.printStackTrace(); // Keep printing stack trace to console
+            // Show a more detailed alert
+            String errorMessage = String.format("Failed to load view: %s\nFXML Path: %s\nException: %s", 
+                                              e.getMessage(), fxmlPath, e.getClass().getName());
+            showAlert(errorMessage);
+        } catch (Exception e) { // Catch other potential exceptions during loading/initialization
             e.printStackTrace();
-            showAlert("Failed to load view: " + e.getMessage());
+            String errorMessage = String.format("An unexpected error occurred while loading view: %s\nFXML Path: %s\nException: %s", 
+                                              e.getMessage(), fxmlPath, e.getClass().getName());
+            showAlert(errorMessage);
         }
     }
     

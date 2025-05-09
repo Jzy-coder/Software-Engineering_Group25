@@ -7,7 +7,7 @@ public class AreaDialog extends JDialog {
     private JTextField areaField;
     
     public AreaDialog(JFrame parent) {
-        super(parent, "输入地区", true);
+        super(parent, "Input the region.", true);
         initComponents();
         setupLayout();
         setLocationRelativeTo(parent);
@@ -17,7 +17,7 @@ public class AreaDialog extends JDialog {
         areaField = new JTextField(20);
         areaField.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
         
-        // 设置当前保存的地区
+        // Set current saved region
         String currentArea = UserInfoManager.getArea();
         if (currentArea != null && !currentArea.isEmpty()) {
             areaField.setText(currentArea);
@@ -27,19 +27,19 @@ public class AreaDialog extends JDialog {
     private void setupLayout() {
         setLayout(new BorderLayout());
         
-        // 创建输入面板
+        // Create input panel
         JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        JLabel label = new JLabel("地区：");
+        JLabel label = new JLabel("Region:");
         label.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
         inputPanel.add(label);
         inputPanel.add(areaField);
         
-        // 创建按钮面板
+        // Create button panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
-        JButton applyButton = new JButton("应用");
-        JButton cancelButton = new JButton("返回");
+        JButton applyButton = new JButton("Apply");
+        JButton cancelButton = new JButton("Return");
         
-        // 设置按钮字体和大小
+        // Set button font and size
         Font buttonFont = new Font("Microsoft YaHei", Font.PLAIN, 14);
         Dimension buttonSize = new Dimension(80, 30);
         
@@ -48,7 +48,7 @@ public class AreaDialog extends JDialog {
         applyButton.setPreferredSize(buttonSize);
         cancelButton.setPreferredSize(buttonSize);
         
-        // 添加按钮事件
+        // Add button events
         applyButton.addActionListener(e -> {
             String area = areaField.getText().trim();
             if (!area.isEmpty()) {
@@ -62,11 +62,11 @@ public class AreaDialog extends JDialog {
         buttonPanel.add(applyButton);
         buttonPanel.add(cancelButton);
         
-        // 添加到主面板
+        // Add to main panel
         add(inputPanel, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
         
-        // 设置对话框大小
+        // Set dialog size
         setSize(300, 150);
     }
 }

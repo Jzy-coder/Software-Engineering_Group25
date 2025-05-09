@@ -11,9 +11,14 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.chart.PieChart;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.layout.StackPane;
 import javafx.scene.input.MouseEvent;
 
 import java.net.URL;
@@ -43,6 +48,9 @@ public class AnalysisController implements Initializable, TransactionEventListen
     private PieChart pieChart;
 
     @FXML
+    private StackPane chartContainer;
+
+    @FXML
     private ToggleGroup typeGroup;
 
     @FXML
@@ -68,7 +76,7 @@ public class AnalysisController implements Initializable, TransactionEventListen
         transactions = FXCollections.observableArrayList(transactionService.getAllTransactions());
 
         // 初始化模型下拉框
-        modelComboBox.setItems(FXCollections.observableArrayList("Transaction Type"));
+        modelComboBox.setItems(FXCollections.observableArrayList("Pie Chart", "Bar Chart"));
         modelComboBox.getSelectionModel().selectFirst();
 
         // 设置初始选择日期为有交易数据的日期中的最新日期，如果没有则使用当前日期
@@ -147,6 +155,7 @@ public class AnalysisController implements Initializable, TransactionEventListen
             // 创建日期选择器
             DatePicker datePicker = new DatePicker();
             datePicker.setValue(selectedDate);
+            datePicker.getStyleClass().add("date-picker");
             
             // 设置日期选择器只显示有交易数据的日期
             datePicker.setDayCellFactory(picker -> new DateCell() {
@@ -159,15 +168,21 @@ public class AnalysisController implements Initializable, TransactionEventListen
             
             // 创建对话框
             Dialog<LocalDate> dialog = new Dialog<>();
-            dialog.setTitle("选择日期");
-            dialog.setHeaderText("请选择一个有交易数据的日期");
+            dialog.setTitle("Select a date");
+            dialog.setHeaderText("Please choose a date with transaction data");
             
             // 设置按钮
-            ButtonType selectButtonType = new ButtonType("选择", ButtonBar.ButtonData.OK_DONE);
-            dialog.getDialogPane().getButtonTypes().addAll(selectButtonType, ButtonType.CANCEL);
+            ButtonType selectButtonType = new ButtonType("Select", ButtonBar.ButtonData.OK_DONE);
+            ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+            dialog.getDialogPane().getButtonTypes().addAll(selectButtonType,cancelButtonType);
+            
+            // 应用CSS样式
+            DialogPane dialogPane = dialog.getDialogPane();
+            dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+            dialogPane.getStyleClass().add("dialog-pane");
             
             // 设置对话框内容
-            dialog.getDialogPane().setContent(datePicker);
+            dialogPane.setContent(datePicker);
             
             // 转换结果
             dialog.setResultConverter(dialogButton -> {
@@ -234,11 +249,21 @@ public class AnalysisController implements Initializable, TransactionEventListen
         String selectedModel = modelComboBox.getValue();
         boolean isIncome = incomeRadio.isSelected();
         
-        // Update pie chart data based on selected model and transaction type
-        ObservableList<PieChart.Data> pieChartData = createPieChartData(selectedModel, isIncome);
-        pieChart.setData(pieChartData);
-        setupPieChartListeners();  // Re-bind listeners
-        updateChartStyle();
+        // Clear the chart container
+        chartContainer.getChildren().clear();
+        
+        // Create and display the selected chart type
+        if (selectedModel.equals("Bar Chart")) {
+            BarChart<String, Number> barChart = createBarChart(isIncome);
+            chartContainer.getChildren().add(barChart);
+        } else {
+            // Create and display pie chart
+            ObservableList<PieChart.Data> pieChartData = createPieChartData(isIncome);
+            pieChart.setData(pieChartData);
+            chartContainer.getChildren().add(pieChart);
+            setupPieChartListeners();  // Re-bind listeners
+            updateChartStyle();
+        }
     }
 
     private void updateDateLabel() {
@@ -257,7 +282,7 @@ public class AnalysisController implements Initializable, TransactionEventListen
     /**
      * Create pie chart data
      */
-    private ObservableList<PieChart.Data> createPieChartData(String model, boolean isIncome) {
+    private ObservableList<PieChart.Data> createPieChartData(boolean isIncome) {
         ObservableList<PieChart.Data> data = FXCollections.observableArrayList();
         
         // Filter transactions by type (income or expense) and date
@@ -274,19 +299,16 @@ public class AnalysisController implements Initializable, TransactionEventListen
                 })
                 .collect(Collectors.toList());
         
-        // Generate data based on transaction type
-        if (model.equals("Transaction Type")) {
-            // Group by transaction type
-            Map<String, Double> groupedData = new HashMap<>();
-            for (Transaction t : filteredTransactions) {
-                String type = t.getType();
-                groupedData.put(type, groupedData.getOrDefault(type, 0.0) + Math.abs(t.getAmount()));
-            }
-            
-            // Convert to pie chart data
-            for (Map.Entry<String, Double> entry : groupedData.entrySet()) {
-                data.add(new PieChart.Data(entry.getKey(), entry.getValue()));
-            }
+        // Group by transaction type
+        Map<String, Double> groupedData = new HashMap<>();
+        for (Transaction t : filteredTransactions) {
+            String type = t.getType();
+            groupedData.put(type, groupedData.getOrDefault(type, 0.0) + Math.abs(t.getAmount()));
+        }
+        
+        // Convert to pie chart data
+        for (Map.Entry<String, Double> entry : groupedData.entrySet()) {
+            data.add(new PieChart.Data(entry.getKey(), entry.getValue()));
         }
         
         // If no data available, add a "No Data" item
@@ -312,6 +334,53 @@ public class AnalysisController implements Initializable, TransactionEventListen
      * Implementation of TransactionEventListener interface method
      * Called when transaction data changes
      */
+    private BarChart<String, Number> createBarChart(boolean isIncome) {
+        CategoryAxis xAxis = new CategoryAxis();
+        NumberAxis yAxis = new NumberAxis();
+        
+        xAxis.setLabel("Type");
+        yAxis.setLabel("Amount");
+        
+        BarChart<String, Number> barChart = new BarChart<>(xAxis, yAxis);
+        barChart.setTitle(isIncome ? "Income Distribution" : "Expense Distribution");
+        
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        series.setName(isIncome ? "Income" : "Expense");
+        
+        // Filter and aggregate data
+        List<Transaction> filteredTransactions = transactions.stream()
+                .filter(t -> t.getCategory().equals(isIncome ? "Income" : "Expense"))
+                .filter(t -> {
+                    LocalDate transactionDate = t.getDate().toLocalDate();
+                    if (singleDateRadio.isSelected()) {
+                        return transactionDate.equals(selectedDate);
+                    } else {
+                        return !transactionDate.isBefore(rangeStartDate) && 
+                               !transactionDate.isAfter(rangeEndDate);
+                    }
+                })
+                .collect(Collectors.toList());
+        
+        Map<String, Double> groupedData = new HashMap<>();
+        for (Transaction t : filteredTransactions) {
+            String type = t.getType();
+            groupedData.put(type, groupedData.getOrDefault(type, 0.0) + Math.abs(t.getAmount()));
+        }
+        
+        // Add data to series
+        for (Map.Entry<String, Double> entry : groupedData.entrySet()) {
+            series.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
+        }
+        
+        // If no data available
+        if (groupedData.isEmpty()) {
+            series.getData().add(new XYChart.Data<>("No Data", 0));
+        }
+        
+        barChart.getData().add(series);
+        return barChart;
+    }
+    
     @Override
     public void onTransactionChanged(TransactionEvent event) {
         // Reload transaction data
@@ -319,7 +388,5 @@ public class AnalysisController implements Initializable, TransactionEventListen
         
         // Update chart
         updateChartData();
-        updateChartStyle();
-        setupPieChartListeners();
     }
 }

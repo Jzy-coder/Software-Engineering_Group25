@@ -14,6 +14,9 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public void addTransaction(Transaction transaction) {
+        if (transaction.getId() == null) {
+            transaction.setId(getNextTransactionId());
+        }
         transactionDAO.save(transaction);
     }
 
@@ -27,20 +30,23 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public void batchImport(List<Transaction> transactions) {
-        List<Transaction> existing = transactionDAO.getAllTransactions();
-        existing.addAll(transactions);
-        transactionDAO.batchInsert(existing);
+        transactions.forEach(transaction -> {
+            if (transaction.getId() == null) {
+                transaction.setId(getNextTransactionId());
+            }
+            transactionDAO.save(transaction);
+        });
     }
 
     @Override
     public double calculateBalance() {
         List<Transaction> transactions = getAllTransactions();
         double totalIncome = transactions.stream()
-            .filter(t -> "收入".equals(t.getCategory()))
+            .filter(t -> "Income".equals(t.getCategory()))
             .mapToDouble(Transaction::getAmount)
             .sum();
         double totalExpense = transactions.stream()
-            .filter(t -> "支出".equals(t.getCategory()))
+            .filter(t -> "Expense".equals(t.getCategory()))
             .mapToDouble(Transaction::getAmount)
             .sum();
         return totalIncome - totalExpense;

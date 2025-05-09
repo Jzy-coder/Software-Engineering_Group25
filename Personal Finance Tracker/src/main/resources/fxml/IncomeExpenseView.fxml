@@ -28,7 +28,7 @@
                             <RowConstraints minHeight="30" prefHeight="30" vgrow="SOMETIMES" />
                         </rowConstraints>
                          <Label text="Date:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
-                        <DatePicker fx:id="datePicker" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+                        <DatePicker fx:id="datePicker" GridPane.rowIndex="0" GridPane.columnIndex="1" styleClass="date-picker" />
 
                         <Label text="Category:" GridPane.rowIndex="1" GridPane.columnIndex="0" />
                         <ComboBox fx:id="categoryComboBox" styleClass="text-field" GridPane.rowIndex="1" GridPane.columnIndex="1" />
@@ -45,19 +45,17 @@
                         <Button fx:id="addButton" text="Add New Transaction" styleClass="button" onAction="#handleAddTransaction" 
                                 GridPane.rowIndex="5" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
 
-                        <Button text="importCSV" styleClass="button" onAction="#handleImportCSV"
+                        <Button text="Import CSV" styleClass="button" onAction="#handleImportCSV"
                                 GridPane.rowIndex="6" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
+
+                        <Button text="Export CSV" styleClass="button" onAction="#handleExportCSV"
+                                GridPane.rowIndex="7" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
                     </GridPane>
                 </VBox>
                 
                 <!-- Right side - Transaction Table -->
                 <VBox spacing="10" HBox.hgrow="ALWAYS">
-                    <HBox spacing="10" alignment="CENTER_LEFT">
-                        <Label text="Transaction History" styleClass="label-heading" style="-fx-font-size: 14;" />
-                        <DatePicker fx:id="filterDatePicker" />
-                        <Button fx:id="filterByDateButton" text="Filter" styleClass="button" onAction="#handleFilterByDate" />
-                        <Button fx:id="showAllButton" text="Show All" styleClass="button" onAction="#handleShowAll" />
-                    </HBox>
+                    <Label text="Transaction History" styleClass="label-heading" style="-fx-font-size: 14;" />
                     <TableView fx:id="transactionTable" styleClass="table-view" VBox.vgrow="ALWAYS">
                         <columns>
                             <TableColumn fx:id="dateColumn" text="Date" prefWidth="120" />
@@ -93,9 +91,9 @@
                 <Label text="Period Filter" style="-fx-font-size: 14; -fx-font-weight: bold;" />
                 <HBox spacing="10" alignment="CENTER_LEFT">
                     <Label text="Period From:" />
-                    <DatePicker fx:id="startDatePicker" />
+                    <DatePicker fx:id="startDatePicker" styleClass="date-picker" />
                     <Label text="To:" />
-                    <DatePicker fx:id="endDatePicker" />
+                    <DatePicker fx:id="endDatePicker" styleClass="date-picker" />
                     <Button fx:id="filterButton" text="Filter" styleClass="button" onAction="#handleFilterByDateRange" />
                 </HBox>
                 
