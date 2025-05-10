@@ -4,34 +4,43 @@
 <?import javafx.scene.control.*?>
 <?import javafx.geometry.Insets?>
 
-<VBox spacing="20" alignment="CENTER" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.BudgetController">
-    <padding>
+<BorderPane spacing="20" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.BudgetController">
+  <top>
+    <VBox alignment="TOP_LEFT" styleClass="card">
+      <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
-    </padding>
-    
-    <Label text="Budget Management" styleClass="label-heading"/>
-    <!-- ����Ԥ������ʾ -->
-    <Label fx:id="budgetBalanceLabel" text="Budget Balance: 0.00"/>
-    <VBox spacing="10" alignment="CENTER">
-        <Button fx:id="addButton" text="Add Budget" styleClass="button" onAction="#handleAddBudget"/>
-        
-        <GridPane fx:id="inputGrid" visible="false" vgap="10" hgap="10" alignment="CENTER" styleClass="card">
-            <Label text="Budget Name:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-            <TextField fx:id="budgetNameField" styleClass="text-field" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-            
-            <Label text="Planned Amount:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-            <TextField fx:id="plannedAmountField" styleClass="text-field" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-            
-            <Label text="Current Amount:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-            <TextField fx:id="actualAmountField" styleClass="text-field" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-            
-            <HBox spacing="10" alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="3">
-                <Button text="Confirm" styleClass="button" onAction="#handleConfirm"/>
-                <Button text="Cancel" styleClass="button" onAction="#handleCancel"/>
-            </HBox>
-        </GridPane>
-        
-        <VBox fx:id="budgetListContainer" spacing="10" alignment="CENTER" styleClass="card"/>
-
+      </padding>
+      <HBox spacing="10" alignment="CENTER_LEFT">
+        <Button text="Add" styleClass="button" onAction="#handleAddBudget"/>
+        <Button text="Remove" styleClass="button" onAction="#handleRemoveBudget"/>
+      </HBox>
+      <Label text="Budget Management" styleClass="label-heading"/>
+      <Label fx:id="budgetBalanceLabel" text="Budget Balance: 0.00"/>
     </VBox>
-</VBox>
+  </top>
+
+  <center>
+    <VBox spacing="20" alignment="CENTER">
+      <!-- 单个预算显示区域 -->
+      <VBox fx:id="singleBudgetContainer" spacing="10" alignment="CENTER" styleClass="card">
+        <padding>
+          <Insets top="10" right="10" bottom="10" left="10"/>
+        </padding>
+      </VBox>
+
+      <!-- Plan 区域 -->
+      <VBox spacing="10" alignment="CENTER" styleClass="card">
+        <ListView fx:id="planListView" prefHeight="150"/>
+        <HBox spacing="10">
+          <Button text="Add Plan" onAction="#handleAddPlan"/>
+          <Button text="Remove Plan" onAction="#handleRemovePlan"/>
+        </HBox>
+      </VBox>
+
+      <!-- 原输入表单（位置调整） -->
+      <GridPane fx:id="inputGrid" visible="false" vgap="10" hgap="10" alignment="CENTER" styleClass="card">
+        <!-- 保留原有输入字段 -->
+      </GridPane>
+    </VBox>
+  </center>
+</BorderPane>

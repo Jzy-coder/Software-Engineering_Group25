@@ -2,6 +2,9 @@ package com.finance.model;
 
 import java.io.Serializable;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 public class Budget implements Serializable {
     private String name;
     private double plannedAmount;
@@ -35,5 +38,11 @@ public class Budget implements Serializable {
 
     public void setActualAmount(double actualAmount) {
         this.actualAmount = actualAmount;
+    }
+    // 新增计划列表
+    private ObservableList<String> plans = FXCollections.observableArrayList();
+
+    public ObservableList<String> getPlans() {
+        return plans;
     }
 }

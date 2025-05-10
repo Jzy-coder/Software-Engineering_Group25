@@ -3,11 +3,14 @@ package com.finance.controller;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 import com.finance.model.Budget;
 import com.finance.util.BudgetDataManager;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
@@ -16,9 +19,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.control.ListView;
 
 public class BudgetController implements Initializable {
     @FXML
@@ -40,8 +45,18 @@ public class BudgetController implements Initializable {
     private VBox budgetListContainer;
 
     @FXML
-    private Label budgetBalanceLabel; // 新增的预算差额标签
-    
+    private Label budgetBalanceLabel; 
+
+    //新增
+    @FXML
+    private VBox singleBudgetContainer;
+    @FXML
+    private ListView<String> planListView;
+
+    private Budget currentBudget; // 当前显示的单个预算
+    private ObservableList<String> plans = FXCollections.observableArrayList();
+    //新增
+
     private int currentEditingIndex = -1;
     private List<Budget> budgets = new ArrayList<>();
     
@@ -106,28 +121,27 @@ public class BudgetController implements Initializable {
     }
     
     private void addNewBudgetItem(String budgetName, double plannedAmount, double actualAmount) {
+        budgets.clear();
         Budget budget = new Budget(budgetName, plannedAmount, actualAmount);
         budgets.add(budget);
-        HBox budgetItem = createBudgetItem(budgetName, plannedAmount, actualAmount);
-        budgetListContainer.getChildren().add(budgetItem);
+        currentBudget = budget;
+        refreshSingleBudgetDisplay();
+        // 持久化存储
         BudgetDataManager.saveBudgets(budgets);
-        // 新增：重新加载数据并更新差额
-        budgets = BudgetDataManager.loadBudgets(); // 重新加载最新数据
-        updateBudgetBalance(); // 立即更新差额显示
+        // 更新预算差额
+        updateBudgetBalance();
     }
     
-    private void updateBudgetItem(int index, String budgetName, double plannedAmount, double actualAmount) {
-        Budget budget = budgets.get(index);
-        budget.setName(budgetName);
-        budget.setPlannedAmount(plannedAmount);
-        budget.setActualAmount(actualAmount);
-        HBox budgetItem = (HBox) budgetListContainer.getChildren().get(index);
-        updateBudgetItemContent(budgetItem, budgetName, plannedAmount, actualAmount);
-        BudgetDataManager.saveBudgets(budgets);
-         // 新增：重新加载数据并更新差额
-        budgets = BudgetDataManager.loadBudgets(); // 重新加载最新数据
-        updateBudgetBalance(); // 立即更新差额显示
+    private void updateBudgetItem(int index, String newBudgetName, double newPlannedAmount, double newActualAmount) {
+        // 更新当前预算属性
+        currentBudget.setName(newBudgetName);
+        currentBudget.setPlannedAmount(newPlannedAmount);
+        currentBudget.setActualAmount(newActualAmount);
         
+        // 刷新界面显示
+        refreshSingleBudgetDisplay();
+        BudgetDataManager.saveBudgets(budgets);
+        updateBudgetBalance();
     }
     
     private HBox createBudgetItem(String budgetName, double plannedAmount, double actualAmount) {
@@ -224,14 +238,60 @@ public class BudgetController implements Initializable {
         budgetBalanceLabel.setText(String.format("Budget Balance: %.2f yuan", balance));
     }
 
+    // 删除当前预算
+    @FXML
+    private void handleRemoveBudget() {
+    if (currentBudget != null) {
+        budgets.remove(currentBudget);
+        BudgetDataManager.saveBudgets(budgets);
+        currentBudget = null;
+        singleBudgetContainer.getChildren().clear();
+        updateBudgetBalance();
+    }
+    }
 
+    // 添加计划条目
+    @FXML
+    private void handleAddPlan() {
+    TextInputDialog dialog = new TextInputDialog();
+    dialog.setTitle("Add Plan");
+    dialog.setHeaderText("Enter plan description");
+    Optional<String> result = dialog.showAndWait();
+    result.ifPresent(plan -> {
+        plans.add(plan);
+        planListView.setItems(plans);
+    });
+    }
+
+    // 删除计划条目
+    @FXML
+    private void handleRemovePlan() {
+    int selectedIndex = planListView.getSelectionModel().getSelectedIndex();
+    if (selectedIndex >= 0) {
+        plans.remove(selectedIndex);
+    }
+    }
+
+  
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        budgets = BudgetDataManager.loadBudgets();
-        for (Budget budget : budgets) {
-            HBox budgetItem = createBudgetItem(budget.getName(), budget.getPlannedAmount(), budget.getActualAmount());
-            budgetListContainer.getChildren().add(budgetItem);
-        }
-        updateBudgetBalance(); // 初始化时更新预算差额
+    budgets = BudgetDataManager.loadBudgets();
+    if (!budgets.isEmpty()) {
+        currentBudget = budgets.get(0);
+        refreshSingleBudgetDisplay();
+    }
+    updateBudgetBalance();
+    }
+
+    private void refreshSingleBudgetDisplay() {
+    singleBudgetContainer.getChildren().clear();
+    if (currentBudget != null) {
+        HBox budgetItem = createBudgetItem(
+        currentBudget.getName(),
+        currentBudget.getPlannedAmount(),
+        currentBudget.getActualAmount()
+        );
+        singleBudgetContainer.getChildren().add(budgetItem);
+    }
     }
 }

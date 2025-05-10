@@ -220,8 +220,9 @@
     -fx-padding: 20px;
     -fx-border-radius: 8px;
     -fx-border-color: #e3e6f0;
-}
+} 
 
+  
 /* 标签样式 */
 .label {
     -fx-text-fill: #5a5c69;
