@@ -45,11 +45,10 @@ public class BudgetController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         currentBudget = BudgetDataManager.loadBudget();
         if (currentBudget != null) {
-            plans.setAll(currentBudget.getPlans()); // 初始化计划列表
+            plans.setAll(currentBudget.getPlans()); // 转换为 ObservableList
             planListView.setItems(plans);
             refreshSingleBudgetDisplay();
         }
-        updateBudgetBalance();
     }
 
     //================ Budget Management ================//
@@ -57,7 +56,7 @@ public class BudgetController implements Initializable {
     @FXML
     private void handleAddBudget() {
         // 创建对话框
-        Dialog<ButtonType> dialog = new Dialog<>(); // 改用 Dialog<ButtonType> 更清晰
+        Dialog<ButtonType> dialog = new Dialog<>(); 
         dialog.setTitle("Add Budget");
         dialog.setHeaderText("Enter budget details");
 
@@ -130,6 +129,7 @@ public class BudgetController implements Initializable {
             BudgetDataManager.saveBudget(null);
             currentBudget = null;
             refreshSingleBudgetDisplay();
+            updateBudgetBalance(); // 更新余额为0
             showAlert("Budget removed successfully");
         }
     }
@@ -211,6 +211,7 @@ public class BudgetController implements Initializable {
                 currentBudget.setActualAmount(newActual);
                 BudgetDataManager.saveBudget(currentBudget);
                 refreshSingleBudgetDisplay();
+                updateBudgetBalance(); // 触发余额更新
 
                 } catch (NumberFormatException e) {
                         showAlert("Invalid number format");

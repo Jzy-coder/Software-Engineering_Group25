@@ -1,14 +1,32 @@
 package com.finance.model;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import javafx.collections.FXCollections;
+import java.util.ArrayList;
+import java.util.List;
 import javafx.collections.ObservableList;
 
 public class Budget implements Serializable {
+    private static final long serialVersionUID = 1L; // 序列化版本号
     private String name;
     private double plannedAmount;
     private double actualAmount;
-    private ObservableList<String> plans = FXCollections.observableArrayList();
+    private transient List<String> plans = new ArrayList<>(); // 标记为 transient
+
+    // 自定义序列化方法
+    private void writeObject(ObjectOutputStream oos) throws IOException {
+        oos.defaultWriteObject();
+        oos.writeObject(new ArrayList<>(plans)); // 序列化为 ArrayList
+    }
+
+    // 自定义反序列化方法
+    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+        ois.defaultReadObject();
+        plans = (List<String>) ois.readObject(); // 反序列化为 List
+    }
+
 
     public Budget(String name, double plannedAmount, double actualAmount) {
         this.name = name;
@@ -31,7 +49,7 @@ public class Budget implements Serializable {
     }
 
     // 计划列表的 Getter & Setter
-    public ObservableList<String> getPlans() { 
+    public List<String> getPlans() { 
         return plans; 
     }
 

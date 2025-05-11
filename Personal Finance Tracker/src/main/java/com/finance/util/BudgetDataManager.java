@@ -3,37 +3,41 @@ package com.finance.util;
 import com.finance.model.Budget;
 import com.finance.gui.LoginManager;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class BudgetDataManager {
-     private static final String DATA_DIR = "data";
-     private static final String BUDGET_FILE = "budget.dat";
+    private static final Path DATA_DIR = Paths.get("data");
+    private static final Path BUDGET_FILE = DATA_DIR.resolve("budget.dat");
     
     
-     public static void saveBudget(Budget budget) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(
-            new FileOutputStream(new File(DATA_DIR, BUDGET_FILE)))
-        ) {
-            oos.writeObject(budget);
-            System.out.println("Budget saved: " + budget); // 添加日志
+    public static void saveBudget(Budget budget) {
+        try {
+            Files.createDirectories(DATA_DIR); // 自动创建目录
+            try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(BUDGET_FILE))) {
+                oos.writeObject(budget);
+                System.out.println("Budget saved to: " + BUDGET_FILE.toAbsolutePath());
+            }
         } catch (IOException e) {
             System.err.println("Failed to save budget: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
     public static Budget loadBudget() {
-        File file = new File(DATA_DIR, BUDGET_FILE);
-        if (!file.exists()) return null;
-        
-        try (ObjectInputStream ois = new ObjectInputStream(
-            new FileInputStream(file))
-        ) {
+        if (!Files.exists(BUDGET_FILE)) {
+            System.out.println("No budget file found at: " + BUDGET_FILE.toAbsolutePath());
+            return null;
+        }
+
+        try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(BUDGET_FILE))) {
             Budget budget = (Budget) ois.readObject();
-            System.out.println("Budget loaded: " + budget); // 添加日志
+            System.out.println("Budget loaded from: " + BUDGET_FILE.toAbsolutePath());
             return budget;
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Failed to load budget: " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }
