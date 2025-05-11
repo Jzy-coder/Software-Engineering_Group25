@@ -6,7 +6,7 @@ import java.util.ResourceBundle;
 
 import com.finance.model.Budget;
 import com.finance.util.BudgetDataManager;
-
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -24,7 +24,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+
 
 public class BudgetController implements Initializable {
 
@@ -170,7 +172,6 @@ public class BudgetController implements Initializable {
     }
 
     //================ Core Logic ================//
-    // 修改后的 showBudgetDialog 方法（编辑逻辑）
     private void showBudgetDialog(String title, String name, double planned, double actual) {
         // 改用 Dialog<ButtonType> 替代 TextInputDialog
         Dialog<ButtonType> dialog = new Dialog<>();
@@ -249,32 +250,66 @@ public class BudgetController implements Initializable {
         container.setAlignment(Pos.CENTER_LEFT);
         container.setStyle("-fx-padding: 15; -fx-background-color: #f8f9fa; -fx-border-radius: 5;");
 
-        // Progress Section
+        // ==================== 进度条部分 ====================
         VBox progressBox = new VBox(8);
         Label nameLabel = new Label(name);
         nameLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
-        
+
         ProgressBar progressBar = new ProgressBar(actual / planned);
         progressBar.setPrefWidth(300);
-        
+      
+
+        // 动态监听进度变化并应用颜色样式
+            progressBar.progressProperty().addListener((obs, oldVal, newVal) -> {
+            double progress = newVal.doubleValue();
+            progressBar.getStyleClass().removeAll("warning", "caution", "safe"); // 移除所有旧状态
+
+            // 输出当前进度，帮助调试
+            System.out.println("Current Progress: " + progress);
+
+            // 根据进度值添加对应的状态
+            if (progress < 0.4) {
+                progressBar.getStyleClass().add("warning"); // 红色
+            } else if (progress < 0.6) {
+                progressBar.getStyleClass().add("caution"); // 黄色
+            } else {
+                progressBar.getStyleClass().add("safe"); // 绿色
+            }
+        });
+
+
+
+        // 百分比标签（叠加在进度条上）
+        Label progressLabel = new Label();
+        progressLabel.textProperty().bind(
+            Bindings.format("%.0f%%", progressBar.progressProperty().multiply(100))
+        );
+        progressLabel.getStyleClass().add("progress-label");
+
+        StackPane progressStack = new StackPane();
+        progressStack.getChildren().addAll(progressBar, progressLabel); // 正确添加进度条和标签
+
+        // 详细金额标签
         Label detailLabel = new Label(String.format("Planned: $%.2f | Actual: $%.2f", planned, actual));
         detailLabel.setStyle("-fx-text-fill: #666;");
 
-        progressBox.getChildren().addAll(nameLabel, progressBar, detailLabel);
+        progressBox.getChildren().addAll(nameLabel, progressStack, detailLabel); // 替换为 progressStack
 
-        // Action Buttons
+        // ==================== 操作按钮 ====================
         Button editBtn = new Button("Edit");
         editBtn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
         editBtn.setOnAction(e -> showBudgetDialog("Edit Budget", name, planned, actual));
 
         Button deleteBtn = new Button("Delete");
         deleteBtn.setStyle("-fx-background-color: #f44336; -fx-text-fill: white;");
-        deleteBtn.setOnAction(e -> handleRemoveBudget());
+        deleteBtn.setOnAction(e -> {
+            singleBudgetContainer.getChildren().remove(container); // 动态移除当前项
+            handleRemoveBudget(); // 调用控制器方法
+        });
 
         container.getChildren().addAll(progressBox, editBtn, deleteBtn);
         return container;
     }
-
     //================ Utilities ================//
     private void loadBudgetData() {
         currentBudget = BudgetDataManager.loadBudget();

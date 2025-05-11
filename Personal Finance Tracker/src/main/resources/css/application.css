@@ -240,11 +240,39 @@
 }
 
 /* 进度条样式 */
-.progress-bar {
-    -fx-accent: #4e73df;
-    -fx-background-color: #f8f9fc;
-    -fx-border-color: #e3e6f0;
-    -fx-border-radius: 4px;
+/* 进度条轨道 */
+.progress-bar > .track {
+    -fx-background-color: #f0f0f0;
+    -fx-background-radius: 8;
+}
+
+/* 默认填充色（绿色，≥60%） */
+/* 安全状态（绿色，≥60%） */
+.progress-bar.safe > .bar {
+    -fx-background-color: #4CAF50;
+    -fx-background-radius: 8;
+    -fx-background-insets: 2;
+}
+
+/* 警告状态（红色，<40%） */
+.progress-bar.warning > .bar {
+    -fx-background-color: #FF5722 ;
+}
+
+/* 注意状态（黄色，40%-60%） */
+.progress-bar.caution > .bar {
+    -fx-background-color: #FFC107;
+}
+
+/* 百分比标签样式 */
+.progress-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 2, 0, 0, 1);
+}
+.progress-bar > .bar {
+    transition: -fx-background-color 0.3s ease;
 }
 
 /* 工具提示样式 */
