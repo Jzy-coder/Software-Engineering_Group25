@@ -18,8 +18,8 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.layout.StackPane;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.StackPane;
 
 import java.net.URL;
 import java.time.LocalDate;
@@ -45,10 +45,10 @@ public class AnalysisController implements Initializable, TransactionEventListen
     private Label dateLabel;
 
     @FXML
-    private PieChart pieChart;
-
-    @FXML
     private StackPane chartContainer;
+    
+    private PieChart pieChart;
+    private BarChart<String, Number> barChart;
 
     @FXML
     private ToggleGroup typeGroup;
@@ -71,12 +71,14 @@ public class AnalysisController implements Initializable, TransactionEventListen
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // 初始化图表
+        initializeCharts();
         // 使用LoginManager中的TransactionService实例，确保用户数据隔离
         transactionService = com.finance.gui.LoginManager.getTransactionService();
         transactions = FXCollections.observableArrayList(transactionService.getAllTransactions());
 
         // 初始化模型下拉框
-        modelComboBox.setItems(FXCollections.observableArrayList("Pie Chart", "Bar Chart"));
+        modelComboBox.setItems(FXCollections.observableArrayList("view", "pie chart", "column chart"));
         modelComboBox.getSelectionModel().selectFirst();
 
         // 设置初始选择日期为有交易数据的日期中的最新日期，如果没有则使用当前日期
@@ -105,10 +107,8 @@ public class AnalysisController implements Initializable, TransactionEventListen
             updateChartData();
         });
 
-        // 初始化图表
-        updateChartData();
-        updateChartStyle();
-        setupPieChartListeners();
+        // 显示默认图表
+        showDefaultView();
 
         // 初始化饼图样式
         pieChart.setLabelLineLength(20);
@@ -245,24 +245,51 @@ public class AnalysisController implements Initializable, TransactionEventListen
         pieChart.setStartAngle(5);
     }
 
+    private void initializeCharts() {
+        // 初始化饼图
+        pieChart = new PieChart();
+        pieChart.setLabelLineLength(20);
+        pieChart.setLegendVisible(false);
+        
+        // 初始化柱状图
+        CategoryAxis xAxis = new CategoryAxis();
+        NumberAxis yAxis = new NumberAxis();
+        xAxis.setLabel("类别");
+        yAxis.setLabel("金额");
+        barChart = new BarChart<>(xAxis, yAxis);
+        barChart.setTitle("收支分析");
+    }
+    
+    private void showDefaultView() {
+        chartContainer.getChildren().clear();
+        Label defaultLabel = new Label("请选择图表类型");
+        defaultLabel.setStyle("-fx-font-size: 16px;");
+        chartContainer.getChildren().add(defaultLabel);
+    }
+    
     private void updateChartData() {
         String selectedModel = modelComboBox.getValue();
         boolean isIncome = incomeRadio.isSelected();
         
-        // Clear the chart container
         chartContainer.getChildren().clear();
         
-        // Create and display the selected chart type
-        if (selectedModel.equals("Bar Chart")) {
-            BarChart<String, Number> barChart = createBarChart(isIncome);
-            chartContainer.getChildren().add(barChart);
-        } else {
-            // Create and display pie chart
-            ObservableList<PieChart.Data> pieChartData = createPieChartData(isIncome);
-            pieChart.setData(pieChartData);
-            chartContainer.getChildren().add(pieChart);
-            setupPieChartListeners();  // Re-bind listeners
-            updateChartStyle();
+        switch (selectedModel) {
+            case "pie chart":
+                ObservableList<PieChart.Data> pieChartData = createPieChartData(selectedModel, isIncome);
+                pieChart.setData(pieChartData);
+                setupPieChartListeners();
+                updateChartStyle();
+                chartContainer.getChildren().add(pieChart);
+                break;
+                
+            case "column chart":
+                updateBarChartData(isIncome);
+                chartContainer.getChildren().add(barChart);
+                break;
+                
+            default:
+                showDefaultView();
+                break;
         }
     }
 
@@ -282,7 +309,7 @@ public class AnalysisController implements Initializable, TransactionEventListen
     /**
      * Create pie chart data
      */
-    private ObservableList<PieChart.Data> createPieChartData(boolean isIncome) {
+    private ObservableList<PieChart.Data> createPieChartData(String model, boolean isIncome) {
         ObservableList<PieChart.Data> data = FXCollections.observableArrayList();
         
         // Filter transactions by type (income or expense) and date
@@ -299,16 +326,19 @@ public class AnalysisController implements Initializable, TransactionEventListen
                 })
                 .collect(Collectors.toList());
         
-        // Group by transaction type
-        Map<String, Double> groupedData = new HashMap<>();
-        for (Transaction t : filteredTransactions) {
-            String type = t.getType();
-            groupedData.put(type, groupedData.getOrDefault(type, 0.0) + Math.abs(t.getAmount()));
-        }
-        
-        // Convert to pie chart data
-        for (Map.Entry<String, Double> entry : groupedData.entrySet()) {
-            data.add(new PieChart.Data(entry.getKey(), entry.getValue()));
+        // Generate data based on selected chart type
+        if (model.equals("pie chart")) {
+            // Group by transaction type
+            Map<String, Double> groupedData = new HashMap<>();
+            for (Transaction t : filteredTransactions) {
+                String type = t.getType();
+                groupedData.put(type, groupedData.getOrDefault(type, 0.0) + Math.abs(t.getAmount()));
+            }
+            
+            // Convert to pie chart data
+            for (Map.Entry<String, Double> entry : groupedData.entrySet()) {
+                data.add(new PieChart.Data(entry.getKey(), entry.getValue()));
+            }
         }
         
         // If no data available, add a "No Data" item
@@ -334,20 +364,10 @@ public class AnalysisController implements Initializable, TransactionEventListen
      * Implementation of TransactionEventListener interface method
      * Called when transaction data changes
      */
-    private BarChart<String, Number> createBarChart(boolean isIncome) {
-        CategoryAxis xAxis = new CategoryAxis();
-        NumberAxis yAxis = new NumberAxis();
+    private void updateBarChartData(boolean isIncome) {
+        barChart.getData().clear();
         
-        xAxis.setLabel("Type");
-        yAxis.setLabel("Amount");
-        
-        BarChart<String, Number> barChart = new BarChart<>(xAxis, yAxis);
-        barChart.setTitle(isIncome ? "Income Distribution" : "Expense Distribution");
-        
-        XYChart.Series<String, Number> series = new XYChart.Series<>();
-        series.setName(isIncome ? "Income" : "Expense");
-        
-        // Filter and aggregate data
+        // 过滤交易数据
         List<Transaction> filteredTransactions = transactions.stream()
                 .filter(t -> t.getCategory().equals(isIncome ? "Income" : "Expense"))
                 .filter(t -> {
@@ -361,24 +381,23 @@ public class AnalysisController implements Initializable, TransactionEventListen
                 })
                 .collect(Collectors.toList());
         
-        Map<String, Double> groupedData = new HashMap<>();
-        for (Transaction t : filteredTransactions) {
-            String type = t.getType();
-            groupedData.put(type, groupedData.getOrDefault(type, 0.0) + Math.abs(t.getAmount()));
-        }
+        // 按类型分组并计算金额
+        Map<String, Double> groupedData = filteredTransactions.stream()
+                .collect(Collectors.groupingBy(
+                    Transaction::getType,
+                    Collectors.summingDouble(t -> Math.abs(t.getAmount()))
+                ));
         
-        // Add data to series
-        for (Map.Entry<String, Double> entry : groupedData.entrySet()) {
-            series.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
-        }
+        // 创建数据系列
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        series.setName(isIncome ? "收入" : "支出");
         
-        // If no data available
-        if (groupedData.isEmpty()) {
-            series.getData().add(new XYChart.Data<>("No Data", 0));
-        }
+        // 添加数据点
+        groupedData.forEach((type, amount) -> {
+            series.getData().add(new XYChart.Data<>(type, amount));
+        });
         
         barChart.getData().add(series);
-        return barChart;
     }
     
     @Override

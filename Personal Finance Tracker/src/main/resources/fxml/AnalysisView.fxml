@@ -26,12 +26,16 @@
                 <Button fx:id="dateButton" text="Select Date" styleClass="button,date-button" onAction="#handleDateSelection" />
                 <Label fx:id="dateLabel" styleClass="label-heading,date-label" style="-fx-font-size: 14;" />
             </HBox>
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10" />
+            </padding>
         </VBox>
     </top>
-    
     <center>
-        <StackPane styleClass="card">
-            <PieChart fx:id="pieChart" title="Income/Expense Distribution" labelLineLength="20" legendVisible="true" />
+        <StackPane fx:id="chartContainer" styleClass="chart-container">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10" />
+            </padding>
         </StackPane>
     </center>
 </BorderPane>
