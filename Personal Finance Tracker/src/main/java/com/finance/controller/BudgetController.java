@@ -40,9 +40,6 @@ public class BudgetController implements Initializable {
     
     @FXML
     private TextField actualAmountField;
-    
-    @FXML
-    private VBox budgetListContainer;
 
     @FXML
     private Label budgetBalanceLabel; 
@@ -57,13 +54,10 @@ public class BudgetController implements Initializable {
     private ObservableList<String> plans = FXCollections.observableArrayList();
     //新增
 
-    private int currentEditingIndex = -1;
-    private List<Budget> budgets = new ArrayList<>();
     
     @FXML
     private void handleAddBudget() {
         resetInputFields();
-        currentEditingIndex = -1;
         inputGrid.setVisible(true);
     }
     
@@ -107,8 +101,8 @@ public class BudgetController implements Initializable {
                 return;
             }
             
-            if (currentEditingIndex >= 0) {
-                updateBudgetItem(currentEditingIndex, budgetName, plannedAmount, actualAmount);
+            if (currentBudget != null) {
+                updateBudgetItem(budgetName, plannedAmount, actualAmount);
             } else {
                 addNewBudgetItem(budgetName, plannedAmount, actualAmount);
             }
@@ -121,18 +115,17 @@ public class BudgetController implements Initializable {
     }
     
     private void addNewBudgetItem(String budgetName, double plannedAmount, double actualAmount) {
-        budgets.clear();
         Budget budget = new Budget(budgetName, plannedAmount, actualAmount);
-        budgets.add(budget);
         currentBudget = budget;
         refreshSingleBudgetDisplay();
         // 持久化存储
-        BudgetDataManager.saveBudgets(budgets);
+        BudgetDataManager.saveBudget(currentBudget);
         // 更新预算差额
         updateBudgetBalance();
+
     }
     
-    private void updateBudgetItem(int index, String newBudgetName, double newPlannedAmount, double newActualAmount) {
+    private void updateBudgetItem(String newBudgetName, double newPlannedAmount, double newActualAmount) {
         // 更新当前预算属性
         currentBudget.setName(newBudgetName);
         currentBudget.setPlannedAmount(newPlannedAmount);
@@ -140,54 +133,47 @@ public class BudgetController implements Initializable {
         
         // 刷新界面显示
         refreshSingleBudgetDisplay();
-        BudgetDataManager.saveBudgets(budgets);
+        BudgetDataManager.saveBudget(currentBudget);
         updateBudgetBalance();
     }
     
     private HBox createBudgetItem(String budgetName, double plannedAmount, double actualAmount) {
-        HBox container = new HBox(10);
-        container.setAlignment(Pos.CENTER);
-        
-        VBox progressBox = new VBox(5);
-        progressBox.setPrefWidth(300);
-        
-        Label nameLabel = new Label(budgetName);
-        nameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
-        Label progressLabel = new Label(String.format("目标: %.2f / 当前: %.2f", plannedAmount, actualAmount));
-        ProgressBar progressBar = new ProgressBar();
-        progressBar.setPrefWidth(280);
-        
-        double progress = actualAmount / plannedAmount;
-        progressBar.setProgress(Math.min(progress, 1.0));
-        
-        Label percentageLabel = new Label(String.format("%.1f%%", progress * 100));
-        
-        progressBox.getChildren().addAll(nameLabel, progressLabel, progressBar, percentageLabel);
-        
-        Button editButton = new Button("编辑");
-        editButton.setOnAction(e -> {
-            int index = budgetListContainer.getChildren().indexOf(container);
-            currentEditingIndex = index;
-            budgetNameField.setText(budgetName);
-            plannedAmountField.setText(String.valueOf(plannedAmount));
-            actualAmountField.setText(String.valueOf(actualAmount));
-            inputGrid.setVisible(true);
-        });
+    HBox container = new HBox(10);
+    container.setAlignment(Pos.CENTER);
+    
+    VBox progressBox = new VBox(5);
+    progressBox.setPrefWidth(300);
+    
+    Label nameLabel = new Label(budgetName);
+    nameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+    Label progressLabel = new Label(String.format("目标: %.2f / 当前: %.2f", plannedAmount, actualAmount));
+    ProgressBar progressBar = new ProgressBar();
+    progressBar.setPrefWidth(280);
+    
+    double progress = actualAmount / plannedAmount;
+    progressBar.setProgress(Math.min(progress, 1.0));
+    
+    Label percentageLabel = new Label(String.format("%.1f%%", progress * 100));
+    
+    progressBox.getChildren().addAll(nameLabel, progressLabel, progressBar, percentageLabel);
 
-        Button deleteButton = new Button("删除");
-        deleteButton.setOnAction(e -> {
-            int index = budgetListContainer.getChildren().indexOf(container);
-            budgets.remove(index);
-            budgetListContainer.getChildren().remove(index);
-            BudgetDataManager.saveBudgets(budgets);
-            // 新增：重新加载数据并更新差额
-            budgets = BudgetDataManager.loadBudgets(); // 重新加载最新数据
-            updateBudgetBalance(); // 立即更新差额显示
-        });
-        
-        container.getChildren().addAll(progressBox, editButton, deleteButton);
-        return container;
-    }
+    // ========== 新增编辑按钮逻辑（直接绑定当前预算） ==========
+    Button editButton = new Button("编辑");
+    editButton.setOnAction(e -> {
+        // 直接填充表单（无需索引）
+        budgetNameField.setText(budgetName);
+        plannedAmountField.setText(String.valueOf(plannedAmount));
+        actualAmountField.setText(String.valueOf(actualAmount));
+        inputGrid.setVisible(true);
+    });
+
+    // ========== 新增删除按钮逻辑（直接调用删除方法） ==========
+    Button deleteButton = new Button("删除");
+    deleteButton.setOnAction(e -> handleRemoveBudget()); // 直接调用控制器方法
+
+    container.getChildren().addAll(progressBox, editButton, deleteButton);
+    return container;
+}
     
     private void updateBudgetItemContent(HBox container, String budgetName, double plannedAmount, double actualAmount) {
         VBox progressBox = (VBox) container.getChildren().get(0);
@@ -208,7 +194,6 @@ public class BudgetController implements Initializable {
         budgetNameField.setText("");
         plannedAmountField.setText("");
         actualAmountField.setText("");
-        currentEditingIndex = -1;
     }
     
     private void showAlert(String message) {
@@ -220,47 +205,43 @@ public class BudgetController implements Initializable {
     }
 
 
-    /**
-     * 计算并显示预算差额
-     */
+    // 修改 updateBudgetBalance 方法，处理 null 值
     private void updateBudgetBalance() {
-        // 确保每次计算时都加载最新数据
-        List<Budget> latestBudgets = BudgetDataManager.loadBudgets();
+        Budget current = BudgetDataManager.loadBudget();
         double totalPlanned = 0.0;
         double totalActual = 0.0;
-        
-        for (Budget budget : latestBudgets) {
-            totalPlanned += budget.getPlannedAmount();
-            totalActual += budget.getActualAmount();
+        if (current != null) {
+            totalPlanned = current.getPlannedAmount();
+            totalActual = current.getActualAmount();
         }
-        
-        double balance = totalPlanned - totalActual;
-        budgetBalanceLabel.setText(String.format("Budget Balance: %.2f yuan", balance));
+        budgetBalanceLabel.setText(String.format("Budget Balance: %.2f yuan", totalPlanned - totalActual));
     }
 
-    // 删除当前预算
+    /// 修改 handleRemoveBudget 方法，确保删除后数据一致
     @FXML
     private void handleRemoveBudget() {
-    if (currentBudget != null) {
-        budgets.remove(currentBudget);
-        BudgetDataManager.saveBudgets(budgets);
-        currentBudget = null;
-        singleBudgetContainer.getChildren().clear();
-        updateBudgetBalance();
-    }
+        if (currentBudget != null) {
+            BudgetDataManager.saveBudget(null);
+            currentBudget = null;
+            singleBudgetContainer.getChildren().clear();
+            planListView.getItems().clear();
+            updateBudgetBalance();
+        }
     }
 
     // 添加计划条目
     @FXML
     private void handleAddPlan() {
-    TextInputDialog dialog = new TextInputDialog();
-    dialog.setTitle("Add Plan");
-    dialog.setHeaderText("Enter plan description");
-    Optional<String> result = dialog.showAndWait();
-    result.ifPresent(plan -> {
-        plans.add(plan);
-        planListView.setItems(plans);
-    });
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Add Plan");
+        dialog.setHeaderText("Enter plan description");
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(plan -> {
+            if (currentBudget != null) {
+                currentBudget.getPlans().add(plan); // 绑定到当前预算的 plans
+                planListView.setItems(currentBudget.getPlans());
+            }
+        });
     }
 
     // 删除计划条目
@@ -273,14 +254,15 @@ public class BudgetController implements Initializable {
     }
 
   
+    // 修改初始化逻辑
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-    budgets = BudgetDataManager.loadBudgets();
-    if (!budgets.isEmpty()) {
-        currentBudget = budgets.get(0);
-        refreshSingleBudgetDisplay();
-    }
-    updateBudgetBalance();
+        currentBudget = BudgetDataManager.loadBudget();
+        if (currentBudget != null) {
+            refreshSingleBudgetDisplay();
+            planListView.setItems(currentBudget.getPlans()); // 绑定当前预算的 plans
+        }
+        updateBudgetBalance();
     }
 
     private void refreshSingleBudgetDisplay() {

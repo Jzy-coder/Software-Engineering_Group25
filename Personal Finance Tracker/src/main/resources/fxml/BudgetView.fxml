@@ -3,8 +3,9 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ListView?>
 
-<BorderPane spacing="20" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.BudgetController">
+<BorderPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.BudgetController">
   <top>
     <VBox alignment="TOP_LEFT" styleClass="card">
       <padding>
@@ -20,6 +21,7 @@
   </top>
 
   <center>
+
     <VBox spacing="20" alignment="CENTER">
       <!-- 单个预算显示区域 -->
       <VBox fx:id="singleBudgetContainer" spacing="10" alignment="CENTER" styleClass="card">

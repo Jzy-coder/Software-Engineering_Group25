@@ -7,41 +7,43 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BudgetDataManager {
-    private static final String DATA_DIR = System.getProperty("user.dir") + "/data";
+     private static final String DATA_DIR = "data";
+     private static final String BUDGET_FILE = "budget.dat";
     
-    private static String getDataFilePath() {
-        String username = LoginManager.getCurrentUsername();
-        return DATA_DIR + "/budgets_" + username + ".dat";
+    
+     // 保存单预算对象
+    public static void saveBudget(Budget budget) {
+    File dataDir = new File(DATA_DIR);
+    if (!dataDir.exists()) {
+        dataDir.mkdirs();
     }
-    
-    public static void saveBudgets(List<Budget> budgets) {
-        File dataDir = new File(DATA_DIR);
-        if (!dataDir.exists()) {
-            dataDir.mkdirs();
-        }
-        try (ObjectOutputStream oos = new ObjectOutputStream(
-                new FileOutputStream(getDataFilePath()))) {
-            oos.writeObject(budgets);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    File budgetFile = new File(DATA_DIR, BUDGET_FILE);
+    System.out.println("数据存储路径: " + budgetFile.getAbsolutePath());
+    try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(budgetFile))) {
+        oos.writeObject(budget);
+    } catch (IOException e) {
+        System.err.println("保存失败，路径: " + budgetFile.getAbsolutePath());
+        e.printStackTrace();
     }
-    
-    public static List<Budget> loadBudgets() {
-        String filePath = getDataFilePath();
-        if (!new File(filePath).exists()) {
-            return new ArrayList<>();
+}
+
+    // 加载单预算对象
+    public static Budget loadBudget() {
+        File budgetFile = new File(DATA_DIR, BUDGET_FILE);
+        if (!budgetFile.exists()) {
+            return null; // 文件不存在时返回 null
         }
-        
+
         try (ObjectInputStream ois = new ObjectInputStream(
-                new FileInputStream(filePath))) {
-            return (List<Budget>) ois.readObject();
+                new FileInputStream(budgetFile))) {
+            return (Budget) ois.readObject(); // 读取单个 Budget 对象
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
-            return new ArrayList<>();
+            return null;
         }
     }
-    
+
+
     public static void handleUsernameChange(String oldUsername, String newUsername) {
         File oldFile = new File(DATA_DIR + "/budgets_" + oldUsername + ".dat");
         File newFile = new File(DATA_DIR + "/budgets_" + newUsername + ".dat");
