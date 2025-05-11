@@ -1,11 +1,13 @@
 package com.finance.controller;
 
 import java.net.URL;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
 import com.finance.model.Budget;
 import com.finance.util.BudgetDataManager;
+
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -20,6 +22,7 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.GridPane;
@@ -123,6 +126,42 @@ public class BudgetController implements Initializable {
                 currentBudget.getActualAmount()
             );
         }
+    }
+    
+    @FXML
+    private void handleReviewBudget() {
+        List<Budget> budgetHistory = BudgetDataManager.loadBudgetHistory();
+        
+        if (budgetHistory.isEmpty()) {
+            showAlert("No budget history found.");
+            return;
+        }
+        
+        // Create dialog
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Budget History Review");
+        dialog.setHeaderText("Your Budget History");
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+        
+        // Create content container
+        VBox contentBox = new VBox(10);
+        contentBox.setPadding(new Insets(20));
+        ScrollPane scrollPane = new ScrollPane(contentBox);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setPrefHeight(400);
+        
+        // Add each budget to the dialog - using read-only version for history items
+        for (Budget budget : budgetHistory) {
+            HBox budgetItem = createReadOnlyBudgetItem(
+                budget.getName(),
+                budget.getPlannedAmount(),
+                budget.getActualAmount()
+            );
+            contentBox.getChildren().add(budgetItem);
+        }
+        
+        dialog.getDialogPane().setContent(scrollPane);
+        dialog.showAndWait();
     }
 
     @FXML
@@ -308,6 +347,74 @@ public class BudgetController implements Initializable {
         });
 
         container.getChildren().addAll(progressBox, editBtn, deleteBtn);
+        return container;
+    }
+    
+    /**
+     * 创建只读的预算项目，用于历史预算记录显示
+     * 与createBudgetItem类似，但不包含Edit按钮，只有Delete按钮
+     */
+    private HBox createReadOnlyBudgetItem(String name, double planned, double actual) {
+        HBox container = new HBox(15);
+        container.setAlignment(Pos.CENTER_LEFT);
+        container.setStyle("-fx-padding: 15; -fx-background-color: #f8f9fa; -fx-border-radius: 5;");
+
+        // ==================== 进度条部分 ====================
+        VBox progressBox = new VBox(8);
+        Label nameLabel = new Label(name);
+        nameLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
+        ProgressBar progressBar = new ProgressBar(actual / planned);
+        progressBar.setPrefWidth(300);
+      
+        // 动态监听进度变化并应用颜色样式
+        progressBar.progressProperty().addListener((obs, oldVal, newVal) -> {
+            double progress = newVal.doubleValue();
+            progressBar.getStyleClass().removeAll("warning", "caution", "safe"); // 移除所有旧状态
+
+            // 根据进度值添加对应的状态
+            if (progress < 0.4) {
+                progressBar.getStyleClass().add("warning"); // 红色
+            } else if (progress < 0.6) {
+                progressBar.getStyleClass().add("caution"); // 黄色
+            } else {
+                progressBar.getStyleClass().add("safe"); // 绿色
+            }
+        });
+
+        // 百分比标签（叠加在进度条上）
+        Label progressLabel = new Label();
+        progressLabel.textProperty().bind(
+            Bindings.format("%.0f%%", progressBar.progressProperty().multiply(100))
+        );
+        progressLabel.getStyleClass().add("progress-label");
+
+        StackPane progressStack = new StackPane();
+        progressStack.getChildren().addAll(progressBar, progressLabel);
+
+        // 详细金额标签
+        Label detailLabel = new Label(String.format("Planned: $%.2f | Actual: $%.2f", planned, actual));
+        detailLabel.setStyle("-fx-text-fill: #666;");
+
+        progressBox.getChildren().addAll(nameLabel, progressStack, detailLabel);
+
+        // ==================== 操作按钮 ====================
+        // 只添加Delete按钮，不添加Edit按钮
+        Button deleteBtn = new Button("Delete");
+        deleteBtn.setStyle("-fx-background-color: #f44336; -fx-text-fill: white;");
+        deleteBtn.setOnAction(e -> {
+            // 从历史记录中删除该预算项
+            List<Budget> budgetHistory = BudgetDataManager.loadBudgetHistory();
+            budgetHistory.removeIf(b -> b.getName().equals(name) && 
+                                  Math.abs(b.getPlannedAmount() - planned) < 0.01 && 
+                                  Math.abs(b.getActualAmount() - actual) < 0.01);
+            BudgetDataManager.saveBudgetHistory(budgetHistory);
+            
+            // 从UI中移除
+            ((VBox) container.getParent()).getChildren().remove(container);
+        });
+
+        container.getChildren().addAll(progressBox, deleteBtn);
         return container;
     }
     //================ Utilities ================//

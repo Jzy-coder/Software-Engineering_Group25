@@ -6,25 +6,26 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
 import javafx.collections.ObservableList;
 
 public class Budget implements Serializable {
-    private static final long serialVersionUID = 1L; // ÐòÁÐ»¯°æ±¾ºÅ
+    private static final long serialVersionUID = 1L; // ï¿½ï¿½ï¿½Ð»ï¿½ï¿½æ±¾ï¿½ï¿½
     private String name;
     private double plannedAmount;
     private double actualAmount;
-    private transient List<String> plans = new ArrayList<>(); // ±ê¼ÇÎª transient
+    private transient List<String> plans = new ArrayList<>(); // ï¿½ï¿½ï¿½Îª transient
 
-    // ×Ô¶¨ÒåÐòÁÐ»¯·½·¨
+    // ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð»ï¿½ï¿½ï¿½ï¿½ï¿½
     private void writeObject(ObjectOutputStream oos) throws IOException {
         oos.defaultWriteObject();
-        oos.writeObject(new ArrayList<>(plans)); // ÐòÁÐ»¯Îª ArrayList
+        oos.writeObject(new ArrayList<>(plans)); // ï¿½ï¿½ï¿½Ð»ï¿½Îª ArrayList
     }
 
-    // ×Ô¶¨Òå·´ÐòÁÐ»¯·½·¨
+    // ï¿½Ô¶ï¿½ï¿½å·´ï¿½ï¿½ï¿½Ð»ï¿½ï¿½ï¿½ï¿½ï¿½
     private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
         ois.defaultReadObject();
-        plans = (List<String>) ois.readObject(); // ·´ÐòÁÐ»¯Îª List
+        plans = (List<String>) ois.readObject(); // ï¿½ï¿½ï¿½ï¿½ï¿½Ð»ï¿½Îª List
     }
 
 
@@ -34,7 +35,7 @@ public class Budget implements Serializable {
         this.actualAmount = actualAmount;
     }
 
-    // Getter & Setter ·½·¨
+    // Getter & Setter ï¿½ï¿½ï¿½ï¿½
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
@@ -48,13 +49,19 @@ public class Budget implements Serializable {
         this.actualAmount = actualAmount; 
     }
 
-    // ¼Æ»®ÁÐ±íµÄ Getter & Setter
+    // Plans list Getter & Setter
     public List<String> getPlans() { 
         return plans; 
     }
 
     public void setPlans(ObservableList<String> plans) {
-        this.plans.clear(); // ÏÈÇå¿ÕÔ­ÓÐÊý¾Ý
-        this.plans.addAll(plans); // Ìí¼ÓÐÂÊý¾Ý
+        this.plans.clear(); // Clear original data
+        this.plans.addAll(plans); // Add new data
+    }
+    
+    // Overloaded method to accept List<String>
+    public void setPlans(List<String> plans) {
+        this.plans.clear();
+        this.plans.addAll(plans);
     }
 }

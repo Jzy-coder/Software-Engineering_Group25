@@ -19,7 +19,7 @@
     <HBox spacing="10">
         <Button text="Add" onAction="#handleAddBudget" 
                style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold;"/>
-        <Button text="Review" onAction="#handleEditBudget" 
+        <Button text="Review" onAction="#handleReviewBudget" 
                style="-fx-background-color: #FF9800; -fx-text-fill: white;"/>
         <Button text="Delete" onAction="#handleRemoveBudget" 
                style="-fx-background-color: #f44336; -fx-text-fill: white;"/>
