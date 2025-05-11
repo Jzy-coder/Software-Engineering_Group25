@@ -131,10 +131,29 @@ public class IncomeExpenseController implements Initializable {
     
     @FXML
     private Label periodBalanceLabel;
-
+    
+    @FXML
+    private DatePicker singleDatePicker;
+    
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // 为singleDatePicker添加监听逻辑，实现选择日期后自动筛选并刷新transactionTable，仅显示所选日期的交易记录。
+        if (singleDatePicker != null) {
+            singleDatePicker.valueProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue != null) {
+                    ObservableList<Transaction> filtered = FXCollections.observableArrayList();
+                    for (Transaction t : transactionList) {
+                        if (t.getDate() != null && t.getDate().toLocalDate().isEqual(newValue)) {
+                            filtered.add(t);
+                        }
+                    }
+                    transactionTable.setItems(filtered);
+                } else {
+                    transactionTable.setItems(transactionList);
+                }
+            });
+        }
         
         // 使用LoginManager中的TransactionService实例，确保用户数据隔离
         transactionService = com.finance.gui.LoginManager.getTransactionService();

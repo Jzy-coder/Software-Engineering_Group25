@@ -55,6 +55,10 @@
                 
                 <!-- Right side - Transaction Table -->
                 <VBox spacing="10" HBox.hgrow="ALWAYS">
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="选择日期：" />
+                        <DatePicker fx:id="singleDatePicker" styleClass="date-picker" />
+                    </HBox>
                     <Label text="Transaction History" styleClass="label-heading" style="-fx-font-size: 14;" />
                     <TableView fx:id="transactionTable" styleClass="table-view" VBox.vgrow="ALWAYS">
                         <columns>
