@@ -1,8 +1,6 @@
 package com.finance.controller;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -13,267 +11,288 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.control.ListView;
 
 public class BudgetController implements Initializable {
-    @FXML
-    private Button addButton;
-    
-    @FXML
-    private GridPane inputGrid;
-    
-    @FXML
-    private TextField budgetNameField;
-    
-    @FXML
-    private TextField plannedAmountField;
-    
-    @FXML
-    private TextField actualAmountField;
 
-    @FXML
-    private Label budgetBalanceLabel; 
+    // UI Components
+    @FXML private VBox singleBudgetContainer;
+    @FXML private ListView<String> planListView;
+    @FXML private Label budgetBalanceLabel;
+    @FXML private GridPane inputGrid;
+    @FXML private TextField budgetNameField;
+    @FXML private TextField plannedAmountField;
+    @FXML private TextField actualAmountField;
 
-    //新增
-    @FXML
-    private VBox singleBudgetContainer;
-    @FXML
-    private ListView<String> planListView;
-
-    private Budget currentBudget; // 当前显示的单个预算
+    // Data
+    private Budget currentBudget;
     private ObservableList<String> plans = FXCollections.observableArrayList();
-    //新增
 
-    
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        currentBudget = BudgetDataManager.loadBudget();
+        if (currentBudget != null) {
+            plans.setAll(currentBudget.getPlans()); // 初始化计划列表
+            planListView.setItems(plans);
+            refreshSingleBudgetDisplay();
+        }
+        updateBudgetBalance();
+    }
+
+    //================ Budget Management ================//
+    // 修改后的 handleAddBudget 方法
     @FXML
     private void handleAddBudget() {
-        resetInputFields();
-        inputGrid.setVisible(true);
-    }
-    
-    @FXML
-    private void handleCancel() {
-        inputGrid.setVisible(false);
-        resetInputFields();
-    }
+        // 创建对话框
+        Dialog<ButtonType> dialog = new Dialog<>(); // 改用 Dialog<ButtonType> 更清晰
+        dialog.setTitle("Add Budget");
+        dialog.setHeaderText("Enter budget details");
 
-    @FXML
-    private void handleRefresh() {
-        updateBudgetBalance();//刷新balance
-    }
-    
-    @FXML
-    private void handleConfirm() {
-        try {
-            String budgetName = budgetNameField.getText().trim();
-            double plannedAmount = Double.parseDouble(plannedAmountField.getText());
-            double actualAmount = Double.parseDouble(actualAmountField.getText());
-            
-            // Validate budget name
-            if (budgetName.isEmpty()) {
-                showAlert("Please enter a budget name");
-                return;
+        // 设置按钮类型
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        // 构建输入表单
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20));
+
+        TextField nameField = new TextField();
+        TextField plannedField = new TextField();
+        TextField actualField = new TextField();
+
+        grid.addRow(0, new Label("Budget Name:"), nameField);
+        grid.addRow(1, new Label("Planned Amount:"), plannedField);
+        grid.addRow(2, new Label("Actual Amount:"), actualField);
+
+        dialog.getDialogPane().setContent(grid);
+
+        // 处理结果
+        Optional<ButtonType> result = dialog.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                String name = nameField.getText().trim();
+                double planned = Double.parseDouble(plannedField.getText());
+                double actual = Double.parseDouble(actualField.getText());
+
+                // 输入验证
+                if (name.isEmpty()) {
+                    showAlert("Budget name cannot be empty!");
+                    return;
+                }
+                if (planned <= 0 || actual < 0 || planned <= actual) {
+                    showAlert("Invalid amounts. Ensure:\n- Planned > 0\n- Actual ≥ 0\n- Planned > Actual");
+                    return;
+                }
+
+                // 创建新预算并保存
+                currentBudget = new Budget(name, planned, actual);
+                BudgetDataManager.saveBudget(currentBudget);
+
+                // 强制刷新界面
+                refreshSingleBudgetDisplay();
+                updateBudgetBalance();
+
+            } catch (NumberFormatException e) {
+                showAlert("Please enter valid numbers!");
             }
-            
-            if (plannedAmount <= 0) {
-                showAlert("Planned amount must be greater than 0");
-                return;
-            }
-            
-            if (actualAmount < 0) {
-                showAlert("Current amount cannot be negative");
-                return;
-            }
-            
-            // Validate planned amount must be greater than current amount
-            if (plannedAmount <= actualAmount) {
-                showAlert("Planned amount must be greater than current amount");
-                return;
-            }
-            
-            if (currentBudget != null) {
-                updateBudgetItem(budgetName, plannedAmount, actualAmount);
-            } else {
-                addNewBudgetItem(budgetName, plannedAmount, actualAmount);
-            }
-            
-            inputGrid.setVisible(false);
-            resetInputFields();
-        } catch (NumberFormatException e) {
-            showAlert("Please enter valid numbers");
         }
     }
-    
-    private void addNewBudgetItem(String budgetName, double plannedAmount, double actualAmount) {
-        Budget budget = new Budget(budgetName, plannedAmount, actualAmount);
-        currentBudget = budget;
-        refreshSingleBudgetDisplay();
-        // 持久化存储
-        BudgetDataManager.saveBudget(currentBudget);
-        // 更新预算差额
-        updateBudgetBalance();
 
-    }
     
-    private void updateBudgetItem(String newBudgetName, double newPlannedAmount, double newActualAmount) {
-        // 更新当前预算属性
-        currentBudget.setName(newBudgetName);
-        currentBudget.setPlannedAmount(newPlannedAmount);
-        currentBudget.setActualAmount(newActualAmount);
-        
-        // 刷新界面显示
-        refreshSingleBudgetDisplay();
-        BudgetDataManager.saveBudget(currentBudget);
-        updateBudgetBalance();
-    }
-    
-    private HBox createBudgetItem(String budgetName, double plannedAmount, double actualAmount) {
-    HBox container = new HBox(10);
-    container.setAlignment(Pos.CENTER);
-    
-    VBox progressBox = new VBox(5);
-    progressBox.setPrefWidth(300);
-    
-    Label nameLabel = new Label(budgetName);
-    nameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
-    Label progressLabel = new Label(String.format("目标: %.2f / 当前: %.2f", plannedAmount, actualAmount));
-    ProgressBar progressBar = new ProgressBar();
-    progressBar.setPrefWidth(280);
-    
-    double progress = actualAmount / plannedAmount;
-    progressBar.setProgress(Math.min(progress, 1.0));
-    
-    Label percentageLabel = new Label(String.format("%.1f%%", progress * 100));
-    
-    progressBox.getChildren().addAll(nameLabel, progressLabel, progressBar, percentageLabel);
-
-    // ========== 新增编辑按钮逻辑（直接绑定当前预算） ==========
-    Button editButton = new Button("编辑");
-    editButton.setOnAction(e -> {
-        // 直接填充表单（无需索引）
-        budgetNameField.setText(budgetName);
-        plannedAmountField.setText(String.valueOf(plannedAmount));
-        actualAmountField.setText(String.valueOf(actualAmount));
-        inputGrid.setVisible(true);
-    });
-
-    // ========== 新增删除按钮逻辑（直接调用删除方法） ==========
-    Button deleteButton = new Button("删除");
-    deleteButton.setOnAction(e -> handleRemoveBudget()); // 直接调用控制器方法
-
-    container.getChildren().addAll(progressBox, editButton, deleteButton);
-    return container;
-}
-    
-    private void updateBudgetItemContent(HBox container, String budgetName, double plannedAmount, double actualAmount) {
-        VBox progressBox = (VBox) container.getChildren().get(0);
-        Label nameLabel = (Label) progressBox.getChildren().get(0);
-        Label progressLabel = (Label) progressBox.getChildren().get(1);
-        ProgressBar progressBar = (ProgressBar) progressBox.getChildren().get(2);
-        Label percentageLabel = (Label) progressBox.getChildren().get(3);
-        
-        nameLabel.setText(budgetName);
-        progressLabel.setText(String.format("目标: %.2f / 当前: %.2f", plannedAmount, actualAmount));
-        
-        double progress = actualAmount / plannedAmount;
-        progressBar.setProgress(Math.min(progress, 1.0));
-        percentageLabel.setText(String.format("%.1f%%", progress * 100));
-    }
-    
-    private void resetInputFields() {
-        budgetNameField.setText("");
-        plannedAmountField.setText("");
-        actualAmountField.setText("");
-    }
-    
-    private void showAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("错误");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
-
-    // 修改 updateBudgetBalance 方法，处理 null 值
-    private void updateBudgetBalance() {
-        Budget current = BudgetDataManager.loadBudget();
-        double totalPlanned = 0.0;
-        double totalActual = 0.0;
-        if (current != null) {
-            totalPlanned = current.getPlannedAmount();
-            totalActual = current.getActualAmount();
+    @FXML
+    private void handleEditBudget() {
+        if (currentBudget != null) {
+            showBudgetDialog("Edit Budget", 
+                currentBudget.getName(), 
+                currentBudget.getPlannedAmount(), 
+                currentBudget.getActualAmount()
+            );
         }
-        budgetBalanceLabel.setText(String.format("Budget Balance: %.2f yuan", totalPlanned - totalActual));
     }
 
-    /// 修改 handleRemoveBudget 方法，确保删除后数据一致
     @FXML
     private void handleRemoveBudget() {
         if (currentBudget != null) {
             BudgetDataManager.saveBudget(null);
             currentBudget = null;
-            singleBudgetContainer.getChildren().clear();
-            planListView.getItems().clear();
-            updateBudgetBalance();
+            refreshSingleBudgetDisplay();
+            showAlert("Budget removed successfully");
         }
     }
 
-    // 添加计划条目
-    @FXML
+    //================ Plan Management ================//
+        @FXML
     private void handleAddPlan() {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Add Plan");
-        dialog.setHeaderText("Enter plan description");
+        dialog.setHeaderText("Enter plan description:");
+        
+        // 显式设置按钮类型（TextInputDialog 默认已有 OK 和 Cancel）
+        dialog.getDialogPane().getButtonTypes().setAll(ButtonType.OK, ButtonType.CANCEL);
+
+        // 正确获取输入结果（返回 Optional<String>）
         Optional<String> result = dialog.showAndWait();
-        result.ifPresent(plan -> {
-            if (currentBudget != null) {
-                currentBudget.getPlans().add(plan); // 绑定到当前预算的 plans
-                planListView.setItems(currentBudget.getPlans());
+
+        // 检查用户是否点击了 OK（通过 Optional<String> 的存在性判断）
+        if (result.isPresent()) {
+            String plan = result.get().trim(); // 直接获取输入的字符串
+            if (!plan.isEmpty()) {
+                plans.add(plan);
+                currentBudget.setPlans(plans);
+                BudgetDataManager.saveBudget(currentBudget);
+                planListView.setItems(plans); // 强制刷新列表
             }
-        });
+        }
     }
 
-    // 删除计划条目
     @FXML
     private void handleRemovePlan() {
-    int selectedIndex = planListView.getSelectionModel().getSelectedIndex();
-    if (selectedIndex >= 0) {
-        plans.remove(selectedIndex);
-    }
+        int selectedIndex = planListView.getSelectionModel().getSelectedIndex();
+        if (selectedIndex >= 0) {
+            plans.remove(selectedIndex);
+            currentBudget.setPlans(plans); // 更新计划列表
+            BudgetDataManager.saveBudget(currentBudget);
+        }
     }
 
-  
-    // 修改初始化逻辑
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    //================ Core Logic ================//
+    // 修改后的 showBudgetDialog 方法（编辑逻辑）
+    private void showBudgetDialog(String title, String name, double planned, double actual) {
+        // 改用 Dialog<ButtonType> 替代 TextInputDialog
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle(title);
+        
+        // 添加 OK 和 Cancel 按钮
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        // 构建输入表单（原有代码不变）
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20));
+
+        TextField nameField = new TextField(name);
+        TextField plannedField = new TextField(String.valueOf(planned));
+        TextField actualField = new TextField(String.valueOf(actual));
+
+        grid.addRow(0, new Label("Budget Name:"), nameField);
+        grid.addRow(1, new Label("Planned Amount:"), plannedField);
+        grid.addRow(2, new Label("Actual Amount:"), actualField);
+
+        dialog.getDialogPane().setContent(grid);
+
+        // 处理结果
+        Optional<ButtonType> result = dialog.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) { // 明确检查 OK 按钮
+            try {
+                String newName = nameField.getText().trim();
+                double newPlanned = Double.parseDouble(plannedField.getText());
+                double newActual = Double.parseDouble(actualField.getText());
+
+                validateInput(newName, newPlanned, newActual);
+
+                // 直接更新现有对象，避免创建新实例
+                currentBudget.setName(newName);
+                currentBudget.setPlannedAmount(newPlanned);
+                currentBudget.setActualAmount(newActual);
+                BudgetDataManager.saveBudget(currentBudget);
+                refreshSingleBudgetDisplay();
+
+                } catch (NumberFormatException e) {
+                        showAlert("Invalid number format");
+                } catch (IllegalArgumentException e) {
+                        showAlert(e.getMessage());
+                }
+        }
+    }
+    
+    private void validateInput(String name, double planned, double actual) {
+        if (name.isEmpty()) throw new IllegalArgumentException("Name cannot be empty");
+        if (planned <= 0) throw new IllegalArgumentException("Planned amount must > 0");
+        if (actual < 0) throw new IllegalArgumentException("Actual amount cannot be negative");
+        if (planned <= actual) throw new IllegalArgumentException("Planned must > Actual");
+    }
+
+    // 修改后的 refreshSingleBudgetDisplay 方法
+    private void refreshSingleBudgetDisplay() {
+        singleBudgetContainer.getChildren().clear(); // 确保清空旧内容
+
+        if (currentBudget != null) {
+            HBox budgetItem = createBudgetItem(
+                currentBudget.getName(),
+                currentBudget.getPlannedAmount(),
+                currentBudget.getActualAmount()
+            );
+            singleBudgetContainer.getChildren().add(budgetItem); // 只添加一次
+        }
+    }
+    
+
+    //================ UI Components ================//
+    private HBox createBudgetItem(String name, double planned, double actual) {
+        HBox container = new HBox(15);
+        container.setAlignment(Pos.CENTER_LEFT);
+        container.setStyle("-fx-padding: 15; -fx-background-color: #f8f9fa; -fx-border-radius: 5;");
+
+        // Progress Section
+        VBox progressBox = new VBox(8);
+        Label nameLabel = new Label(name);
+        nameLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        
+        ProgressBar progressBar = new ProgressBar(actual / planned);
+        progressBar.setPrefWidth(300);
+        
+        Label detailLabel = new Label(String.format("Planned: $%.2f | Actual: $%.2f", planned, actual));
+        detailLabel.setStyle("-fx-text-fill: #666;");
+
+        progressBox.getChildren().addAll(nameLabel, progressBar, detailLabel);
+
+        // Action Buttons
+        Button editBtn = new Button("Edit");
+        editBtn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
+        editBtn.setOnAction(e -> showBudgetDialog("Edit Budget", name, planned, actual));
+
+        Button deleteBtn = new Button("Delete");
+        deleteBtn.setStyle("-fx-background-color: #f44336; -fx-text-fill: white;");
+        deleteBtn.setOnAction(e -> handleRemoveBudget());
+
+        container.getChildren().addAll(progressBox, editBtn, deleteBtn);
+        return container;
+    }
+
+    //================ Utilities ================//
+    private void loadBudgetData() {
         currentBudget = BudgetDataManager.loadBudget();
         if (currentBudget != null) {
-            refreshSingleBudgetDisplay();
-            planListView.setItems(currentBudget.getPlans()); // 绑定当前预算的 plans
+            plans.setAll(currentBudget.getPlans());
         }
-        updateBudgetBalance();
     }
 
-    private void refreshSingleBudgetDisplay() {
-    singleBudgetContainer.getChildren().clear();
-    if (currentBudget != null) {
-        HBox budgetItem = createBudgetItem(
-        currentBudget.getName(),
-        currentBudget.getPlannedAmount(),
-        currentBudget.getActualAmount()
-        );
-        singleBudgetContainer.getChildren().add(budgetItem);
+    private void updateBudgetBalance() {
+        double balance = (currentBudget != null) ? 
+            currentBudget.getPlannedAmount() - currentBudget.getActualAmount() : 0;
+        budgetBalanceLabel.setText(String.format("Budget Balance: $%.2f", balance));
     }
+
+    private void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("System Message");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }

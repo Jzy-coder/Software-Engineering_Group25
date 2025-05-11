@@ -3,46 +3,41 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.ListView?>
 
-<BorderPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.finance.controller.BudgetController">
-  <top>
-    <VBox alignment="TOP_LEFT" styleClass="card">
-      <padding>
-        <Insets top="20" right="20" bottom="20" left="20"/>
-      </padding>
-      <HBox spacing="10" alignment="CENTER_LEFT">
-        <Button text="Add" styleClass="button" onAction="#handleAddBudget"/>
-        <Button text="Remove" styleClass="button" onAction="#handleRemoveBudget"/>
-      </HBox>
-      <Label text="Budget Management" styleClass="label-heading"/>
-      <Label fx:id="budgetBalanceLabel" text="Budget Balance: 0.00"/>
-    </VBox>
-  </top>
+<VBox spacing="20" xmlns="http://javafx.com/javafx/8" 
+      xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="com.finance.controller.BudgetController"
+      style="-fx-padding: 20; -fx-background-color: #ffffff;">
 
-  <center>
+    <!-- Header Section -->
+    <HBox spacing="20" alignment="CENTER_LEFT">
+        <Label text="Budget Manager" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+        <Label fx:id="budgetBalanceLabel" style="-fx-font-size: 18px; -fx-text-fill: #2e7d32;"/>
+    </HBox>
 
-    <VBox spacing="20" alignment="CENTER">
-      <!-- 单个预算显示区域 -->
-      <VBox fx:id="singleBudgetContainer" spacing="10" alignment="CENTER" styleClass="card">
-        <padding>
-          <Insets top="10" right="10" bottom="10" left="10"/>
-        </padding>
-      </VBox>
+    <!-- Action Buttons -->
+    <HBox spacing="10">
+        <Button text="Add" onAction="#handleAddBudget" 
+               style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold;"/>
+        <Button text="Review" onAction="#handleEditBudget" 
+               style="-fx-background-color: #FF9800; -fx-text-fill: white;"/>
+        <Button text="Delete" onAction="#handleRemoveBudget" 
+               style="-fx-background-color: #f44336; -fx-text-fill: white;"/>
+    </HBox>
 
-      <!-- Plan 区域 -->
-      <VBox spacing="10" alignment="CENTER" styleClass="card">
-        <ListView fx:id="planListView" prefHeight="150"/>
-        <HBox spacing="10">
-          <Button text="Add Plan" onAction="#handleAddPlan"/>
-          <Button text="Remove Plan" onAction="#handleRemovePlan"/>
+    <!-- Budget Display Area -->
+    <VBox fx:id="singleBudgetContainer" spacing="15" 
+         style="-fx-border-color: #e0e0e0; -fx-border-radius: 5; -fx-padding: 15;"/>
+
+    <!-- Plan Management -->
+    <VBox spacing="10">
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Plans" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+            <Button text="Add Plan" onAction="#handleAddPlan" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+            <Button text="Remove Plan" onAction="#handleRemovePlan" style="-fx-background-color: #9E9E9E; -fx-text-fill: white;"/>
         </HBox>
-      </VBox>
-
-      <!-- 原输入表单（位置调整） -->
-      <GridPane fx:id="inputGrid" visible="false" vgap="10" hgap="10" alignment="CENTER" styleClass="card">
-        <!-- 保留原有输入字段 -->
-      </GridPane>
+        <ListView fx:id="planListView" 
+                 style="-fx-border-color: #bdbdbd; -fx-border-radius: 3; -fx-pref-height: 200;"/>
     </VBox>
-  </center>
-</BorderPane>
+
+</VBox>

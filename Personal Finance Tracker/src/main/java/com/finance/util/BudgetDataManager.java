@@ -11,38 +11,32 @@ public class BudgetDataManager {
      private static final String BUDGET_FILE = "budget.dat";
     
     
-     // 保存单预算对象
-    public static void saveBudget(Budget budget) {
-    File dataDir = new File(DATA_DIR);
-    if (!dataDir.exists()) {
-        dataDir.mkdirs();
-    }
-    File budgetFile = new File(DATA_DIR, BUDGET_FILE);
-    System.out.println("数据存储路径: " + budgetFile.getAbsolutePath());
-    try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(budgetFile))) {
-        oos.writeObject(budget);
-    } catch (IOException e) {
-        System.err.println("保存失败，路径: " + budgetFile.getAbsolutePath());
-        e.printStackTrace();
-    }
-}
-
-    // 加载单预算对象
-    public static Budget loadBudget() {
-        File budgetFile = new File(DATA_DIR, BUDGET_FILE);
-        if (!budgetFile.exists()) {
-            return null; // 文件不存在时返回 null
+     public static void saveBudget(Budget budget) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(
+            new FileOutputStream(new File(DATA_DIR, BUDGET_FILE)))
+        ) {
+            oos.writeObject(budget);
+            System.out.println("Budget saved: " + budget); // 添加日志
+        } catch (IOException e) {
+            System.err.println("Failed to save budget: " + e.getMessage());
         }
+    }
 
+    public static Budget loadBudget() {
+        File file = new File(DATA_DIR, BUDGET_FILE);
+        if (!file.exists()) return null;
+        
         try (ObjectInputStream ois = new ObjectInputStream(
-                new FileInputStream(budgetFile))) {
-            return (Budget) ois.readObject(); // 读取单个 Budget 对象
+            new FileInputStream(file))
+        ) {
+            Budget budget = (Budget) ois.readObject();
+            System.out.println("Budget loaded: " + budget); // 添加日志
+            return budget;
         } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
+            System.err.println("Failed to load budget: " + e.getMessage());
             return null;
         }
     }
-
 
     public static void handleUsernameChange(String oldUsername, String newUsername) {
         File oldFile = new File(DATA_DIR + "/budgets_" + oldUsername + ".dat");
