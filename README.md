@@ -40,8 +40,14 @@ A comprehensive personal finance management application built with JavaFX, helpi
 - Trend analysis
 - Period comparison
 - Chart visualization
-
-### 6. Dashboard
+  
+### 6.Personal Finacial AI Assistant
+- AI Chat Interface
+- Personal Choice Of Different Kinds AI Styles
+- Generating Personal Finacial Plans
+- Clear The Chat Interface And Start A New One
+  
+### 7. Dashboard
 - Welcome screen with daily summary
 - Today's transaction overview
 - Current balance display
@@ -153,6 +159,8 @@ The application uses the following configuration files:
 4. More data analysis tools
 5. Custom report generation
 6. API integration support
+7. Different languages for different regions
+8. UI improvement
 
 ## FAQ
 1. How to backup data
@@ -167,8 +175,9 @@ The application uses the following configuration files:
 - Open source contributors
 
 ## Change Log
-### Version 2.0.0 (2025-04-21)
-- Initial release
+### Version 3.0.0 (2025-05-12)
 - Core functionality implementation
 - Basic interface design
 - Data storage functionality
+- Chart implementation
+- AI chat function
