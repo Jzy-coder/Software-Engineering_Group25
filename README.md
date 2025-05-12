@@ -41,10 +41,10 @@ A comprehensive personal finance management application built with JavaFX, helpi
 - Period comparison
 - Chart visualization
   
-### 6.Personal Finacial AI Assistant
+### 6.Personal Financial AI Assistant
 - AI chat interface
 - Personal choice of different kinds AI styles
-- Generating personal finacial plans
+- Generating personal financial plans
 - Clear the chat interface and start a new one
   
 ### 7. Dashboard
