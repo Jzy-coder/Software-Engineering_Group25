@@ -66,6 +66,17 @@ public class SettingsController implements Initializable {
         dialog.setTitle("Change Username");
         dialog.setHeaderText("Please enter new username");
         dialog.setContentText("Username:");
+        
+        // 应用CSS样式
+        DialogPane dialogPane = dialog.getDialogPane();
+        dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+        dialogPane.getStyleClass().add("dialog-pane");
+        
+        // 修改按钮文本
+        dialog.getDialogPane().getButtonTypes().setAll(
+            new ButtonType("Register", ButtonBar.ButtonData.OK_DONE),
+            new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE)
+        );
 
         // Get user input
         Optional<String> result = dialog.showAndWait();
@@ -178,8 +189,14 @@ public class SettingsController implements Initializable {
         dialog.setHeaderText("Please enter new password");
         
         // Set buttons
-        ButtonType confirmButtonType = new ButtonType("Confirm", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(confirmButtonType, ButtonType.CANCEL);
+        ButtonType registerButtonType = new ButtonType("Register", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(registerButtonType, cancelButtonType);
+        
+        // 应用CSS样式
+        DialogPane dialogPane = dialog.getDialogPane();
+        dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+        dialogPane.getStyleClass().add("dialog-pane");
         
         // Create dialog content
         GridPane grid = new GridPane();
@@ -200,7 +217,7 @@ public class SettingsController implements Initializable {
         
         // Show dialog and handle result
         Optional<ButtonType> result = dialog.showAndWait();
-        if (result.isPresent() && result.get() == confirmButtonType) {
+        if (result.isPresent() && result.get() == registerButtonType) {
             String newPassword = newPasswordField.getText();
             String confirmPassword = confirmPasswordField.getText();
             
@@ -256,6 +273,17 @@ public class SettingsController implements Initializable {
         dialog.setHeaderText("Please select your gender");
         dialog.setContentText("Gender:");
         
+        // 应用CSS样式
+        DialogPane dialogPane = dialog.getDialogPane();
+        dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+        dialogPane.getStyleClass().add("dialog-pane");
+        
+        // 修改按钮文本
+        dialog.getDialogPane().getButtonTypes().setAll(
+            new ButtonType("Register", ButtonBar.ButtonData.OK_DONE),
+            new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE)
+        );
+        
         // Set default selection
         String currentGender = UserInfoManager.getGender();
         if (!currentGender.isEmpty()) {
@@ -283,6 +311,17 @@ public class SettingsController implements Initializable {
         dialog.setHeaderText("Please enter your area");
         dialog.setContentText("Area:");
         
+        // 应用CSS样式
+        DialogPane dialogPane = dialog.getDialogPane();
+        dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+        dialogPane.getStyleClass().add("dialog-pane");
+        
+        // 修改按钮文本
+        dialog.getDialogPane().getButtonTypes().setAll(
+            new ButtonType("Register", ButtonBar.ButtonData.OK_DONE),
+            new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE)
+        );
+        
         // Get user input
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(area -> {
@@ -307,6 +346,17 @@ public class SettingsController implements Initializable {
         dialog.setTitle("Change Occupation");
         dialog.setHeaderText("Please enter your occupation");
         dialog.setContentText("Occupation:");
+        
+        // 应用CSS样式
+        DialogPane dialogPane = dialog.getDialogPane();
+        dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+        dialogPane.getStyleClass().add("dialog-pane");
+        
+        // 修改按钮文本
+        dialog.getDialogPane().getButtonTypes().setAll(
+            new ButtonType("Register", ButtonBar.ButtonData.OK_DONE),
+            new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE)
+        );
         
         // Get user input
         Optional<String> result = dialog.showAndWait();
@@ -371,6 +421,18 @@ public class SettingsController implements Initializable {
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
+        
+        // 应用CSS样式
+        DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+        dialogPane.getStyleClass().add("dialog-pane");
+        
+        // 修改按钮文本
+        alert.getButtonTypes().clear();
+        alert.getButtonTypes().addAll(
+            new ButtonType("OK", ButtonBar.ButtonData.OK_DONE)
+        );
+        
         alert.showAndWait();
     }
 }
