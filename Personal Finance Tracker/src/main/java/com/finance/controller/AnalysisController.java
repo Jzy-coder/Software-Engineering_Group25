@@ -240,7 +240,23 @@ public class AnalysisController implements Initializable, TransactionEventListen
                 data.getNode().setEffect(new DropShadow(10, javafx.scene.paint.Color.GRAY));
                 // 当显示"No Data"时，金额显示为0.00
                 double amount = data.getName().equals("No Data") ? 0.00 : data.getPieValue();
-                showAlert("Selection: " + data.getName() + " - Amount: " + String.format("%.2f", amount));
+                
+                // 创建带样式的弹窗
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Selection Details");
+                alert.setHeaderText(data.getName());
+                alert.setContentText("Amount: " + String.format("%.2f", amount));
+                
+                // 应用CSS样式
+                DialogPane dialogPane = alert.getDialogPane();
+                dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+                dialogPane.getStyleClass().add("dialog-pane");
+                
+                // Set button text to English
+                ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+                alert.getButtonTypes().setAll(okButton);
+                
+                alert.showAndWait();
             });
             
             colorIndex = (colorIndex + 1) % 10; // 循环使用10种颜色
@@ -400,6 +416,12 @@ public class AnalysisController implements Initializable, TransactionEventListen
         alert.setTitle("Information");
         alert.setHeaderText(null);
         alert.setContentText(message);
+        
+        // 应用CSS样式
+        DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+        dialogPane.getStyleClass().add("dialog-pane");
+        
         // Set button text to English
         ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
         alert.getButtonTypes().setAll(okButton);
@@ -443,6 +465,9 @@ public class AnalysisController implements Initializable, TransactionEventListen
         });
         
         barChart.getData().add(series);
+        
+        // 隐藏图例
+        barChart.setLegendVisible(false);
         
         // 为每个柱体设置不同的颜色
         String[] colors = {
