@@ -16,6 +16,7 @@ public class RegisterDialog extends Dialog<String> {
 
         // Set dialog style
         DialogPane dialogPane = getDialogPane();
+        dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
         dialogPane.getStyleClass().add("dialog-pane");
 
         // Create form layout
@@ -100,7 +101,18 @@ public class RegisterDialog extends Dialog<String> {
         alert.setTitle("Error");
         alert.setHeaderText(null);
         alert.setContentText(message);
-        alert.getDialogPane().getStyleClass().add("dialog-pane");
+        
+        // 应用CSS样式
+        DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+        dialogPane.getStyleClass().add("dialog-pane");
+        
+        // 修改按钮文本
+        alert.getButtonTypes().clear();
+        alert.getButtonTypes().addAll(
+            new ButtonType("OK", ButtonBar.ButtonData.OK_DONE)
+        );
+        
         alert.showAndWait();
     }
 }

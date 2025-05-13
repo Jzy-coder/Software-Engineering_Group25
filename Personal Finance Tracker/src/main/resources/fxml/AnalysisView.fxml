@@ -9,6 +9,7 @@
     <top>
         <VBox spacing="10" styleClass="card">
             <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="View" styleClass="label-bold" />
                 <ComboBox fx:id="modelComboBox" styleClass="text-field" prefWidth="120" promptText="Select Model" />
                 <RadioButton fx:id="incomeRadio" text="Income" selected="true">
                     <toggleGroup>

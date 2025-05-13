@@ -1,0 +1,39 @@
+/* 饼图样式 */
+.pie-chart {
+    -fx-background-color: transparent;
+    -fx-padding: 10px;
+}
+
+.pie-chart-legend {
+    -fx-background-color: transparent;
+    -fx-padding: 10px;
+    -fx-font-size: 12px;
+}
+
+.chart-pie {
+    -fx-border-width: 1px;
+    -fx-border-color: white;
+}
+
+.chart-pie-label {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-fill: #2c3e50;
+}
+
+.chart-pie-label-line {
+    -fx-stroke: #2c3e50;
+    -fx-stroke-width: 1px;
+}
+
+/* 饼图数据颜色 */
+.data0 { -fx-pie-color: #f3622d; }
+.data1 { -fx-pie-color: #fba71b; }
+.data2 { -fx-pie-color: #57b757; }
+.data3 { -fx-pie-color: #41a9c9; }
+.data4 { -fx-pie-color: #4258c9; }
+.data5 { -fx-pie-color: #9a42c8; }
+.data6 { -fx-pie-color: #c84164; }
+.data7 { -fx-pie-color: #888888; }
+.data8 { -fx-pie-color: #e45e9d; }
+.data9 { -fx-pie-color: #5e9de4; }

@@ -503,6 +503,13 @@ public class InvestmentController {
         rightPieChart.setMaxSize(350, 350);
 
         // Add date validation to prevent selecting future dates or dates before start date
+        leftStartDatePicker.setDayCellFactory(picker -> new javafx.scene.control.DateCell() {
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                setDisable(empty || date.compareTo(LocalDate.now()) > 0);
+            }
+        });
+        
         leftEndDatePicker.setDayCellFactory(picker -> new javafx.scene.control.DateCell() {
             public void updateItem(LocalDate date, boolean empty) {
                 super.updateItem(date, empty);
@@ -510,6 +517,13 @@ public class InvestmentController {
                           date.compareTo(leftStartDatePicker.getValue()) < 0);
             }
         });
+        rightStartDatePicker.setDayCellFactory(picker -> new javafx.scene.control.DateCell() {
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                setDisable(empty || date.compareTo(LocalDate.now()) > 0);
+            }
+        });
+        
         rightEndDatePicker.setDayCellFactory(picker -> new javafx.scene.control.DateCell() {
             public void updateItem(LocalDate date, boolean empty) {
                 super.updateItem(date, empty);

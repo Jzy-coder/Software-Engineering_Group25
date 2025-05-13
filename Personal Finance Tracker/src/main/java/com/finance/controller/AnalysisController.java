@@ -78,8 +78,8 @@ public class AnalysisController implements Initializable, TransactionEventListen
         transactions = FXCollections.observableArrayList(transactionService.getAllTransactions());
 
         // 初始化模型下拉框
-        modelComboBox.setItems(FXCollections.observableArrayList("view", "pie chart", "column chart"));
-        modelComboBox.getSelectionModel().selectFirst();
+        modelComboBox.setItems(FXCollections.observableArrayList("pie chart", "column chart"));
+        modelComboBox.getSelectionModel().selectFirst(); // 选择饼状图作为默认视图
 
         // 设置初始选择日期为有交易数据的日期中的最新日期，如果没有则使用当前日期
         List<LocalDate> availableDates = getAvailableTransactionDates();
@@ -112,7 +112,8 @@ public class AnalysisController implements Initializable, TransactionEventListen
 
         // 初始化饼图样式
         pieChart.setLabelLineLength(20);
-        pieChart.setLegendVisible(false);
+        pieChart.setLegendVisible(true);
+        pieChart.setLegendSide(javafx.geometry.Side.BOTTOM);
         
         // 注册为交易事件监听器
         TransactionEventManager.getInstance().addTransactionEventListener(this);
@@ -225,14 +226,41 @@ public class AnalysisController implements Initializable, TransactionEventListen
     }
 
     private void setupPieChartListeners() {
-        pieChart.getData().forEach(data -> {
+        int colorIndex = 0;
+        for (PieChart.Data data : pieChart.getData()) {
             Node node = data.getNode();
+            // 设置数据片段的样式类
+            node.getStyleClass().add("data" + colorIndex);
+            
+            // 添加点击效果
             node.setOnMouseClicked(e -> {
-                data.getNode().setEffect(new DropShadow());
-                showAlert("Selection: " + data.getName() + " - Amount: " + String.format("%.2f", data.getPieValue()));
+                // 移除其他片段的阴影效果
+                pieChart.getData().forEach(d -> d.getNode().setEffect(null));
+                // 为当前片段添加阴影效果
+                data.getNode().setEffect(new DropShadow(10, javafx.scene.paint.Color.GRAY));
+                // 当显示"No Data"时，金额显示为0.00
+                double amount = data.getName().equals("No Data") ? 0.00 : data.getPieValue();
+                
+                // 创建带样式的弹窗
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Selection Details");
+                alert.setHeaderText(data.getName());
+                alert.setContentText("Amount: " + String.format("%.2f", amount));
+                
+                // 应用CSS样式
+                DialogPane dialogPane = alert.getDialogPane();
+                dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+                dialogPane.getStyleClass().add("dialog-pane");
+                
+                // Set button text to English
+                ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+                alert.getButtonTypes().setAll(okButton);
+                
+                alert.showAndWait();
             });
-            node.setStyle("-fx-border-width: 1; -fx-border-color: white;");
-        });
+            
+            colorIndex = (colorIndex + 1) % 10; // 循环使用10种颜色
+        }
     }
 
     private void updateChartStyle() {
@@ -240,31 +268,49 @@ public class AnalysisController implements Initializable, TransactionEventListen
         pieChart.setLabelLineLength(30);
         pieChart.setLegendVisible(true);
         pieChart.setLegendSide(javafx.geometry.Side.BOTTOM);
-        pieChart.setStyle("-fx-font-size: 12px; -fx-padding: 10 0 0 20;");
         pieChart.setClockwise(false);
-        pieChart.setStartAngle(5);
+        pieChart.setStartAngle(90);
     }
 
     private void initializeCharts() {
         // 初始化饼图
         pieChart = new PieChart();
+        pieChart.getStylesheets().add(getClass().getResource("/css/chart-styles.css").toExternalForm());
+        pieChart.getStyleClass().add("pie-chart");
+        pieChart.setLabelLineLength(30);
+        pieChart.setLegendVisible(true);
+        pieChart.setLegendSide(javafx.geometry.Side.BOTTOM);
+        pieChart.setStartAngle(90);
+        pieChart.setClockwise(false);
+        // 禁用动画效果
+        pieChart.setAnimated(false);
+        // 设置饼图的首选大小
+        pieChart.setPrefSize(600, 400);
+        // 设置标签可见性和位置
+        pieChart.setLabelsVisible(true);
         pieChart.setLabelLineLength(20);
-        pieChart.setLegendVisible(false);
+        // 启用自动调整大小
+        pieChart.setMinSize(300, 200);
+        pieChart.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         
         // 初始化柱状图
         CategoryAxis xAxis = new CategoryAxis();
         NumberAxis yAxis = new NumberAxis();
-        xAxis.setLabel("类别");
-        yAxis.setLabel("金额");
+        xAxis.setLabel("Category");
+        yAxis.setLabel("Amount");
         barChart = new BarChart<>(xAxis, yAxis);
-        barChart.setTitle("收支分析");
+        barChart.setTitle("Income/Expense Analysis");
+        barChart.setAnimated(false); // 禁用动画效果
     }
     
     private void showDefaultView() {
+        // 默认显示饼状图
         chartContainer.getChildren().clear();
-        Label defaultLabel = new Label("请选择图表类型");
-        defaultLabel.setStyle("-fx-font-size: 16px;");
-        chartContainer.getChildren().add(defaultLabel);
+        ObservableList<PieChart.Data> pieChartData = createPieChartData("pie chart", incomeRadio.isSelected());
+        pieChart.setData(pieChartData);
+        setupPieChartListeners();
+        updateChartStyle();
+        chartContainer.getChildren().add(pieChart);
     }
     
     private void updateChartData() {
@@ -277,9 +323,22 @@ public class AnalysisController implements Initializable, TransactionEventListen
             case "pie chart":
                 ObservableList<PieChart.Data> pieChartData = createPieChartData(selectedModel, isIncome);
                 pieChart.setData(pieChartData);
+                // 重置饼图的样式和布局
+                pieChart.setStartAngle(90);
+                pieChart.setClockwise(false);
+                pieChart.setLabelsVisible(true);
+                pieChart.setLabelLineLength(20);
+                // 确保标签正确显示
+                pieChart.layout();
                 setupPieChartListeners();
                 updateChartStyle();
                 chartContainer.getChildren().add(pieChart);
+                // 在JavaFX应用程序线程中延迟刷新标签
+                javafx.application.Platform.runLater(() -> {
+                    pieChart.layout();
+                    pieChart.setLabelsVisible(false);
+                    pieChart.setLabelsVisible(true);
+                });
                 break;
                 
             case "column chart":
@@ -357,6 +416,15 @@ public class AnalysisController implements Initializable, TransactionEventListen
         alert.setTitle("Information");
         alert.setHeaderText(null);
         alert.setContentText(message);
+        
+        // 应用CSS样式
+        DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+        dialogPane.getStyleClass().add("dialog-pane");
+        
+        // Set button text to English
+        ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        alert.getButtonTypes().setAll(okButton);
         alert.showAndWait();
     }
     
@@ -390,7 +458,6 @@ public class AnalysisController implements Initializable, TransactionEventListen
         
         // 创建数据系列
         XYChart.Series<String, Number> series = new XYChart.Series<>();
-        series.setName(isIncome ? "收入" : "支出");
         
         // 添加数据点
         groupedData.forEach((type, amount) -> {
@@ -398,6 +465,22 @@ public class AnalysisController implements Initializable, TransactionEventListen
         });
         
         barChart.getData().add(series);
+        
+        // 隐藏图例
+        barChart.setLegendVisible(false);
+        
+        // 为每个柱体设置不同的颜色
+        String[] colors = {
+            "#f3622d", "#fba71b", "#57b757", "#41a9c9", "#4258c9",
+            "#9a42c8", "#c84164", "#888888", "#e45e9d", "#5e9de4"
+        };
+        
+        int colorIndex = 0;
+        for (XYChart.Data<String, Number> item : series.getData()) {
+            String color = colors[colorIndex % colors.length];
+            item.getNode().setStyle("-fx-bar-fill: " + color + ";");
+            colorIndex++;
+        }
     }
     
     @Override
