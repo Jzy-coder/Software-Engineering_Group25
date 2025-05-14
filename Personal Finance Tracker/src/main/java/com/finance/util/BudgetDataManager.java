@@ -28,17 +28,21 @@ public class BudgetDataManager {
                 System.out.println("Budget saved to: " + budgetFile.toAbsolutePath());
             }
             
-            // If budget is not null, add it to history
-            if (budget != null) {
-                addBudgetToHistory(budget);
-            }
+            // 不在这里自动添加到历史记录，而是由调用方决定是否添加
         } catch (IOException e) {
             System.err.println("Failed to save budget: " + e.getMessage());
             e.printStackTrace();
         }
     }
     
-    private static void addBudgetToHistory(Budget budget) {
+    /**
+     * 将预算添加到历史记录中
+     * 此方法应该只在创建新预算时调用，而不是在修改计划时调用
+     * @param budget 要添加到历史记录的预算
+     */
+    public static void addBudgetToHistory(Budget budget) {
+        if (budget == null) return;
+        
         List<Budget> history = loadBudgetHistory();
         
         // Create a new Budget object to avoid reference issues
