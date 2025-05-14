@@ -105,6 +105,8 @@ public class BudgetController implements Initializable {
                 // 创建新预算并保存
                 currentBudget = new Budget(name, planned, actual);
                 BudgetDataManager.saveBudget(currentBudget);
+                // 显式添加到历史记录中，因为这是新创建的预算
+                BudgetDataManager.addBudgetToHistory(currentBudget);
 
                 // 强制刷新界面
                 refreshSingleBudgetDisplay();
@@ -250,6 +252,7 @@ public class BudgetController implements Initializable {
                 currentBudget.setPlannedAmount(newPlanned);
                 currentBudget.setActualAmount(newActual);
                 BudgetDataManager.saveBudget(currentBudget);
+                // 编辑预算时不添加到历史记录中
                 refreshSingleBudgetDisplay();
                 updateBudgetBalance(); // 触发余额更新
 
@@ -329,7 +332,7 @@ public class BudgetController implements Initializable {
         progressStack.getChildren().addAll(progressBar, progressLabel); // 正确添加进度条和标签
 
         // 详细金额标签
-        Label detailLabel = new Label(String.format("Planned: $%.2f | Actual: $%.2f", planned, actual));
+        Label detailLabel = new Label(String.format("Planned: ￥%.2f | Actual: ￥%.2f", planned, actual));
         detailLabel.setStyle("-fx-text-fill: #666;");
 
         progressBox.getChildren().addAll(nameLabel, progressStack, detailLabel); // 替换为 progressStack
@@ -342,8 +345,18 @@ public class BudgetController implements Initializable {
         Button deleteBtn = new Button("Delete");
         deleteBtn.setStyle("-fx-background-color: #f44336; -fx-text-fill: white;");
         deleteBtn.setOnAction(e -> {
-            singleBudgetContainer.getChildren().remove(container); // 动态移除当前项
-            handleRemoveBudget(); // 调用控制器方法
+            // 添加确认弹窗
+            Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
+            confirmDialog.setTitle("Confirm deletion");
+            confirmDialog.setHeaderText("Delete confirmation");
+            confirmDialog.setContentText("Once deleted, it cannot be modified anymore. Are you sure you want to delete it?");
+            
+            // 等待用户确认
+            Optional<ButtonType> result = confirmDialog.showAndWait();
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                singleBudgetContainer.getChildren().remove(container); // 动态移除当前项
+                handleRemoveBudget(); // 调用控制器方法
+            }
         });
 
         container.getChildren().addAll(progressBox, editBtn, deleteBtn);
@@ -393,7 +406,7 @@ public class BudgetController implements Initializable {
         progressStack.getChildren().addAll(progressBar, progressLabel);
 
         // 详细金额标签
-        Label detailLabel = new Label(String.format("Planned: $%.2f | Actual: $%.2f", planned, actual));
+        Label detailLabel = new Label(String.format("Planned: ￥%.2f | Actual: ￥%.2f", planned, actual));
         detailLabel.setStyle("-fx-text-fill: #666;");
 
         progressBox.getChildren().addAll(nameLabel, progressStack, detailLabel);
@@ -428,7 +441,7 @@ public class BudgetController implements Initializable {
     private void updateBudgetBalance() {
         double balance = (currentBudget != null) ? 
             currentBudget.getPlannedAmount() - currentBudget.getActualAmount() : 0;
-        budgetBalanceLabel.setText(String.format("Budget Balance: $%.2f", balance));
+        budgetBalanceLabel.setText(String.format("Budget Balance: ￥%.2f", balance));
     }
 
     private void showAlert(String message) {
