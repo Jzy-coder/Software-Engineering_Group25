@@ -34,8 +34,8 @@ A comprehensive personal finance management application built with JavaFX, helpi
 - Interactive data visualization
 - Custom date range selection
 
-### 5. Investment Portfolio
-- Investment tracking
+### 5. Income/Expense Portfolio
+- Income/Expense tracking
 - Multiple view types (single/comparative)
 - Trend analysis
 - Period comparison
