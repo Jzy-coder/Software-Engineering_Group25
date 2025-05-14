@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 import org.slf4j.Logger;
@@ -140,6 +141,26 @@ public class IncomeExpenseController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         // 为singleDatePicker添加监听逻辑，实现选择日期后自动筛选并刷新transactionTable，仅显示所选日期的交易记录。
         if (singleDatePicker != null) {
+            // 设置日期单元格工厂，只允许选择有交易记录的日期
+            singleDatePicker.setDayCellFactory(picker -> new DateCell() {
+                @Override
+                public void updateItem(LocalDate date, boolean empty) {
+                    super.updateItem(date, empty);
+                    boolean hasTransactions = false;
+                    for (Transaction t : transactionList) {
+                        if (t.getDate() != null && t.getDate().toLocalDate().isEqual(date)) {
+                            hasTransactions = true;
+                            break;
+                        }
+                    }
+                    setDisable(!hasTransactions);
+                    if (!hasTransactions) {
+                        setStyle("-fx-background-color: #fafafa;");
+                    }
+                }
+            });
+
+            // 添加日期选择监听器
             singleDatePicker.valueProperty().addListener((observable, oldValue, newValue) -> {
                 if (newValue != null) {
                     ObservableList<Transaction> filtered = FXCollections.observableArrayList();
@@ -278,8 +299,17 @@ public class IncomeExpenseController implements Initializable {
      */
     private void loadTransactions() {
         transactionList.clear();
+        // 加载所有交易记录
         transactionList.addAll(transactionService.getAllTransactions());
-        transactionTable.setItems(transactionList);
+        // 初始化时只显示当天的交易记录
+        ObservableList<Transaction> todayTransactions = FXCollections.observableArrayList();
+        LocalDate today = LocalDate.now();
+        for (Transaction t : transactionList) {
+            if (t.getDate() != null && t.getDate().toLocalDate().isEqual(today)) {
+                todayTransactions.add(t);
+            }
+        }
+        transactionTable.setItems(todayTransactions);
     }
     
     /**
@@ -532,66 +562,27 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
         confirmAlert.setHeaderText(null);
         confirmAlert.setContentText("Are you sure you want to delete this transaction?");
         
-        // 修正语法错误，去掉多余的右括号并添加分号
-        confirmAlert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                // 原文件选择器逻辑保持不变
-                FileChooser fileChooser = new FileChooser();
-                fileChooser.setTitle("Select CSV File");
-                
-                fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
-                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV file", "*.csv"));
-                File file = fileChooser.showOpenDialog(transactionTable.getScene().getWindow());
-
-                if (file != null) {
-                    try {
-                        // CSV解析逻辑
-                        List<Transaction> importedTransactions = CsvUtil.parseCSV(file);
-
-                        // 创建预览对话框
-                        Dialog<ButtonType> dialog = new Dialog<>();
-                        dialog.setTitle("Import preview");
-                        dialog.setHeaderText(String.format("Found %d records ready for import", importedTransactions.size()));
-                        
-                        // 添加预览表格
-                        TableView<Transaction> previewTable = createPreviewTable(importedTransactions);
-                        dialog.getDialogPane().setContent(previewTable);
-                        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-                        
-                        if (dialog.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
-                            transactionService.batchImport(importedTransactions);
-                            loadTransactions();
-                            updateSummary();
-                            Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
-                            successAlert.setTitle("Success");
-                            successAlert.setHeaderText(String.format("Successfully imported %d records", importedTransactions.size()));
-                            successAlert.showAndWait();
-                        }
-                    } catch (Exception e) {
-                        showAlert("CSV import failed: " + e.getMessage());
-                    }
-                }
-            }
-            
+        Optional<ButtonType> result = confirmAlert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
-                    // Check if transaction ID is null
-                    if (transaction.getId() == null) {
-                        showAlert("Cannot delete transaction: Invalid transaction ID");
-                        return;
-                    }
-                    
-                    // Delete from database
-                    transactionService.deleteTransaction(transaction.getId());
-                    
-                    // Refresh table
-                    loadTransactions();
-                    updateSummary();
-                    
-                } catch (Exception e) {
-                    showAlert("Failed to delete transaction: " + e.getMessage());
+                // Check if transaction ID is null
+                if (transaction.getId() == null) {
+                    showAlert("Cannot delete transaction: Invalid transaction ID");
+                    return;
                 }
-            });
+                
+                // Delete from database
+                transactionService.deleteTransaction(transaction.getId());
+                
+                // Refresh table
+                loadTransactions();
+                updateSummary();
+                
+            } catch (Exception e) {
+                showAlert("Failed to delete transaction: " + e.getMessage());
+            }
         }
+    }
     
     /**
      * Reset form to add mode
