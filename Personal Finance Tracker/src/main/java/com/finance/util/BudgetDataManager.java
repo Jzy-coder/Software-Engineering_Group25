@@ -143,4 +143,44 @@ public class BudgetDataManager {
             return new ArrayList<>();
         }
     }
+    
+    /**
+     * 更新预算历史记录中的特定预算项
+     * 此方法在编辑预算时调用，确保历史记录中的预算也得到更新
+     * @param oldBudget 编辑前的预算（用于查找匹配项）
+     * @param newBudget 编辑后的预算
+     */
+    public static void updateBudgetInHistory(Budget oldBudget, Budget newBudget) {
+        if (oldBudget == null || newBudget == null) return;
+        
+        List<Budget> history = loadBudgetHistory();
+        boolean found = false;
+        
+        // 查找匹配的预算项并更新
+        for (int i = 0; i < history.size(); i++) {
+            Budget historyBudget = history.get(i);
+            // 通过名称和金额匹配确定是同一预算项
+            if (historyBudget.getName().equals(oldBudget.getName()) && 
+                Math.abs(historyBudget.getPlannedAmount() - oldBudget.getPlannedAmount()) < 0.01 && 
+                Math.abs(historyBudget.getActualAmount() - oldBudget.getActualAmount()) < 0.01) {
+                
+                // 更新历史记录中的预算项
+                historyBudget.setName(newBudget.getName());
+                historyBudget.setPlannedAmount(newBudget.getPlannedAmount());
+                historyBudget.setActualAmount(newBudget.getActualAmount());
+                historyBudget.setPlans(newBudget.getPlans());
+                
+                found = true;
+                break;
+            }
+        }
+        
+        // 如果没有找到匹配项，则添加为新项
+        if (!found) {
+            addBudgetToHistory(newBudget);
+        } else {
+            // 保存更新后的历史记录
+            saveBudgetHistory(history);
+        }
+    }
 }
