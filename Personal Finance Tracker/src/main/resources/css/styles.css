@@ -145,3 +145,100 @@
     -fx-background-color: #45a049;
 }
 
+/* BudgetView Dialog Styles */
+.confirmation-dialog .header-panel {
+    -fx-background-color: #2196F3; /* Blue for confirmation */
+}
+
+.error-alert .header-panel {
+    -fx-background-color: #f44336; /* Red for error */
+}
+
+.error-alert .label {
+    -fx-text-fill: white;
+}
+
+.info-alert .header-panel {
+    -fx-background-color: #00BCD4; /* Cyan for info */
+}
+
+.review-dialog .header-panel {
+    -fx-background-color: #FF9800; /* Orange for review */
+}
+
+.success-alert .header-panel {
+    -fx-background-color: #4CAF50; /* Green for success */
+}
+
+.success-alert .label {
+    -fx-text-fill: white;
+}
+
+.warning-alert .header-panel {
+    -fx-background-color: #FFC107; /* Amber for warning */
+}
+
+.input-dialog .header-panel {
+    -fx-background-color: #607D8B; /* Blue Grey for input */
+}
+
+/* General dialog pane styling to ensure consistency */
+.dialog-pane {
+    -fx-border-color: #bdbdbd;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 5);
+}
+
+.dialog-pane .label {
+    -fx-font-size: 14px;
+}
+
+.dialog-pane .header-panel {
+    -fx-padding: 10px 15px;
+}
+
+.dialog-pane .header-panel .label {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white; /* Default text fill for header, specific alerts can override */
+}
+
+.dialog-pane .content.label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #333333;
+}
+
+.dialog-pane .button-bar .button {
+    -fx-font-size: 14px;
+    -fx-padding: 8px 20px;
+}
+
+/* Specific styling for different alert types if needed beyond header */
+.error-alert {
+    /* Add specific styles for error dialog content or buttons if needed */
+}
+
+.success-alert {
+    /* Add specific styles for success dialog content or buttons if needed */
+}
+
+.warning-alert {
+    /* Add specific styles for warning dialog content or buttons if needed */
+}
+
+.info-alert {
+    /* Add specific styles for info dialog content or buttons if needed */
+}
+
+.confirmation-dialog {
+    /* Add specific styles for confirmation dialog content or buttons if needed */
+}
+
+.input-dialog {
+    /* Add specific styles for input dialog content or buttons if needed */
+}
+
+.review-dialog {
+     /* Add specific styles for review dialog content or buttons if needed */
+}
+
