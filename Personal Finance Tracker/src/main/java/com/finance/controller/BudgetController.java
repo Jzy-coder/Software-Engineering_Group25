@@ -61,6 +61,12 @@ public class BudgetController implements Initializable {
     // 修改后的 handleAddBudget 方法
     @FXML
     private void handleAddBudget() {
+
+        // 如果当前存在预算，先保存到历史记录
+        if (currentBudget != null) {
+            BudgetDataManager.addBudgetToHistory(currentBudget); // 新增此行
+        }
+
         // 如果当前存在预算，检查其进度
         if (currentBudget != null) {
             double progress = currentBudget.getActualAmount() / currentBudget.getPlannedAmount();
@@ -136,8 +142,6 @@ public class BudgetController implements Initializable {
                 // 创建新预算并保存
                 currentBudget = new Budget(name, planned, actual);
                 BudgetDataManager.saveBudget(currentBudget);
-                // 显式添加到历史记录中，因为这是新创建的预算
-                BudgetDataManager.addBudgetToHistory(currentBudget);
     
                 // 强制刷新界面
                 refreshSingleBudgetDisplay();
@@ -166,6 +170,15 @@ public class BudgetController implements Initializable {
     private void handleReviewBudget() {
         List<Budget> budgetHistory = BudgetDataManager.loadBudgetHistory();
         
+         // 新增：过滤掉当前活动的预算（如果有）
+        if (currentBudget != null) {
+            budgetHistory.removeIf(b -> 
+                b.getName().equals(currentBudget.getName()) &&
+                Math.abs(b.getPlannedAmount() - currentBudget.getPlannedAmount()) < 0.01 &&
+                Math.abs(b.getActualAmount() - currentBudget.getActualAmount()) < 0.01
+            );
+        }
+    
         if (budgetHistory.isEmpty()) {
             showAlert(Alert.AlertType.INFORMATION, "Information", "No budget history found.", "info-alert");
             return;
@@ -220,10 +233,11 @@ public class BudgetController implements Initializable {
 
     @FXML
     private void handleRemoveBudget() {
-        if (currentBudget != null) {
-            // 确保当前预算已添加到历史记录中，这样即使删除当前预算，历史记录中仍然保留
-            BudgetDataManager.addBudgetToHistory(currentBudget);
-            
+
+            if (currentBudget != null) {
+            // 修复：删除前将当前预算添加到历史记录
+            BudgetDataManager.addBudgetToHistory(currentBudget); // 重新添加此行
+
             // 删除当前活动预算
             BudgetDataManager.saveBudget(null);
             currentBudget = null;
