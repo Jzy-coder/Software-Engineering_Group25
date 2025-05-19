@@ -123,7 +123,10 @@
 }
 
 .dialog-pane .content {
-    -fx-padding: 15px;
+    -fx-padding: 15px 25px;
+    -fx-min-width: 500px;
+    -fx-wrap-text: true;
+    -fx-text-alignment: justify;
 }
 
 .dialog-pane .button-bar .button {
@@ -187,10 +190,14 @@
     -fx-border-color: #bdbdbd;
     -fx-border-width: 1px;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 5);
+    -fx-wrap-text: true;
+    -fx-min-width: 500px;
+    -fx-pref-width: 500px;
 }
 
 .dialog-pane .label {
     -fx-font-size: 14px;
+    -fx-text-overrun: clip;
 }
 
 .dialog-pane .header-panel {
@@ -206,6 +213,10 @@
 .dialog-pane .content.label {
     -fx-font-size: 14px;
     -fx-text-fill: #333333;
+    -fx-padding: 15px 25px;
+    -fx-min-width: 400px;
+    -fx-wrap-text: true;
+    -fx-text-overrun: clip; /* 避免省略号 */
 }
 
 .dialog-pane .button-bar .button {
