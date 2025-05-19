@@ -210,14 +210,15 @@
     -fx-text-fill: white; /* Default text fill for header, specific alerts can override */
 }
 
-.dialog-pane .content.label {
+/* .dialog-pane .content.label {
     -fx-font-size: 14px;
     -fx-text-fill: #333333;
     -fx-padding: 15px 25px;
     -fx-min-width: 400px;
     -fx-wrap-text: true;
-    -fx-text-overrun: clip; /* 避免省略号 */
-}
+    -fx-text-overrun: clip;
+    -fx-max-width: 400px;
+} */
 
 .dialog-pane .button-bar .button {
     -fx-font-size: 14px;

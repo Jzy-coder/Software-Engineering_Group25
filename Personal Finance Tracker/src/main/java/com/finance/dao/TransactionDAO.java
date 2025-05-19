@@ -154,7 +154,7 @@ public class TransactionDAO {
     /**
      * Save new transaction
      */
-    public void save(Transaction transaction) {
+    public boolean save(Transaction transaction) {
         List<Transaction> transactions = getAllTransactions();
         long maxId = transactions.stream()
                 .filter(t -> t.getId() != null)
@@ -166,39 +166,39 @@ public class TransactionDAO {
         transactions.add(transaction);
         try {
             saveToFile(transactions);
+            return true;
         } catch (IOException e) {
             throw new RuntimeException("保存到文件失败：" + e.getMessage(), e);
         }
-    }    
+    }
     
-    /**
-    * Update a transaction and persist changes
-    */
-public void update(Transaction transaction) {
-    List<Transaction> transactions = getAllTransactions();
-    for (int i = 0; i < transactions.size(); i++) {
-        if (transactions.get(i).getId().equals(transaction.getId())) {
-            transactions.set(i, transaction);
-            break;
+    public boolean update(Transaction transaction) {
+        List<Transaction> transactions = getAllTransactions();
+        for (int i = 0; i < transactions.size(); i++) {
+            if (transactions.get(i).getId().equals(transaction.getId())) {
+                transactions.set(i, transaction);
+                break;
+            }
+        }
+        try {
+            saveToFile(transactions);
+            return true;
+        } catch (IOException e) {
+            throw new RuntimeException("更新交易失败：" + e.getMessage(), e);
         }
     }
-    try {
-        saveToFile(transactions);
-    } catch (IOException e) {
-        throw new RuntimeException("更新交易失败：" + e.getMessage(), e);
-    }
-}
 
 /**
  * Delete transaction by ID
  */
-public void deleteById(Long id) {
+public boolean deleteById(Long id) {
     List<Transaction> transactions = getAllTransactions();
     transactions.removeIf(t -> t.getId().equals(id));
     try {
         saveToFile(transactions);
+        return true;
     } catch (IOException e) {
-        throw new RuntimeException("删除交易失败：" + e.getMessage(), e);
+        return false;
     }
 }
 
