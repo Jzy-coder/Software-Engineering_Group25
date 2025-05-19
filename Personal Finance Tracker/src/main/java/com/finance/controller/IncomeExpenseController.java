@@ -16,8 +16,6 @@ import org.slf4j.LoggerFactory;
 import com.finance.model.Transaction;
 import com.finance.service.TransactionService;
 import com.finance.util.CsvUtil;
-import com.finance.util.FileHashUtil;
-import com.finance.util.ImportHistoryManager;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
@@ -694,20 +692,6 @@ boolean deleted = true;
                 fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
                 fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV file", "*.csv"));
                 File file = fileChooser.showOpenDialog(transactionTable.getScene().getWindow());
-
-        // 文件哈希校验
-        if (file != null) {
-            String fileHash = FileHashUtil.calculateMD5(file.getAbsolutePath());
-            if (ImportHistoryManager.isFileImported(fileHash)) {
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("Duplicate import warning!");
-                alert.setHeaderText("This file has already been imported.");
-                alert.setContentText("Please select another file that has not been imported.");
-                alert.showAndWait();
-                return;
-            }
-            ImportHistoryManager.addImportRecord(fileHash, file.getName());
-        }
 
                 if (file != null) {
                     try {
