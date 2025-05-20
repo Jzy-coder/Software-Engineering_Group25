@@ -30,11 +30,40 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public void batchImport(List<Transaction> transactions) {
-        transactions.forEach(transaction -> {
-            if (transaction.getId() == null) {
-                transaction.setId(getNextTransactionId());
+        List<Transaction> existingTransactions = getAllTransactions();
+        
+        transactions.forEach(newTransaction -> {
+            // 查找是否存在相同记录
+            boolean isDuplicate = existingTransactions.stream().anyMatch(existing ->
+                existing.getCategory().equals(newTransaction.getCategory()) &&
+                existing.getType().equals(newTransaction.getType()) &&
+                existing.getAmount() == newTransaction.getAmount() &&
+                existing.getDescription().equals(newTransaction.getDescription()) &&
+                existing.getDate().toLocalDate().equals(newTransaction.getDate().toLocalDate())
+            );
+            
+            if (isDuplicate) {
+                // 如果存在相同记录，更新该记录
+                existingTransactions.stream()
+                    .filter(existing ->
+                        existing.getCategory().equals(newTransaction.getCategory()) &&
+                        existing.getType().equals(newTransaction.getType()) &&
+                        existing.getAmount() == newTransaction.getAmount() &&
+                        existing.getDescription().equals(newTransaction.getDescription()) &&
+                        existing.getDate().toLocalDate().equals(newTransaction.getDate().toLocalDate())
+                    )
+                    .findFirst()
+                    .ifPresent(existing -> {
+                        newTransaction.setId(existing.getId());
+                        transactionDAO.update(newTransaction);
+                    });
+            } else {
+                // 如果不存在相同记录，添加新记录
+                if (newTransaction.getId() == null) {
+                    newTransaction.setId(getNextTransactionId());
+                }
+                transactionDAO.save(newTransaction);
             }
-            transactionDAO.save(transaction);
         });
     }
 
