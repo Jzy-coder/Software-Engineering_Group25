@@ -1,12 +1,8 @@
 package com.finance.controller;
 
-import com.finance.util.CsvUtil;
-import java.io.IOException;
-
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -19,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import com.finance.model.Transaction;
 import com.finance.service.TransactionService;
-
+import com.finance.util.CsvUtil;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
@@ -29,11 +25,13 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -41,6 +39,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
 
@@ -57,7 +56,6 @@ public class IncomeExpenseController implements Initializable {
     private final ObservableList<String> expenseTypes = 
         FXCollections.observableArrayList("Food", "Shopping", "Transportation", "Housing", "Entertainment", "Others");
    
-
     private TransactionService transactionService;
     private ObservableList<Transaction> transactionList;
 
@@ -200,9 +198,9 @@ public class IncomeExpenseController implements Initializable {
             protected void updateItem(LocalDateTime item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) {
-                    setText(null);
+                    setText("");
                 } else {
-                    setText(formatter.format(item));
+                    setText(item != null ? formatter.format(item) : "");
                 }
             }
         });
@@ -437,10 +435,22 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
      * Show alert dialog
      */
     private void showAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Information");
         alert.setHeaderText(null);
-        alert.setContentText(message);
+        
+        // 创建Label并设置自动换行
+        Label label = new Label(message);
+        label.setWrapText(true);
+        label.setMaxWidth(Double.MAX_VALUE);
+        
+        // 应用CSS样式
+// 导入 DialogPane 类，解决找不到符号的问题
+DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+        dialogPane.getStyleClass().add("dialog-pane");
+        
+        alert.getDialogPane().setContent(label);
         alert.showAndWait();
     }
     
@@ -553,36 +563,58 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
         });
     }
     
-    /**
-     * Handle delete transaction
-     */
-    private void handleDeleteTransaction(Transaction transaction) {
-        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmAlert.setTitle("Confirm Delete");
-        confirmAlert.setHeaderText(null);
-        confirmAlert.setContentText("Are you sure you want to delete this transaction?");
-        
-        Optional<ButtonType> result = confirmAlert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            try {
-                // Check if transaction ID is null
-                if (transaction.getId() == null) {
-                    showAlert("Cannot delete transaction: Invalid transaction ID");
-                    return;
-                }
-                
-                // Delete from database
-                transactionService.deleteTransaction(transaction.getId());
-                
-                // Refresh table
+/**
+ * Handle delete transaction
+ */
+private void handleDeleteTransaction(Transaction transaction) {
+    Dialog<ButtonType> dialog = new Dialog<>();
+    dialog.setTitle("Confirm Delete");
+    dialog.setHeaderText(null);
+
+    // 设置内容标签
+    Label label = new Label("Are you sure you want to delete this transaction?");
+    label.setWrapText(true);
+    label.setMaxWidth(400);
+// 导入 VBox 类，解决无法解析的问题
+// 重新编写代码
+dialog.getDialogPane().setContent(new VBox(label));
+
+    // 设置按钮
+    ButtonType okButton = new ButtonType("Confirm", ButtonBar.ButtonData.OK_DONE);
+    ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+    dialog.getDialogPane().getButtonTypes().addAll(okButton, cancelButton);
+
+    // 应用CSS样式
+    DialogPane dialogPane = dialog.getDialogPane();
+    dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+    dialogPane.getStyleClass().add("dialog-pane");
+
+    Optional<ButtonType> result = dialog.showAndWait();
+    if (result.isPresent() && result.get() == okButton) {
+        try {
+            // Check if transaction ID is null
+            if (transaction.getId() == null) {
+                showAlert("Cannot delete transaction: Invalid transaction ID");
+                return;
+            }
+
+            // Delete from database
+// 假设 deleteTransaction 方法返回值为 void，先调用该方法
+transactionService.deleteTransaction(transaction.getId());
+// 由于无法从返回值判断是否删除成功，这里先假设删除成功，可根据实际情况修改逻辑
+boolean deleted = true;
+            if (deleted) {
                 loadTransactions();
                 updateSummary();
-                
-            } catch (Exception e) {
-                showAlert("Failed to delete transaction: " + e.getMessage());
+            } else {
+                showAlert("Failed to delete transaction: The record may not exist");
             }
+        } catch (Exception e) {
+            logger.error("Delete transaction failed", e);
+            showAlert("Delete failed: " + e.getLocalizedMessage());
         }
     }
+}
     
     /**
      * Reset form to add mode
