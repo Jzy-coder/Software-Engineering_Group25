@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import com.finance.model.Transaction;
 import com.finance.service.TransactionService;
-
+import com.finance.result.ImportResult;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
@@ -778,14 +778,14 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
                         dialog.getDialogPane().getButtonTypes().addAll(previewOkButton, previewCancelButton);
                         
                         if (dialog.showAndWait().orElse(ButtonType.CANCEL).getButtonData() == ButtonBar.ButtonData.OK_DONE) {
-                            transactionService.batchImport(importedTransactions);
+                            ImportResult result = transactionService.batchImport(importedTransactions);
                             loadTransactions();
                             updateSummary();
                             // 更新时间段统计信息
                             updatePeriodSummary(startDatePicker.getValue(), endDatePicker.getValue());
                             Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
                             successAlert.setTitle("Import Success");
-                            successAlert.setHeaderText(String.format("Successfully imported %d records", importedTransactions.size()));
+                            successAlert.setHeaderText(String.format("Import finished.\nSuccessfully imported: %d\nSkipped duplicates: %d", result.getImportedCount(), result.getSkippedCount()));
                             
                             // Apply CSS styles
                             DialogPane successDialogPane = successAlert.getDialogPane();

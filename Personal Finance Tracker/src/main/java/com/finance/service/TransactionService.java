@@ -4,9 +4,10 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.finance.model.Transaction;
+import com.finance.result.ImportResult;
 
 public interface TransactionService {
-    void batchImport(List<Transaction> transactions);
+    ImportResult batchImport(List<Transaction> transactions);
     void clearCache();
     void switchUser(String username, boolean isRename);
     List<Transaction> getAllTransactions();

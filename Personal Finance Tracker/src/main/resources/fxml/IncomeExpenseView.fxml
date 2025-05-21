@@ -11,12 +11,12 @@
             
             <HBox spacing="20">
                 <!-- Left side - Transaction Form -->
-                <VBox spacing="10" minWidth="300">
+                <VBox spacing="10" minWidth="250" prefWidth="250">
                     <Label text="Add New Transaction" styleClass="label-heading" style="-fx-font-size: 14;" />
                     <GridPane hgap="10" vgap="10" styleClass="card">
                         <columnConstraints>
                             <ColumnConstraints hgrow="SOMETIMES" minWidth="100" prefWidth="100" />
-                            <ColumnConstraints hgrow="SOMETIMES" minWidth="200" prefWidth="200" />
+                            <ColumnConstraints hgrow="SOMETIMES" minWidth="150" prefWidth="150" />
                         </columnConstraints>
                         <rowConstraints>
                              <!-- 新增一行用于 DatePicker -->
@@ -55,11 +55,15 @@
                 
                 <!-- Right side - Transaction Table -->
                 <VBox spacing="10" HBox.hgrow="ALWAYS">
+                    <HBox.margin>
+                        <Insets left="40" />
+                
+                    </HBox.margin>
                     <HBox spacing="10" alignment="CENTER_LEFT">
-                        <Label text="选择日期：" />
+                        <Label text="Transaction History" styleClass="label-heading" style="-fx-font-size: 14;" HBox.hgrow="ALWAYS" />
+                        <Label text="Select Date:" />
                         <DatePicker fx:id="singleDatePicker" styleClass="date-picker" />
                     </HBox>
-                    <Label text="Transaction History" styleClass="label-heading" style="-fx-font-size: 14;" />
                     <TableView fx:id="transactionTable" styleClass="table-view" VBox.vgrow="ALWAYS">
                         <columns>
                             <TableColumn fx:id="dateColumn" text="Date" prefWidth="120" />

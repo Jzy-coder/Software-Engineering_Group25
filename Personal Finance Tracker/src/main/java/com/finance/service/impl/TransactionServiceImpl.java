@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 import com.finance.dao.TransactionDAO;
 import com.finance.model.Transaction;
 import com.finance.service.TransactionService;
+import com.finance.result.ImportResult;
+import com.finance.util.CsvUtil;
 
 public class TransactionServiceImpl implements TransactionService {
     private TransactionDAO transactionDAO = new TransactionDAO();
@@ -29,13 +31,32 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public void batchImport(List<Transaction> transactions) {
-        transactions.forEach(transaction -> {
-            if (transaction.getId() == null) {
-                transaction.setId(getNextTransactionId());
+    public ImportResult batchImport(List<Transaction> transactions) {
+        List<Transaction> existingTransactions = transactionDAO.getAllTransactions();
+        int importedCount = 0;
+        int skippedCount = 0;
+
+        for (Transaction transaction : transactions) {
+            // Simple duplicate check based on key fields (excluding ID)
+            boolean isDuplicate = existingTransactions.stream().anyMatch(existing ->
+                existing.getDate().equals(transaction.getDate()) &&
+                existing.getCategory().equals(transaction.getCategory()) &&
+                existing.getType().equals(transaction.getType()) &&
+                existing.getAmount() == transaction.getAmount() &&
+                existing.getDescription().equals(transaction.getDescription())
+            );
+
+            if (!isDuplicate) {
+                if (transaction.getId() == null) {
+                    transaction.setId(getNextTransactionId());
+                }
+                transactionDAO.save(transaction);
+                importedCount++;
+            } else {
+                skippedCount++;
             }
-            transactionDAO.save(transaction);
-        });
+        }
+        return new ImportResult(importedCount, skippedCount);
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.finance.util;
 import java.io.File;
 import java.util.Arrays;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import com.opencsv.CSVReader;
 import com.finance.model.Transaction;
 import com.opencsv.CSVWriter;
@@ -78,7 +79,12 @@ public class CsvUtil {
             List<String> row = new ArrayList<>();
             for (TableColumn<T, ?> column : tableView.getColumns()) {
                 Object cellValue = column.getCellData(item);
-                row.add(cellValue != null ? cellValue.toString() : "");
+                if (cellValue instanceof LocalDateTime) {
+                    // Format LocalDateTime to yyyy-MM-dd
+                    row.add(((LocalDateTime) cellValue).toLocalDate().format(DATE_FORMATTER));
+                } else {
+                    row.add(cellValue != null ? cellValue.toString() : "");
+                }
             }
             data.add(row.toArray(new String[0]));
         }
