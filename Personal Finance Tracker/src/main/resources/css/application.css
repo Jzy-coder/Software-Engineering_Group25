@@ -307,7 +307,7 @@
 }
 
 .dialog-pane .content {
-    -fx-padding: 25px 15px;
+    -fx-padding: 20px 10px;
 }
 
 .dialog-pane .button-bar {
@@ -315,12 +315,11 @@
 }
 
 .dialog-pane .button-bar .button {
-    -fx-min-width: 90px;
-    -fx-pref-height: 40px;
-    -fx-background-color: #36b9cc;
+    -fx-min-width: 80px;
+    -fx-pref-height: 35px;
+    -fx-background-color: #4e73df;
     -fx-text-fill: white;
     -fx-font-weight: bold;
-    -fx-font-size: 14px;
 }
 
 .dialog-pane .button-bar .button:hover {
@@ -337,18 +336,16 @@
     -fx-spacing: 10px;
 }
 
-/* Alert样式（增强特异性以覆盖默认样式） */
+/* Alert样式 */
 .alert {
-    -fx-background-color: #f8f9fc;
-    -fx-background-radius: 10px;
-    -fx-border-color: #d1d3e2;
-    -fx-border-width: 1px;
-    -fx-border-radius: 10px;
-    -fx-padding: 20px;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 10, 0, 0, 3);
+    -fx-background-color: white;
+    -fx-background-radius: 8px;
+    -fx-border-color: #e3e6f0;
+    -fx-border-radius: 8px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 8, 0, 0, 2);
 }
 
-.alert > .dialog-pane {
+.alert .dialog-pane {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-effect: none;
@@ -358,7 +355,7 @@
     -fx-graphic: none;
 }
 
-.alert.confirmation .dialog-pane .header-panel {
+.alert.confirmation .header-panel {
     -fx-background-color: #1cc88a;
 }
 
@@ -366,7 +363,7 @@
     -fx-graphic: none;
 }
 
-.alert.error .dialog-pane .header-panel {
+.alert.error .header-panel {
     -fx-background-color: #e74a3b;
 }
 
@@ -374,7 +371,7 @@
     -fx-graphic: none;
 }
 
-.alert.information .dialog-pane .header-panel {
+.alert.information .header-panel {
     -fx-background-color: #4e73df;
 }
 
@@ -382,7 +379,7 @@
     -fx-graphic: none;
 }
 
-.alert.warning .dialog-pane .header-panel {
+.alert.warning .header-panel {
     -fx-background-color: #f6c23e;
 }
 

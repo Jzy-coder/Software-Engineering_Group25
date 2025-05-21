@@ -1,6 +1,8 @@
 package com.finance.app;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -16,10 +18,19 @@ public class Launcher {
      * @param args command line arguments
      */
     public static void main(String[] args) {
-// 导入 Locale 类以解决无法解析的问题
-Locale.setDefault(Locale.ENGLISH);
-// 导入 JavaFX 的 Application 类，解决无法解析的问题
-javafx.application.Application.launch(com.finance.app.FinanceApplication.class, args);
+        try {
+            // Set up JavaFX module path if running from executable
+            setupJavaFXModules();
+            
+            // Set default locale to English
+            Locale.setDefault(Locale.ENGLISH);
+
+            // Launch the actual JavaFX application
+            FinanceApplication.main(args);
+        } catch (Exception e) {
+            System.err.println("Error launching application: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
     
     /**

@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 import com.finance.dao.TransactionDAO;
 import com.finance.model.Transaction;
 import com.finance.service.TransactionService;
+import com.finance.result.ImportResult;
+import com.finance.util.CsvUtil;
 
 public class TransactionServiceImpl implements TransactionService {
     private TransactionDAO transactionDAO = new TransactionDAO();
@@ -29,42 +31,32 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public void batchImport(List<Transaction> transactions) {
-        List<Transaction> existingTransactions = getAllTransactions();
-        
-        transactions.forEach(newTransaction -> {
-            // 查找是否存在相同记录
+    public ImportResult batchImport(List<Transaction> transactions) {
+        List<Transaction> existingTransactions = transactionDAO.getAllTransactions();
+        int importedCount = 0;
+        int skippedCount = 0;
+
+        for (Transaction transaction : transactions) {
+            // Simple duplicate check based on key fields (excluding ID)
             boolean isDuplicate = existingTransactions.stream().anyMatch(existing ->
-                existing.getCategory().equals(newTransaction.getCategory()) &&
-                existing.getType().equals(newTransaction.getType()) &&
-                existing.getAmount() == newTransaction.getAmount() &&
-                existing.getDescription().equals(newTransaction.getDescription()) &&
-                existing.getDate().toLocalDate().equals(newTransaction.getDate().toLocalDate())
+                existing.getDate().equals(transaction.getDate()) &&
+                existing.getCategory().equals(transaction.getCategory()) &&
+                existing.getType().equals(transaction.getType()) &&
+                existing.getAmount() == transaction.getAmount() &&
+                existing.getDescription().equals(transaction.getDescription())
             );
-            
-            if (isDuplicate) {
-                // 如果存在相同记录，更新该记录
-                existingTransactions.stream()
-                    .filter(existing ->
-                        existing.getCategory().equals(newTransaction.getCategory()) &&
-                        existing.getType().equals(newTransaction.getType()) &&
-                        existing.getAmount() == newTransaction.getAmount() &&
-                        existing.getDescription().equals(newTransaction.getDescription()) &&
-                        existing.getDate().toLocalDate().equals(newTransaction.getDate().toLocalDate())
-                    )
-                    .findFirst()
-                    .ifPresent(existing -> {
-                        newTransaction.setId(existing.getId());
-                        transactionDAO.update(newTransaction);
-                    });
-            } else {
-                // 如果不存在相同记录，添加新记录
-                if (newTransaction.getId() == null) {
-                    newTransaction.setId(getNextTransactionId());
+
+            if (!isDuplicate) {
+                if (transaction.getId() == null) {
+                    transaction.setId(getNextTransactionId());
                 }
-                transactionDAO.save(newTransaction);
+                transactionDAO.save(transaction);
+                importedCount++;
+            } else {
+                skippedCount++;
             }
-        });
+        }
+        return new ImportResult(importedCount, skippedCount);
     }
 
     @Override
