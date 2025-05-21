@@ -18,7 +18,6 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 
 import java.net.URL;
@@ -71,34 +70,34 @@ public class AnalysisController implements Initializable, TransactionEventListen
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // 初始化图表
+        // Initialize the chart
         initializeCharts();
-        // 使用LoginManager中的TransactionService实例，确保用户数据隔离
+        
         transactionService = com.finance.gui.LoginManager.getTransactionService();
         transactions = FXCollections.observableArrayList(transactionService.getAllTransactions());
 
-        // 初始化模型下拉框
+        
         modelComboBox.setItems(FXCollections.observableArrayList("pie chart", "column chart"));
-        modelComboBox.getSelectionModel().selectFirst(); // 选择饼状图作为默认视图
+        modelComboBox.getSelectionModel().selectFirst(); 
 
-        // 设置初始选择日期为有交易数据的日期中的最新日期，如果没有则使用当前日期
+       
         List<LocalDate> availableDates = getAvailableTransactionDates();
         if (!availableDates.isEmpty()) {
-            // 选择最新的日期
+            
             selectedDate = availableDates.get(availableDates.size() - 1);
             rangeStartDate = availableDates.get(0);
             rangeEndDate = availableDates.get(availableDates.size() - 1);
         } else {
-            // 如果没有交易数据，使用当前日期
+            // If no transaction data, set default date
             selectedDate = LocalDate.now();
             rangeStartDate = LocalDate.now();
             rangeEndDate = LocalDate.now();
         }
         
-        // 设置日期标签
+        // setup chart data
         updateDateLabel();
 
-        // 添加监听器
+        // add event listeners
         modelComboBox.valueProperty().addListener((obs, oldVal, newVal) -> updateChartData());
         typeGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> updateChartData());
         dateSelectionGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
@@ -107,29 +106,28 @@ public class AnalysisController implements Initializable, TransactionEventListen
             updateChartData();
         });
 
-        // 显示默认图表
+        // setup chart data
         showDefaultView();
 
-        // 初始化饼图样式
+        // initialize event listeners
         pieChart.setLabelLineLength(20);
         pieChart.setLegendVisible(true);
         pieChart.setLegendSide(javafx.geometry.Side.BOTTOM);
         
-        // 注册为交易事件监听器
+        // register event listeners
         TransactionEventManager.getInstance().addTransactionEventListener(this);
     }
     
     /**
-     * 清理资源，取消事件监听器注册
-     * 应在控制器不再使用时调用此方法
+     * create bar chart data
      */
     public void cleanup() {
-        // 取消注册事件监听器
+        
         TransactionEventManager.getInstance().removeTransactionEventListener(this);
     }
 
     /**
-     * 获取所有交易的日期（不重复）
+     * add transaction
      */
     private List<LocalDate> getAvailableTransactionDates() {
         return transactions.stream()
@@ -140,11 +138,11 @@ public class AnalysisController implements Initializable, TransactionEventListen
     }
     
     /**
-     * 处理日期选择
+     * handle transaction event
      */
     @FXML
     private void handleDateSelection() {
-        // 获取所有有交易数据的日期
+        // add transaction
         List<LocalDate> availableDates = getAvailableTransactionDates();
         
         if (availableDates.isEmpty()) {
@@ -153,12 +151,12 @@ public class AnalysisController implements Initializable, TransactionEventListen
         }
 
         if (singleDateRadio.isSelected()) {
-            // 创建日期选择器
+            // create date picker
             DatePicker datePicker = new DatePicker();
             datePicker.setValue(selectedDate);
             datePicker.getStyleClass().add("date-picker");
             
-            // 设置日期选择器只显示有交易数据的日期
+            // setup date picker
             datePicker.setDayCellFactory(picker -> new DateCell() {
                 @Override
                 public void updateItem(LocalDate date, boolean empty) {
@@ -167,25 +165,25 @@ public class AnalysisController implements Initializable, TransactionEventListen
                 }
             });
             
-            // 创建对话框
+            // create dialog
             Dialog<LocalDate> dialog = new Dialog<>();
             dialog.setTitle("Select a date");
             dialog.setHeaderText("Please choose a date with transaction data");
             
-            // 设置按钮
+            // setup dialog
             ButtonType selectButtonType = new ButtonType("Select", ButtonBar.ButtonData.OK_DONE);
             ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
             dialog.getDialogPane().getButtonTypes().addAll(selectButtonType,cancelButtonType);
             
-            // 应用CSS样式
+            // add css
             DialogPane dialogPane = dialog.getDialogPane();
             dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
             dialogPane.getStyleClass().add("dialog-pane");
             
-            // 设置对话框内容
+            // setup date picker
             dialogPane.setContent(datePicker);
             
-            // 转换结果
+            // transaction data
             dialog.setResultConverter(dialogButton -> {
                 if (dialogButton == selectButtonType) {
                     return datePicker.getValue();
@@ -193,7 +191,7 @@ public class AnalysisController implements Initializable, TransactionEventListen
                 return null;
             });
             
-            // 显示对话框并处理结果
+            // show dialog
             Optional<LocalDate> result = dialog.showAndWait();
             result.ifPresent(date -> {
                 selectedDate = date;
@@ -203,7 +201,7 @@ public class AnalysisController implements Initializable, TransactionEventListen
                 setupPieChartListeners();
             });
         } else {
-            // 显示日期范围选择器
+            // show date range selector
             Optional<DateRangeSelector.DateRange> result = DateRangeSelector.show(
                 availableDates, rangeStartDate, rangeEndDate);
             
@@ -219,35 +217,31 @@ public class AnalysisController implements Initializable, TransactionEventListen
     }
 
     /**
-     * 处理饼图点击事件
+     * handle transaction event
      */
-    private void handlePieChartClick(MouseEvent event) {
-        // 改进后的点击处理逻辑
-    }
-
     private void setupPieChartListeners() {
         int colorIndex = 0;
         for (PieChart.Data data : pieChart.getData()) {
             Node node = data.getNode();
-            // 设置数据片段的样式类
+            // setup css
             node.getStyleClass().add("data" + colorIndex);
             
-            // 添加点击效果
+            // add click effect
             node.setOnMouseClicked(e -> {
-                // 移除其他片段的阴影效果
+                // remove shadow effect from other segments
                 pieChart.getData().forEach(d -> d.getNode().setEffect(null));
-                // 为当前片段添加阴影效果
+                // add shadow effect to current segment
                 data.getNode().setEffect(new DropShadow(10, javafx.scene.paint.Color.GRAY));
-                // 当显示"No Data"时，金额显示为0.00
+                // show selection details
                 double amount = data.getName().equals("No Data") ? 0.00 : data.getPieValue();
                 
-                // 创建带样式的弹窗
+                // create alert
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("Selection Details");
                 alert.setHeaderText(data.getName());
                 alert.setContentText("Amount: " + String.format("%.2f", amount));
                 
-                // 应用CSS样式
+                // add css
                 DialogPane dialogPane = alert.getDialogPane();
                 dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
                 dialogPane.getStyleClass().add("dialog-pane");
@@ -259,7 +253,7 @@ public class AnalysisController implements Initializable, TransactionEventListen
                 alert.showAndWait();
             });
             
-            colorIndex = (colorIndex + 1) % 10; // 循环使用10种颜色
+            colorIndex = (colorIndex + 1) % 10; // use a different color for each segment
         }
     }
 
@@ -273,7 +267,7 @@ public class AnalysisController implements Initializable, TransactionEventListen
     }
 
     private void initializeCharts() {
-        // 初始化饼图
+        // initialize pie chart
         pieChart = new PieChart();
         pieChart.getStylesheets().add(getClass().getResource("/css/chart-styles.css").toExternalForm());
         pieChart.getStyleClass().add("pie-chart");
@@ -282,29 +276,29 @@ public class AnalysisController implements Initializable, TransactionEventListen
         pieChart.setLegendSide(javafx.geometry.Side.BOTTOM);
         pieChart.setStartAngle(90);
         pieChart.setClockwise(false);
-        // 禁用动画效果
+        // for pie chart
         pieChart.setAnimated(false);
-        // 设置饼图的首选大小
+        // setup chart data
         pieChart.setPrefSize(600, 400);
-        // 设置标签可见性和位置
+        // setup chart container
         pieChart.setLabelsVisible(true);
         pieChart.setLabelLineLength(20);
-        // 启用自动调整大小
+        // add chart to chart container
         pieChart.setMinSize(300, 200);
         pieChart.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         
-        // 初始化柱状图
+        // initialize bar chart
         CategoryAxis xAxis = new CategoryAxis();
         NumberAxis yAxis = new NumberAxis();
         xAxis.setLabel("Category");
         yAxis.setLabel("Amount");
         barChart = new BarChart<>(xAxis, yAxis);
         barChart.setTitle("Income/Expense Analysis");
-        barChart.setAnimated(false); // 禁用动画效果
+        barChart.setAnimated(false); 
     }
     
     private void showDefaultView() {
-        // 默认显示饼状图
+        // add default chart
         chartContainer.getChildren().clear();
         ObservableList<PieChart.Data> pieChartData = createPieChartData("pie chart", incomeRadio.isSelected());
         pieChart.setData(pieChartData);
@@ -323,17 +317,17 @@ public class AnalysisController implements Initializable, TransactionEventListen
             case "pie chart":
                 ObservableList<PieChart.Data> pieChartData = createPieChartData(selectedModel, isIncome);
                 pieChart.setData(pieChartData);
-                // 重置饼图的样式和布局
+                // remove css
                 pieChart.setStartAngle(90);
                 pieChart.setClockwise(false);
                 pieChart.setLabelsVisible(true);
                 pieChart.setLabelLineLength(20);
-                // 确保标签正确显示
+                // enable css
                 pieChart.layout();
                 setupPieChartListeners();
                 updateChartStyle();
                 chartContainer.getChildren().add(pieChart);
-                // 在JavaFX应用程序线程中延迟刷新标签
+                
                 javafx.application.Platform.runLater(() -> {
                     pieChart.layout();
                     pieChart.setLabelsVisible(false);
@@ -417,7 +411,7 @@ public class AnalysisController implements Initializable, TransactionEventListen
         alert.setHeaderText(null);
         alert.setContentText(message);
         
-        // 应用CSS样式
+        // apply css
         DialogPane dialogPane = alert.getDialogPane();
         dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
         dialogPane.getStyleClass().add("dialog-pane");
@@ -435,7 +429,7 @@ public class AnalysisController implements Initializable, TransactionEventListen
     private void updateBarChartData(boolean isIncome) {
         barChart.getData().clear();
         
-        // 过滤交易数据
+        // filter transactions by type and date
         List<Transaction> filteredTransactions = transactions.stream()
                 .filter(t -> t.getCategory().equals(isIncome ? "Income" : "Expense"))
                 .filter(t -> {
@@ -449,27 +443,27 @@ public class AnalysisController implements Initializable, TransactionEventListen
                 })
                 .collect(Collectors.toList());
         
-        // 按类型分组并计算金额
+        // create grouped data
         Map<String, Double> groupedData = filteredTransactions.stream()
                 .collect(Collectors.groupingBy(
                     Transaction::getType,
                     Collectors.summingDouble(t -> Math.abs(t.getAmount()))
                 ));
         
-        // 创建数据系列
+        // create series
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         
-        // 添加数据点
+        // add data
         groupedData.forEach((type, amount) -> {
             series.getData().add(new XYChart.Data<>(type, amount));
         });
         
         barChart.getData().add(series);
         
-        // 隐藏图例
+        
         barChart.setLegendVisible(false);
         
-        // 为每个柱体设置不同的颜色
+        // set color
         String[] colors = {
             "#f3622d", "#fba71b", "#57b757", "#41a9c9", "#4258c9",
             "#9a42c8", "#c84164", "#888888", "#e45e9d", "#5e9de4"

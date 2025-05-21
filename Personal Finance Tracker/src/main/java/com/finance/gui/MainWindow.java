@@ -31,7 +31,7 @@ public class MainWindow extends JFrame {
     }
     
     private void initComponents() {
-        setTitle("个人理财助手");
+        setTitle("Personal Finance Assistant");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setPreferredSize(new Dimension(1000, 700));
         

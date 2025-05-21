@@ -10,22 +10,21 @@ import java.util.List;
 import javafx.collections.ObservableList;
 
 public class Budget implements Serializable {
-    private static final long serialVersionUID = 1L; // ���л��汾��
+    private static final long serialVersionUID = 1L; 
     private String name;
     private double plannedAmount;
     private double actualAmount;
-    private transient List<String> plans = new ArrayList<>(); // ���Ϊ transient
+    private transient List<String> plans = new ArrayList<>(); 
 
-    // �Զ������л�����
     private void writeObject(ObjectOutputStream oos) throws IOException {
         oos.defaultWriteObject();
-        oos.writeObject(new ArrayList<>(plans)); // ���л�Ϊ ArrayList
+        oos.writeObject(new ArrayList<>(plans)); 
     }
 
-    // �Զ��巴���л�����
+    @SuppressWarnings("unchecked")
     private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
         ois.defaultReadObject();
-        plans = (List<String>) ois.readObject(); // �����л�Ϊ List
+        plans = (List<String>) ois.readObject(); 
     }
 
 
@@ -35,7 +34,6 @@ public class Budget implements Serializable {
         this.actualAmount = actualAmount;
     }
 
-    // Getter & Setter ����
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 

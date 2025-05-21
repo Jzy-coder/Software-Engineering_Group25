@@ -43,10 +43,10 @@ public class SettingsController implements Initializable {
         String currentUsername = LoginManager.getCurrentUsername();
         welcomeLabel.setText("Hello, " + currentUsername);
         
-        // 设置用户信息标签
+        // set username label
         usernameLabel.setText(currentUsername);
         
-        // 从用户信息管理器获取其他信息
+        // aquire user info
         String gender = UserInfoManager.getGender();
         String region = UserInfoManager.getArea();
         String occupation = UserInfoManager.getOccupation();
@@ -67,12 +67,12 @@ public class SettingsController implements Initializable {
         dialog.setHeaderText("Please enter new username");
         dialog.setContentText("Username:");
         
-        // 应用CSS样式
+        // apply css style
         DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
         dialogPane.getStyleClass().add("dialog-pane");
         
-        // 修改按钮文本
+        // modify button text
         dialog.getDialogPane().getButtonTypes().setAll(
             new ButtonType("Register", ButtonBar.ButtonData.OK_DONE),
             new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE)
@@ -165,7 +165,7 @@ public class SettingsController implements Initializable {
                 
                 // Update welcome label
                 welcomeLabel.setText("Hello, " + newUsername);
-                // 更新界面上的用户名标签
+                // update username label
                 usernameLabel.setText(newUsername);
                 
                 showAlert(Alert.AlertType.INFORMATION, "Success", "Username changed successfully");
@@ -193,7 +193,7 @@ public class SettingsController implements Initializable {
         ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
         dialog.getDialogPane().getButtonTypes().addAll(registerButtonType, cancelButtonType);
         
-        // 应用CSS样式
+        // apply css
         DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
         dialogPane.getStyleClass().add("dialog-pane");
@@ -273,12 +273,12 @@ public class SettingsController implements Initializable {
         dialog.setHeaderText("Please select your gender");
         dialog.setContentText("Gender:");
         
-        // 应用CSS样式
+        
         DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
         dialogPane.getStyleClass().add("dialog-pane");
         
-        // 修改按钮文本
+        
         dialog.getDialogPane().getButtonTypes().setAll(
             new ButtonType("Register", ButtonBar.ButtonData.OK_DONE),
             new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE)
@@ -294,7 +294,6 @@ public class SettingsController implements Initializable {
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(gender -> {
             UserInfoManager.setGender(gender);
-            // 更新界面上的性别标签
             genderLabel.setText(gender);
             showAlert(Alert.AlertType.INFORMATION, "Success", "Gender changed successfully");
         });
@@ -311,12 +310,12 @@ public class SettingsController implements Initializable {
         dialog.setHeaderText("Please enter your area");
         dialog.setContentText("Area:");
         
-        // 应用CSS样式
+        
         DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
         dialogPane.getStyleClass().add("dialog-pane");
         
-        // 修改按钮文本
+        
         dialog.getDialogPane().getButtonTypes().setAll(
             new ButtonType("Register", ButtonBar.ButtonData.OK_DONE),
             new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE)
@@ -327,7 +326,6 @@ public class SettingsController implements Initializable {
         result.ifPresent(area -> {
             if (!area.trim().isEmpty()) {
                 UserInfoManager.setArea(area);
-                // 更新界面上的地区标签
                 regionLabel.setText(area);
                 showAlert(Alert.AlertType.INFORMATION, "Success", "Area changed successfully");
             } else {
@@ -347,12 +345,12 @@ public class SettingsController implements Initializable {
         dialog.setHeaderText("Please enter your occupation");
         dialog.setContentText("Occupation:");
         
-        // 应用CSS样式
+        
         DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
         dialogPane.getStyleClass().add("dialog-pane");
         
-        // 修改按钮文本
+        
         dialog.getDialogPane().getButtonTypes().setAll(
             new ButtonType("Register", ButtonBar.ButtonData.OK_DONE),
             new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE)
@@ -363,7 +361,7 @@ public class SettingsController implements Initializable {
         result.ifPresent(occupation -> {
             if (!occupation.trim().isEmpty()) {
                 UserInfoManager.setOccupation(occupation);
-                // 更新界面上的职业标签
+                
                 occupationLabel.setText(occupation);
                 showAlert(Alert.AlertType.INFORMATION, "Success", "Occupation changed successfully");
             } else {
@@ -378,7 +376,7 @@ public class SettingsController implements Initializable {
     @FXML
     private void handleSwitchAccount() {
         try {
-            // 重新加载用户信息
+          
             UserInfoManager.reloadUserInfo();
             
             // Load login view
@@ -422,12 +420,10 @@ public class SettingsController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText(message);
         
-        // 应用CSS样式
+       
         DialogPane dialogPane = alert.getDialogPane();
         dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
         dialogPane.getStyleClass().add("dialog-pane");
-        
-        // 修改按钮文本
         alert.getButtonTypes().clear();
         alert.getButtonTypes().addAll(
             new ButtonType("OK", ButtonBar.ButtonData.OK_DONE)

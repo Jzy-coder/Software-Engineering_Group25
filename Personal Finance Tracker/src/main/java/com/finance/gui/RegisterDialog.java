@@ -3,7 +3,6 @@ package com.finance.gui;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
@@ -52,7 +51,6 @@ public class RegisterDialog extends Dialog<String> {
         ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
         dialogPane.getButtonTypes().addAll(registerButtonType, cancelButtonType);
 
-        // 设置结果转换器
         setResultConverter(dialogButton -> {
             if (dialogButton == registerButtonType) {
                 String username = usernameField.getText().trim();
@@ -102,12 +100,10 @@ public class RegisterDialog extends Dialog<String> {
         alert.setHeaderText(null);
         alert.setContentText(message);
         
-        // 应用CSS样式
         DialogPane dialogPane = alert.getDialogPane();
         dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
         dialogPane.getStyleClass().add("dialog-pane");
         
-        // 修改按钮文本
         alert.getButtonTypes().clear();
         alert.getButtonTypes().addAll(
             new ButtonType("OK", ButtonBar.ButtonData.OK_DONE)

@@ -1,14 +1,10 @@
 package com.finance.controller;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ResourceBundle;
 
 import com.finance.gui.LoginManager;
@@ -24,15 +20,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
-import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import javafx.scene.layout.HBox;
 import javafx.scene.control.ComboBox;
 import javafx.application.Platform;
 
@@ -88,7 +79,7 @@ public class LoginController implements Initializable {
         
         // Sync text between field and combo and filter items
         usernameField.textProperty().addListener((obs, oldVal, newVal) -> {
-            // 只在ComboBox未显示或未获得焦点时同步ComboBox编辑器内容，避免覆盖用户输入
+            // Synchronize ComboBox editor content only when ComboBox is not shown or not focused, to avoid overwriting user input
             if (!usernameCombo.isShowing() && !usernameCombo.getEditor().isFocused()) {
                 usernameCombo.getEditor().setText(newVal);
             }
@@ -124,9 +115,9 @@ public class LoginController implements Initializable {
 
         // Handle text field changes
         usernameField.textProperty().addListener((obs, oldVal, newVal) -> {
-            // 实时更新文本框内容
+            // Real-time update of text field content
             usernameCombo.getEditor().setText(newVal);
-            // 检查是否有匹配的已保存用户名
+            // Check for matching saved usernames
             updateComboBoxItems(newVal);
             if (!usernameCombo.getItems().isEmpty() && usernameField.isFocused()) {
                 usernameCombo.setManaged(true);
@@ -183,7 +174,7 @@ public class LoginController implements Initializable {
                 String username = parts[0];
                 String password = parts[1];
                 
-                // 注册新用户
+                // Register new user
                 if (LoginManager.registerUser(username, password)) {
                     showAlert(AlertType.INFORMATION, "Success", "Registration is successful! Please log in with the new account.");
                 } else {
@@ -206,7 +197,7 @@ public class LoginController implements Initializable {
     /**
      * Save user information to file
      */
-    private void saveUserToFile(String username, String hashedPassword) {
+    public void saveUserToFile(String username, String hashedPassword) {
         createUserInfoDirectory();
         File userFile = new File("UserInfo" + File.separator + username + ".txt");
         try (PrintWriter writer = new PrintWriter(new FileWriter(userFile))) {
@@ -219,26 +210,6 @@ public class LoginController implements Initializable {
     }
     
     /**
-     * Hash password using SHA-256
-     */
-    private String hashPassword(String password) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] hash = md.digest(password.getBytes());
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append('0');
-                hexString.append(hex);
-            }
-            return hexString.toString();
-        } catch (NoSuchAlgorithmException e) {
-            System.err.println("Error hashing password: " + e.getMessage());
-            return null;
-        }
-    }
-    
-    /**
      * Show alert dialog
      */
     private void showAlert(AlertType alertType, String title, String message) {
@@ -247,12 +218,12 @@ public class LoginController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText(message);
         
-        // 应用CSS样式
+        // apply css
         DialogPane dialogPane = alert.getDialogPane();
         dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
         dialogPane.getStyleClass().add("dialog-pane");
         
-        // 修改按钮文本
+        // mpdify the text color
         alert.getButtonTypes().clear();
         alert.getButtonTypes().addAll(
             new ButtonType("OK", ButtonBar.ButtonData.OK_DONE)

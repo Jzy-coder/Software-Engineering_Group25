@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import com.finance.dao.TransactionDAO;
 import com.finance.model.Transaction;
 import com.finance.service.TransactionService;
+import com.finance.result.ImportResult;
 
 public class TransactionServiceImpl implements TransactionService {
     private TransactionDAO transactionDAO = new TransactionDAO();
@@ -29,13 +30,32 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public void batchImport(List<Transaction> transactions) {
-        transactions.forEach(transaction -> {
-            if (transaction.getId() == null) {
-                transaction.setId(getNextTransactionId());
+    public ImportResult batchImport(List<Transaction> transactions) {
+        List<Transaction> existingTransactions = transactionDAO.getAllTransactions();
+        int importedCount = 0;
+        int skippedCount = 0;
+
+        for (Transaction transaction : transactions) {
+            // Simple duplicate check based on key fields (excluding ID)
+            boolean isDuplicate = existingTransactions.stream().anyMatch(existing ->
+                existing.getDate().equals(transaction.getDate()) &&
+                existing.getCategory().equals(transaction.getCategory()) &&
+                existing.getType().equals(transaction.getType()) &&
+                existing.getAmount() == transaction.getAmount() &&
+                existing.getDescription().equals(transaction.getDescription())
+            );
+
+            if (!isDuplicate) {
+                if (transaction.getId() == null) {
+                    transaction.setId(getNextTransactionId());
+                }
+                transactionDAO.save(transaction);
+                importedCount++;
+            } else {
+                skippedCount++;
             }
-            transactionDAO.save(transaction);
-        });
+        }
+        return new ImportResult(importedCount, skippedCount);
     }
 
     @Override
@@ -87,32 +107,32 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     /**
-     * 根据日期获取交易记录
-     * @param date 指定的日期
-     * @return 当天的交易记录列表
+     * aquired by TransactionDAO
+     * @param date 
+     * @return 
      */
     @Override
     public List<Transaction> getTransactionsByDate(LocalDate date) {
-        // 获取所有交易记录并过滤出指定日期的记录
+        // aquired by TransactionDAO
         return transactionDAO.getAllTransactions().stream()
                 .filter(transaction -> transaction.getDate().toLocalDate().isEqual(date))
                 .collect(Collectors.toList());
     }
     
     /**
-     * 根据日期范围获取交易记录
-     * @param startDate 开始日期
-     * @param endDate 结束日期
-     * @return 日期范围内的交易记录列表
+     * aquired by TransactionDAO
+     * @param startDate 
+     * @param endDate 
+     * @return 
      */
     @Override
     public List<Transaction> getTransactionsByDateRange(LocalDate startDate, LocalDate endDate) {
-        // 将开始日期转换为当天的开始时间（00:00:00）
+        // transformed by TransactionDAO
         LocalDateTime startDateTime = startDate.atStartOfDay();
-        // 将结束日期转换为当天的结束时间（23:59:59.999999999）
+        // transformed by TransactionDAO
         LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay().minusNanos(1);
         
-        // 获取所有交易记录并过滤出指定日期范围内的记录
+        // aquired by TransactionDAO
         return transactionDAO.getAllTransactions().stream()
                 .filter(transaction -> {
                     LocalDateTime transactionDate = transaction.getDate();
@@ -122,10 +142,10 @@ public class TransactionServiceImpl implements TransactionService {
     }
     
     /**
-     * 计算指定日期范围内的余额
-     * @param startDate 开始日期
-     * @param endDate 结束日期
-     * @return 日期范围内的余额
+     * evaluated by TransactionDAO
+     * @param startDate 
+     * @param endDate 
+     * @return 
      */
     @Override
     public double calculateBalanceByDateRange(LocalDate startDate, LocalDate endDate) {
@@ -142,11 +162,11 @@ public class TransactionServiceImpl implements TransactionService {
     }
     
     /**
-     * 计算指定日期范围内某类别的总金额
-     * @param category 类别（Income/Expense）
-     * @param startDate 开始日期
-     * @param endDate 结束日期
-     * @return 日期范围内指定类别的总金额
+     * 计evaluated by TransactionDAO
+     * @param category 
+     * @param startDate 
+     * @param endDate 
+     * @return 
      */
     @Override
     public double calculateTotalByCategoryAndDateRange(String category, LocalDate startDate, LocalDate endDate) {

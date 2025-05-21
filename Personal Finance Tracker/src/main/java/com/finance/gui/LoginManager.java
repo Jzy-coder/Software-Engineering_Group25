@@ -12,8 +12,6 @@ import com.finance.service.TransactionService;
  */
 public class LoginManager {
     private static String currentUsername = "Default User";
-    private static String currentPassword = "";
-    
     /**
      * Validate user login information
      * @param username username
@@ -59,7 +57,6 @@ public class LoginManager {
                         // Clear cache before switching user
                         getTransactionService().clearCache();              
                         currentUsername = username;
-                        currentPassword = password;
                         // Switch to current user's transaction data
                         getTransactionService().switchUser(username, false);
                         return true;
@@ -188,9 +185,6 @@ public class LoginManager {
                     }
                 }
             }
-            
-            // Update current password
-            currentPassword = newPassword;
             
             // Remove saved credentials for this user
             com.finance.util.UserCredentialManager.removeCredentials(currentUsername);

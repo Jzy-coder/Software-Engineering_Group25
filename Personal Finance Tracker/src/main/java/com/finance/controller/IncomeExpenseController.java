@@ -5,8 +5,6 @@ import java.io.IOException;
 
 import java.io.File;
 import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -19,7 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import com.finance.model.Transaction;
 import com.finance.service.TransactionService;
-
+import com.finance.result.ImportResult;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
@@ -29,11 +27,13 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -41,6 +41,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.GridPane;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
 
@@ -114,7 +115,7 @@ public class IncomeExpenseController implements Initializable {
     @FXML
     private Label balanceLabel;
     
-    // 日期范围筛选相关控件
+
     @FXML
     private DatePicker startDatePicker;
     
@@ -139,9 +140,9 @@ public class IncomeExpenseController implements Initializable {
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // 为singleDatePicker添加监听逻辑，实现选择日期后自动筛选并刷新transactionTable，仅显示所选日期的交易记录。
+        // add date picker listener
         if (singleDatePicker != null) {
-            // 设置日期单元格工厂，只允许选择有交易记录的日期
+            // set default date to today
             singleDatePicker.setDayCellFactory(picker -> new DateCell() {
                 @Override
                 public void updateItem(LocalDate date, boolean empty) {
@@ -160,7 +161,7 @@ public class IncomeExpenseController implements Initializable {
                 }
             });
 
-            // 添加日期选择监听器
+            // add listener to singleDatePicker
             singleDatePicker.valueProperty().addListener((observable, oldValue, newValue) -> {
                 if (newValue != null) {
                     ObservableList<Transaction> filtered = FXCollections.observableArrayList();
@@ -176,7 +177,7 @@ public class IncomeExpenseController implements Initializable {
             });
         }
         
-        // 使用LoginManager中的TransactionService实例，确保用户数据隔离
+        // user login
         transactionService = com.finance.gui.LoginManager.getTransactionService();
         transactionList = FXCollections.observableArrayList();
         
@@ -202,7 +203,7 @@ public class IncomeExpenseController implements Initializable {
                 if (empty || item == null) {
                     setText(null);
                 } else {
-                    setText(formatter.format(item));
+                    setText(formatter.format(item.toLocalDate()));
                 }
             }
         });
@@ -211,10 +212,10 @@ public class IncomeExpenseController implements Initializable {
         setupEditColumn();
         setupDeleteColumn();
         
-        // 设置默认日期为今天
+        // setup date picker
         datePicker.setValue(LocalDate.now());
 
-        // 限制可选日期范围为过去一个月内
+        // limit the date picker to the past 30 days
         datePicker.setDayCellFactory(picker -> new DateCell() {
             @Override
             public void updateItem(LocalDate date, boolean empty) {
@@ -224,15 +225,15 @@ public class IncomeExpenseController implements Initializable {
             }
         });
 
-        // 初始化日期范围选择器
+        // initialize date picker
         LocalDate today = LocalDate.now();
         LocalDate oneMonthAgo = today.minusMonths(1);
         
-        // 设置默认的日期范围（过去一个月）
+        // set default date range
         startDatePicker.setValue(oneMonthAgo);
         endDatePicker.setValue(today);
         
-        // 限制开始日期不能超过今天
+        // limit the date picker to the past 30 days
         startDatePicker.setDayCellFactory(picker -> new DateCell() {
             @Override
             public void updateItem(LocalDate date, boolean empty) {
@@ -241,7 +242,7 @@ public class IncomeExpenseController implements Initializable {
             }
         });
         
-        // 限制结束日期不能超过今天，且不能早于开始日期
+        // limit the date picker to the past 30 days
         endDatePicker.setDayCellFactory(picker -> new DateCell() {
             @Override
             public void updateItem(LocalDate date, boolean empty) {
@@ -252,10 +253,10 @@ public class IncomeExpenseController implements Initializable {
             }
         });
         
-        // 当开始日期变化时，更新结束日期的可选范围
+        // update table when date range changes
         startDatePicker.valueProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
-                // 更新结束日期选择器
+                // update end date picker
                 endDatePicker.setDayCellFactory(picker -> new DateCell() {
                     @Override
                     public void updateItem(LocalDate date, boolean empty) {
@@ -264,14 +265,14 @@ public class IncomeExpenseController implements Initializable {
                     }
                 });
                 
-                // 如果当前选择的结束日期早于新的开始日期，则更新结束日期
+                
                 if (endDatePicker.getValue() != null && endDatePicker.getValue().isBefore(newValue)) {
                     endDatePicker.setValue(newValue);
                 }
             }
         });
 
-        // 添加下拉框联动 
+        
         categoryComboBox.setItems(FXCollections.observableArrayList("Income", "Expense"));
       
         categoryComboBox.getSelectionModel().selectedItemProperty().addListener(
@@ -290,7 +291,7 @@ public class IncomeExpenseController implements Initializable {
         loadTransactions();
         updateSummary();
         
-        // 初始化时间段统计信息
+        // initialize period summary
         updatePeriodSummary(startDatePicker.getValue(), endDatePicker.getValue());
     }
     
@@ -299,9 +300,7 @@ public class IncomeExpenseController implements Initializable {
      */
     private void loadTransactions() {
         transactionList.clear();
-        // 加载所有交易记录
         transactionList.addAll(transactionService.getAllTransactions());
-        // 初始化时只显示当天的交易记录
         ObservableList<Transaction> todayTransactions = FXCollections.observableArrayList();
         LocalDate today = LocalDate.now();
         for (Transaction t : transactionList) {
@@ -319,20 +318,20 @@ public class IncomeExpenseController implements Initializable {
     private void handleAddTransaction() {
         try {
             
-             // 获取用户选择的日期
+             
              if (datePicker.getValue() == null) {
                 showAlert("Please select a date range.");
                 return;
             }
             LocalDate selectedDate = datePicker.getValue();
-            LocalDateTime transactionDate = selectedDate.atStartOfDay(); // 转换为当天零点时间
+            LocalDateTime transactionDate = selectedDate.atStartOfDay(); 
 
             String category = categoryComboBox.getValue();
             String type = typeComboBox.getValue();
             double amount = Math.abs(Double.parseDouble(amountField.getText()));
             String description = descriptionArea.getText();
             
-            // 非空校验
+            
 if (category == null || type == null) {
     showAlert("Please select a type of Income or Expense.");
     return;
@@ -357,7 +356,7 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
             updateSummary();
             
         } catch (NumberFormatException e) {
-            showAlert("The amount format is incorrect,Please enter valid digits(like:199.99)");
+            showAlert("Please enter valid amount.");
         } catch (Exception e) {
             logger.error("Fail to add the transcation.", e);
             showAlert("Fail to add the transcation: " + e.getMessage());
@@ -365,7 +364,7 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
     }
     
      /**
-     * 更新总结信息，包括今天的总支出。
+     * update transaction record
      */
     private void updateSummary() {
         double income = transactionService.calculateTotalByCategory("Income");
@@ -378,9 +377,9 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
     }
     
     /**
-     * 更新指定时间段的统计信息
-     * @param startDate 开始日期
-     * @param endDate 结束日期
+     * 
+     * @param startDate 
+     * @param endDate 
      */
     private void updatePeriodSummary(LocalDate startDate, LocalDate endDate) {
         if (startDate == null || endDate == null) {
@@ -396,7 +395,7 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
             periodExpenseLabel.setText(String.format("¥%.2f", periodExpense));
             periodBalanceLabel.setText(String.format("¥%.2f", periodBalance));
             
-            // 更新表格显示，只显示该时间段内的交易记录
+            // update table list
             transactionList.clear();
             transactionList.addAll(transactionService.getTransactionsByDateRange(startDate, endDate));
             transactionTable.setItems(transactionList);
@@ -407,7 +406,7 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
     }
     
     /**
-     * 处理日期范围筛选
+     * handle delete transaction
      */
     @FXML
     private void handleFilterByDateRange() {
@@ -441,6 +440,18 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
         alert.setTitle("Error");
         alert.setHeaderText(null);
         alert.setContentText(message);
+        
+        
+        DialogPane dialogPane = alert.getDialogPane();
+        if (getClass().getResource("/css/styles.css") != null) {
+            dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+            dialogPane.getStyleClass().add("error-alert");
+        }
+        
+        // set button style
+        ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        alert.getButtonTypes().setAll(okButton);
+        
         alert.showAndWait();
     }
     
@@ -502,46 +513,82 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
      * Handle edit transaction
      */
     private void handleEditTransaction(Transaction transaction) {
-        // Populate form fields with transaction data
-        categoryComboBox.setValue(transaction.getCategory());
-        typeComboBox.setValue(transaction.getType());
-        amountField.setText(String.valueOf(transaction.getAmount()));
-        descriptionArea.setText(transaction.getDescription());
+        // create dialog
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Edit Transaction");
+        dialog.setHeaderText("Edit transaction details");
         
-        // Add visual feedback for edit mode
-        categoryComboBox.setStyle("-fx-border-color: #4CAF50; -fx-border-width: 2px");
-        typeComboBox.setStyle("-fx-border-color: #4CAF50; -fx-border-width: 2px");
-        amountField.setStyle("-fx-border-color: #4CAF50; -fx-border-width: 2px");
-        descriptionArea.setStyle("-fx-border-color: #4CAF50; -fx-border-width: 2px");
+        // apply css
+        DialogPane dialogPane = dialog.getDialogPane();
+        if (getClass().getResource("/css/styles.css") != null) {
+            dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+            dialogPane.getStyleClass().add("edit-dialog");
+        }
         
-        // Ensure form fields are visible
-        categoryComboBox.requestFocus();
         
-        // Change add button to update button
-        addButton.setText("Update Transaction");
+        ButtonType saveButton = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().setAll(saveButton, cancelButton);
         
-        // Set onAction to update instead of add
-        addButton.setOnAction(event -> {
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new javafx.geometry.Insets(20));
+        
+        ComboBox<String> categoryBox = new ComboBox<>(FXCollections.observableArrayList("Income", "Expense"));
+        ComboBox<String> typeBox = new ComboBox<>();
+        TextField amountBox = new TextField();
+        TextArea descriptionBox = new TextArea();
+        
+       
+        categoryBox.setValue(transaction.getCategory());
+        typeBox.setValue(transaction.getType());
+        amountBox.setText(String.valueOf(transaction.getAmount()));
+        descriptionBox.setText(transaction.getDescription());
+        
+        categoryBox.setOnAction(e -> {
+            if ("Income".equals(categoryBox.getValue())) {
+                typeBox.setItems(incomeTypes);
+            } else if ("Expense".equals(categoryBox.getValue())) {
+                typeBox.setItems(expenseTypes);
+            }
+            typeBox.getSelectionModel().selectFirst();
+        });
+        
+        
+        categoryBox.fireEvent(new javafx.event.ActionEvent());
+        
+        grid.add(new Label("Category:"), 0, 0);
+        grid.add(categoryBox, 1, 0);
+        grid.add(new Label("Type:"), 0, 1);
+        grid.add(typeBox, 1, 1);
+        grid.add(new Label("Amount:"), 0, 2);
+        grid.add(amountBox, 1, 2);
+        grid.add(new Label("Description:"), 0, 3);
+        grid.add(descriptionBox, 1, 3);
+        
+        dialog.getDialogPane().setContent(grid);
+        
+        
+        Optional<ButtonType> result = dialog.showAndWait();
+        if (result.isPresent() && result.get() == saveButton) {
             try {
-                // Get updated values
-                String category = categoryComboBox.getValue();
-                String type = typeComboBox.getValue();
-                double amount = Double.parseDouble(amountField.getText());
-                String description = descriptionArea.getText();
                 
-                // Update transaction object
+                String category = categoryBox.getValue();
+                String type = typeBox.getValue();
+                double amount = Double.parseDouble(amountBox.getText());
+                String description = descriptionBox.getText();
+                
+                
                 transaction.setCategory(category);
                 transaction.setType(type);
                 transaction.setAmount(amount);
                 transaction.setDescription(description);
                 
-                // Update in database
+                
                 transactionService.updateTransaction(transaction);
                 
-                // Reset form
-                resetForm();
                 
-                // Refresh table
                 loadTransactions();
                 updateSummary();
                 
@@ -550,63 +597,53 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
             } catch (Exception e) {
                 showAlert("Failed to update transaction: " + e.getMessage());
             }
-        });
+        }
     }
     
     /**
      * Handle delete transaction
      */
     private void handleDeleteTransaction(Transaction transaction) {
-        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmAlert.setTitle("Confirm Delete");
-        confirmAlert.setHeaderText(null);
-        confirmAlert.setContentText("Are you sure you want to delete this transaction?");
-        
-        Optional<ButtonType> result = confirmAlert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            try {
-                // Check if transaction ID is null
-                if (transaction.getId() == null) {
-                    showAlert("Cannot delete transaction: Invalid transaction ID");
-                    return;
-                }
-                
-                // Delete from database
-                transactionService.deleteTransaction(transaction.getId());
-                
-                // Refresh table
-                loadTransactions();
-                updateSummary();
-                
-            } catch (Exception e) {
-                showAlert("Failed to delete transaction: " + e.getMessage());
+        try {
+            Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+            confirmAlert.setTitle("Confirm Delete");
+            confirmAlert.setHeaderText("Delete Transaction");
+            confirmAlert.setContentText("Are you sure you want to delete this transaction?");
+            
+            
+            DialogPane dialogPane = confirmAlert.getDialogPane();
+            URL cssUrl = getClass().getResource("/css/styles.css");
+            if (cssUrl != null) {
+                dialogPane.getStylesheets().add(cssUrl.toExternalForm());
+                dialogPane.getStyleClass().add("confirmation-dialog");
             }
+            
+           
+            ButtonType deleteButton = new ButtonType("Delete", ButtonBar.ButtonData.OK_DONE);
+            ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+            confirmAlert.getButtonTypes().setAll(deleteButton, cancelButton);
+            
+            Optional<ButtonType> result = confirmAlert.showAndWait();
+            if (result.isPresent() && result.get() == deleteButton) {
+                if (transaction != null) {
+                    transactionService.deleteTransaction(transaction.getId());
+                    loadTransactions();
+                    updateSummary();
+                   
+                    if (startDatePicker.getValue() != null && endDatePicker.getValue() != null) {
+                        updatePeriodSummary(startDatePicker.getValue(), endDatePicker.getValue());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error deleting transaction", e);
+            showAlert("Failed to delete transaction: " + e.getMessage());
         }
-    }
-    
-    /**
-     * Reset form to add mode
-     */
-    private void resetForm() {
-        categoryComboBox.setValue(null);
-        typeComboBox.setValue(null);
-        amountField.clear();
-        descriptionArea.clear();
-        
-        // Reset form styles
-        categoryComboBox.setStyle("");
-        typeComboBox.setStyle("");
-        amountField.setStyle("");
-        descriptionArea.setStyle("");
-        
-        // Reset button text and action
-        addButton.setText("Add New Transaction");
-        addButton.setOnAction((event) -> handleAddTransaction());
     }
     
     @FXML
     private void handleExportCSV(javafx.event.ActionEvent event) {
-        // 原文件选择器逻辑保持不变
+        
                 FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save CSV File");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
@@ -619,12 +656,32 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
                 alert.setTitle("Export Success");
                 alert.setHeaderText(null);
                 alert.setContentText("Data exported successfully!");
+                
+                // Apply CSS styles
+                DialogPane dialogPane = alert.getDialogPane();
+                dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+                dialogPane.getStyleClass().add("dialog-pane");
+                
+                // Set English button text
+                ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+                alert.getButtonTypes().setAll(okButton);
+                
                 alert.showAndWait();
             } catch (IOException e) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Export Error");
                 alert.setHeaderText("Export Failed");
                 alert.setContentText("Error exporting data: " + e.getMessage());
+                
+                // Apply CSS styles
+                DialogPane dialogPane = alert.getDialogPane();
+                dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+                dialogPane.getStyleClass().add("error-alert");
+                
+                // Set English button text
+                ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+                alert.getButtonTypes().setAll(okButton);
+                
                 alert.showAndWait();
             }
         }
@@ -632,12 +689,12 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
 
     @FXML
     private void handleImportCSV() {
-        // 添加CSV格式提示弹窗
+        // added code here
         Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
         confirmAlert.setTitle("CSV Format Requirements");
         confirmAlert.setHeaderText("Please ensure the CSV file contains the following columns in the correct order");
         
-        // 创建示例文本区域
+        // Create example text area
         TextArea exampleText = new TextArea(
             "Category,Type,Amount,Description,Date\n" +
             "Income,Salary,5000.00,Monthly salary,2023-08-01\n" +
@@ -648,12 +705,20 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
         exampleText.setMaxWidth(Double.MAX_VALUE);
         exampleText.setPrefRowCount(5);
         
-        confirmAlert.getDialogPane().setContent(exampleText);
-        confirmAlert.getButtonTypes().setAll(ButtonType.OK, ButtonType.CANCEL);
+        // Apply CSS styles
+        DialogPane confirmDialogPane = confirmAlert.getDialogPane();
+        confirmDialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+        confirmDialogPane.getStyleClass().add("dialog-pane");
+        confirmDialogPane.setContent(exampleText);
+        
+        // Set English button text
+        ButtonType confirmOkButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        ButtonType confirmCancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        confirmAlert.getButtonTypes().setAll(confirmOkButton, confirmCancelButton);
         
         confirmAlert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                // 原文件选择器逻辑保持不变
+            if (response == confirmOkButton) {
+                
                 FileChooser fileChooser = new FileChooser();
                 fileChooser.setTitle("Select CSV File");
                 
@@ -663,43 +728,67 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
 
                 if (file != null) {
                     try {
-                        // CSV解析逻辑
+                        
                         List<Transaction> importedTransactions = CsvUtil.parseCSV(file);
 
-                        // 创建预览对话框
+                       
                         Dialog<ButtonType> dialog = new Dialog<>();
-                        dialog.setTitle("Import preview");
+                        dialog.setTitle("Import Preview");
                         dialog.setHeaderText(String.format("Found %d records ready for import", importedTransactions.size()));
                         
-                        // 添加预览表格
+                        // Add preview table
                         TableView<Transaction> previewTable = createPreviewTable(importedTransactions);
                         dialog.getDialogPane().setContent(previewTable);
-                        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
                         
-                        if (dialog.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
-                            transactionService.batchImport(importedTransactions);
+                        // Apply CSS styles
+                        DialogPane previewDialogPane = dialog.getDialogPane();
+
+                        previewDialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+                        previewDialogPane.getStyleClass().add("dialog-pane");
+                        
+                        // Set English button text
+                        ButtonType previewOkButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+                        ButtonType previewCancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+                        dialog.getDialogPane().getButtonTypes().addAll(previewOkButton, previewCancelButton);
+                        
+                        if (dialog.showAndWait().orElse(ButtonType.CANCEL).getButtonData() == ButtonBar.ButtonData.OK_DONE) {
+                            ImportResult result = transactionService.batchImport(importedTransactions);
                             loadTransactions();
                             updateSummary();
+                            // update table list
+                            updatePeriodSummary(startDatePicker.getValue(), endDatePicker.getValue());
                             Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
-                            successAlert.setTitle("Success");
-                            successAlert.setHeaderText(String.format("Successfully imported %d records", importedTransactions.size()));
+                            successAlert.setTitle("Import Success");
+                            successAlert.setHeaderText(String.format("Import finished.\nSuccessfully imported: %d\nSkipped duplicates: %d", result.getImportedCount(), result.getSkippedCount()));
+                            
+                            // Apply CSS styles
+                            DialogPane successDialogPane = successAlert.getDialogPane();
+                            successDialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+                            successDialogPane.getStyleClass().add("success-alert");
+
+                            
+                            // Set English button text
+                            ButtonType successOkButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+                            successAlert.getButtonTypes().setAll(successOkButton);
+                            
                             successAlert.showAndWait();
                         }
                     } catch (Exception e) {
-                        showAlert("CSV import failed: " + e.getMessage());
+                        showAlert("CSV import failed. Please check the CSV file format.");
                     }
                 }
             } else {
-                // 用户取消或关闭对话框时直接返回
+                // return
                 return;
             }
         });
 }
 
+    @SuppressWarnings("unchecked")
     private TableView<Transaction> createPreviewTable(List<Transaction> transactions) {
         TableView<Transaction> previewTable = new TableView<>();
         
-        // 定义表格列
+        // define columns
         TableColumn<Transaction, String> categoryCol = new TableColumn<>("Category");
         categoryCol.setCellValueFactory(new PropertyValueFactory<>("category"));
         
@@ -715,13 +804,13 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
             return new SimpleStringProperty(cellData.getValue().getDate().format(formatter));
         });
         
-        // 添加列到表格
+        
         previewTable.getColumns().addAll(categoryCol, typeCol, amountCol, dateCol);
         
-        // 设置数据源
+      
         previewTable.setItems(FXCollections.observableArrayList(transactions));
         
-        // 设置表格样式
+       
         previewTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         previewTable.setPrefHeight(400);
         

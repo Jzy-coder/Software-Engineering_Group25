@@ -6,10 +6,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import com.finance.gui.LoginManager;
-import com.finance.model.Budget;
 import com.finance.model.Transaction;
 import com.finance.service.TransactionService;
-import com.finance.util.BudgetDataManager;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -64,10 +62,7 @@ public class WelcomeController implements Initializable {
      * Load the user's name (hardcoded or fetched from a service)
      */
     private void loadUserName() {
-        // ��ȡ��ǰ��¼���û���
         String currentUsername = LoginManager.getCurrentUsername();
-        
-        // ���û�ӭ��ǩΪ��ǰ�û���
         userNameLabel.setText("Hi, " + currentUsername + " ~");
     }
 
@@ -119,10 +114,6 @@ public class WelcomeController implements Initializable {
         return total;
     }
 
-
-    /**
-     * ���㵱����֧������-֧����
-     */
     private double calculateBalance() {
         double totalIncome = 0.0;
         double totalExpense = 0.0;

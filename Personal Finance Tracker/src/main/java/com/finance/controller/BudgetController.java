@@ -58,20 +58,20 @@ public class BudgetController implements Initializable {
     }
 
     //================ Budget Management ================//
-    // 修改后的 handleAddBudget 方法
+    
     @FXML
     private void handleAddBudget() {
 
-        // 如果当前存在预算，先保存到历史记录
+        // if there is an existing budget, show a confirmation dialog
         if (currentBudget != null) {
             BudgetDataManager.addBudgetToHistory(currentBudget); // 新增此行
         }
 
-        // 如果当前存在预算，检查其进度
+        // if there is an existing budget, show a confirmation dialog
         if (currentBudget != null) {
             double progress = currentBudget.getActualAmount() / currentBudget.getPlannedAmount();
             if (progress < 1.0) {
-                // 如果进度未达到100%，清除所有计划并保存
+                // if there is an existing budget, show a confirmation dialog
                 plans.clear();
                 currentBudget.setPlans(plans);
                 BudgetDataManager.saveBudget(currentBudget);
@@ -79,20 +79,20 @@ public class BudgetController implements Initializable {
             }
         }
 
-        // 创建对话框
+        // create a new budget
         Dialog<ButtonType> dialog = new Dialog<>(); 
         dialog.setTitle("Add Budget");
         dialog.setHeaderText("Enter budget details");
         DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
-        dialogPane.getStyleClass().add("confirmation-dialog"); // 添加CSS类
+        dialogPane.getStyleClass().add("confirmation-dialog"); 
     
-        // 设置按钮类型 - 使用自定义ButtonType确保英文显示
+        // set up input fields
         ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
         ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
         dialog.getDialogPane().getButtonTypes().setAll(okButton, cancelButton);
     
-        // 构建输入表单
+        // create input fields
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
@@ -108,7 +108,7 @@ public class BudgetController implements Initializable {
     
         dialog.getDialogPane().setContent(grid);
     
-        // 处理结果
+        // handle OK button click
         Optional<ButtonType> result = dialog.showAndWait();
         if (result.isPresent() && result.get() == okButton) {
             try {
@@ -116,7 +116,7 @@ public class BudgetController implements Initializable {
                 String plannedText = plannedField.getText().trim();
                 String actualText = actualField.getText().trim();
 
-                // 验证输入是否为纯数字（可以包含小数点）
+                
                 if (!plannedText.matches("^\\d*\\.?\\d+$")) {
                     showAlert(Alert.AlertType.ERROR, "Error", "Planned amount must be a valid number!", "error-alert");
                     return;
@@ -129,7 +129,7 @@ public class BudgetController implements Initializable {
                 double planned = Double.parseDouble(plannedText);
                 double actual = Double.parseDouble(actualText);
     
-                // 输入验证
+                
                 if (name.isEmpty()) {
                     showAlert(Alert.AlertType.ERROR, "Error", "Budget name cannot be empty!", "error-alert");
                     return;
@@ -139,11 +139,11 @@ public class BudgetController implements Initializable {
                     return;
                 }
     
-                // 创建新预算并保存
+                
                 currentBudget = new Budget(name, planned, actual);
                 BudgetDataManager.saveBudget(currentBudget);
     
-                // 强制刷新界面
+                
                 refreshSingleBudgetDisplay();
                 updateBudgetBalance();
     
@@ -161,7 +161,7 @@ public class BudgetController implements Initializable {
                 currentBudget.getName(), 
                 currentBudget.getPlannedAmount(), 
                 currentBudget.getActualAmount(),
-                "confirmation-dialog" // 添加CSS类
+                "confirmation-dialog" 
             );
         }
     }
@@ -170,7 +170,7 @@ public class BudgetController implements Initializable {
     private void handleReviewBudget() {
         List<Budget> budgetHistory = BudgetDataManager.loadBudgetHistory();
         
-         // 新增：过滤掉当前活动的预算（如果有）
+         // new instance of the Budget class
         if (currentBudget != null) {
             budgetHistory.removeIf(b -> 
                 b.getName().equals(currentBudget.getName()) &&
@@ -184,7 +184,7 @@ public class BudgetController implements Initializable {
             return;
         }
         
-        // 移除重复的预算记录（保留最新的）
+        // remove duplicates
         for (int i = budgetHistory.size() - 1; i >= 0; i--) {
             Budget current = budgetHistory.get(i);
             for (int j = i - 1; j >= 0; j--) {
@@ -204,9 +204,9 @@ public class BudgetController implements Initializable {
         dialog.setHeaderText("Your Budget History");
         DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
-        dialogPane.getStyleClass().add("review-dialog"); // 添加CSS类
+        dialogPane.getStyleClass().add("review-dialog"); 
         
-        // 使用自定义ButtonType确保英文显示
+        // use a scroll pane for the content
         ButtonType closeButton = new ButtonType("Close", ButtonBar.ButtonData.CANCEL_CLOSE);
         dialog.getDialogPane().getButtonTypes().add(closeButton);
         
@@ -235,17 +235,17 @@ public class BudgetController implements Initializable {
     private void handleRemoveBudget() {
 
             if (currentBudget != null) {
-            // 修复：删除前将当前预算添加到历史记录
-            BudgetDataManager.addBudgetToHistory(currentBudget); // 重新添加此行
+            
+            BudgetDataManager.addBudgetToHistory(currentBudget); 
 
-            // 删除当前活动预算
+            
             BudgetDataManager.saveBudget(null);
             currentBudget = null;
-            // 清空plans列表
+            
             plans.clear();
-            planListView.setItems(plans); // 更新UI显示
+            planListView.setItems(plans); 
             refreshSingleBudgetDisplay();
-            updateBudgetBalance(); // 更新余额为0
+            updateBudgetBalance(); 
             showAlert(Alert.AlertType.INFORMATION, "Success", "Budget removed successfully", "success-alert");
         }
     }
@@ -253,7 +253,7 @@ public class BudgetController implements Initializable {
     //================ Plan Management ================//
         @FXML
     private void handleAddPlan() {
-        // 检查是否存在预算，如果不存在则显示提示并返回
+        // check if a budget exists
         if (currentBudget == null) {
             showAlert(Alert.AlertType.WARNING, "No Budget", "Please create a budget first before adding plans.", "warning-alert");
             return;
@@ -264,37 +264,37 @@ public class BudgetController implements Initializable {
         dialog.setHeaderText("Enter plan description:");
         DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
-        dialogPane.getStyleClass().add("input-dialog"); // 添加CSS类
+        dialogPane.getStyleClass().add("input-dialog");
         
-        // 显式设置按钮类型（TextInputDialog 默认已有 OK 和 Cancel）
+        // set up input fields
         ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
         ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
         dialog.getDialogPane().getButtonTypes().setAll(okButton, cancelButton);
 
-        // 正确获取输入结果（返回 Optional<String>）
+        // add input fields
         Optional<String> result = dialog.showAndWait();
 
-        // 检查用户是否点击了 OK（通过 Optional<String> 的存在性判断）
+        // check if user clicked OK
         if (result.isPresent()) {
-            String plan = result.get().trim(); // 直接获取输入的字符串
+            String plan = result.get().trim(); 
             if (!plan.isEmpty()) {
                 plans.add(plan);
                 currentBudget.setPlans(plans);
                 BudgetDataManager.saveBudget(currentBudget);
                 
-                // 更新历史记录中的预算，确保plan实时同步到budget history
+                // update the progress bar
                 Budget oldBudget = new Budget(currentBudget.getName(), 
                                             currentBudget.getPlannedAmount(), 
                                             currentBudget.getActualAmount());
-                // 设置旧的plans列表（不包含新添加的plan）
+                // save the old budget to history
                 List<String> oldPlans = new java.util.ArrayList<>(plans);
-                oldPlans.remove(oldPlans.size() - 1); // 移除最后添加的plan
+                oldPlans.remove(oldPlans.size() - 1); // remove the new plan
                 oldBudget.setPlans(oldPlans);
                 
-                // 更新历史记录
+                // update the history
                 BudgetDataManager.updateBudgetInHistory(oldBudget, currentBudget);
                 
-                planListView.setItems(plans); // 强制刷新列表
+                planListView.setItems(plans); 
             }
         }
     }
@@ -303,24 +303,23 @@ public class BudgetController implements Initializable {
     private void handleRemovePlan() {
         int selectedIndex = planListView.getSelectionModel().getSelectedIndex();
         if (selectedIndex >= 0) {
-            // 保存编辑前的预算信息，用于在历史记录中查找匹配项
+            // store the current budget
             Budget oldBudget = new Budget(currentBudget.getName(), 
                                         currentBudget.getPlannedAmount(), 
                                         currentBudget.getActualAmount());
             oldBudget.setPlans(currentBudget.getPlans());
             
             plans.remove(selectedIndex);
-            currentBudget.setPlans(plans); // 更新计划列表
+            currentBudget.setPlans(plans); // update the budget
             BudgetDataManager.saveBudget(currentBudget);
             
-            // 更新历史记录中的预算项
+            // update the history
             BudgetDataManager.updateBudgetInHistory(oldBudget, currentBudget);
         }
     }
 
     //================ Core Logic ================//
     private void showBudgetDialog(String title, String name, double planned, double actual, String styleClass) {
-        // 改用 Dialog<ButtonType> 替代 TextInputDialog
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle(title);
         dialog.setHeaderText("Edit budget details");
@@ -330,12 +329,12 @@ public class BudgetController implements Initializable {
             dialogPane.getStyleClass().add(styleClass);
         }
         
-        // 添加 OK 和 Cancel 按钮
+        
         ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
         ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
         dialog.getDialogPane().getButtonTypes().setAll(okButton, cancelButton);
 
-        // 构建输入表单（原有代码不变）
+        
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
@@ -351,17 +350,16 @@ public class BudgetController implements Initializable {
 
         dialog.getDialogPane().setContent(grid);
 
-        // 处理结果
+        
         Optional<ButtonType> result = dialog.showAndWait();
-        if (result.isPresent() && result.get() == okButton) { // 明确检查 OK 按钮
+        if (result.isPresent() && result.get() == okButton) { 
             try {
                 String newName = nameField.getText().trim();
                 double newPlanned = Double.parseDouble(plannedField.getText());
                 double newActual = Double.parseDouble(actualField.getText());
 
-                //validateInput(newName, newPlanned, newActual); // 将由新的showAlert处理
+                //validateInput(newName, newPlanned, newActual); 
 
-                // 输入验证
                 if (newName.isEmpty()) {
                     showAlert(Alert.AlertType.ERROR, "Error", "Budget name cannot be empty!", "error-alert");
                     return;
@@ -371,57 +369,57 @@ public class BudgetController implements Initializable {
                     return;
                 }
                 
-                // 检查是否达成目标（actual等于planned）
-                if (Math.abs(newActual - newPlanned) < 0.01) { // 使用近似相等来处理浮点数比较
-                    // 保存编辑前的预算信息，用于在历史记录中查找匹配项
+                // check if the budget is being deleted
+                if (Math.abs(newActual - newPlanned) < 0.01) { // use a small epsilon value
+                    // store the current budget
                     Budget oldBudget = new Budget(currentBudget.getName(), 
                                                 currentBudget.getPlannedAmount(), 
                                                 currentBudget.getActualAmount());
                     oldBudget.setPlans(currentBudget.getPlans());
                     
-                    // 更新当前预算（虽然即将删除，但先更新历史记录）
+                    // update the budget
                     currentBudget.setName(newName);
                     currentBudget.setPlannedAmount(newPlanned);
                     currentBudget.setActualAmount(newActual);
                     
-                    // 更新历史记录中的预算项
+                    // update the history
                     BudgetDataManager.updateBudgetInHistory(oldBudget, currentBudget);
                     
-                    // 显示祝贺弹窗
+                    // show the congratulatory alert
                     Alert congratsAlert = new Alert(Alert.AlertType.INFORMATION);
                     congratsAlert.setTitle("Goal Achieved");
                     congratsAlert.setHeaderText("Congratulations!");
                     congratsAlert.setContentText("Congratulations on achieving this goal!");
                     DialogPane congratsDialogPane = congratsAlert.getDialogPane();
                     congratsDialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
-                    congratsDialogPane.getStyleClass().add("success-alert"); // 添加CSS类
+                    congratsDialogPane.getStyleClass().add("success-alert"); 
                     
-                    // 自定义按钮文本为英文
+                    // make button to english
                     ButtonType okButtonAlert = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
                     congratsAlert.getButtonTypes().setAll(okButtonAlert);
                     
                     congratsAlert.showAndWait();
                     
-                    // 自动删除该预算
+                    // delete the budget
                     handleRemoveBudget();
                 } else {
-                    // 保存编辑前的预算信息，用于在历史记录中查找匹配项
+                    // store the current budget
                     Budget oldBudget = new Budget(currentBudget.getName(), 
                                                 currentBudget.getPlannedAmount(), 
                                                 currentBudget.getActualAmount());
                     oldBudget.setPlans(currentBudget.getPlans());
                     
-                    // 直接更新现有对象，避免创建新实例
+                    // update the budget
                     currentBudget.setName(newName);
                     currentBudget.setPlannedAmount(newPlanned);
                     currentBudget.setActualAmount(newActual);
                     BudgetDataManager.saveBudget(currentBudget);
                     
-                    // 更新历史记录中的预算项
+                    // update the history
                     BudgetDataManager.updateBudgetInHistory(oldBudget, currentBudget);
                     
                     refreshSingleBudgetDisplay();
-                    updateBudgetBalance(); // 触发余额更新
+                    updateBudgetBalance(); 
                 }
 
                 } catch (NumberFormatException e) {
@@ -441,9 +439,9 @@ public class BudgetController implements Initializable {
     // }
     // Validation logic is now integrated into methods calling showAlert with appropriate styleClass.
 
-    // 修改后的 refreshSingleBudgetDisplay 方法
+    
     private void refreshSingleBudgetDisplay() {
-        singleBudgetContainer.getChildren().clear(); // 确保清空旧内容
+        singleBudgetContainer.getChildren().clear(); // ensure container is empty
 
         if (currentBudget != null) {
             HBox budgetItem = createBudgetItem(
@@ -451,7 +449,7 @@ public class BudgetController implements Initializable {
                 currentBudget.getPlannedAmount(),
                 currentBudget.getActualAmount()
             );
-            singleBudgetContainer.getChildren().add(budgetItem); // 只添加一次
+            singleBudgetContainer.getChildren().add(budgetItem); // only add once
         }
     }
     
@@ -464,7 +462,7 @@ public class BudgetController implements Initializable {
         container.setAlignment(Pos.CENTER_LEFT);
         container.setStyle("-fx-padding: 15; -fx-background-color: #f8f9fa; -fx-border-radius: 5;");
 
-        // ==================== 进度条部分 ====================
+        // ==================== progress bar ====================
         VBox progressBox = new VBox(8);
         Label nameLabel = new Label(name);
         nameLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
@@ -473,27 +471,27 @@ public class BudgetController implements Initializable {
         progressBar.setPrefWidth(300);
       
 
-        // 动态监听进度变化并应用颜色样式
+        // apply style to progress bar
             progressBar.progressProperty().addListener((obs, oldVal, newVal) -> {
             double progress = newVal.doubleValue();
-            progressBar.getStyleClass().removeAll("warning", "caution", "safe"); // 移除所有旧状态
+            progressBar.getStyleClass().removeAll("warning", "caution", "safe"); 
 
-            // 输出当前进度，帮助调试
+            // output the progress
             System.out.println("Current Progress: " + progress);
 
-            // 根据进度值添加对应的状态
+            // add the class
             if (progress < 0.4) {
-                progressBar.getStyleClass().add("warning"); // 红色
+                progressBar.getStyleClass().add("warning"); 
             } else if (progress < 0.6) {
-                progressBar.getStyleClass().add("caution"); // 黄色
+                progressBar.getStyleClass().add("caution"); 
             } else {
-                progressBar.getStyleClass().add("safe"); // 绿色
+                progressBar.getStyleClass().add("safe"); 
             }
         });
 
 
 
-        // 百分比标签（叠加在进度条上）
+        // % process
         Label progressLabel = new Label();
         progressLabel.textProperty().bind(
             Bindings.format("%.0f%%", progressBar.progressProperty().multiply(100))
@@ -501,15 +499,15 @@ public class BudgetController implements Initializable {
         progressLabel.getStyleClass().add("progress-label");
 
         StackPane progressStack = new StackPane();
-        progressStack.getChildren().addAll(progressBar, progressLabel); // 正确添加进度条和标签
+        progressStack.getChildren().addAll(progressBar, progressLabel); // add progressBar first
 
-        // 详细金额标签
+        
         Label detailLabel = new Label(String.format("Planned: ￥%.2f | Actual: ￥%.2f", planned, actual));
         detailLabel.setStyle("-fx-text-fill: #666;");
 
-        progressBox.getChildren().addAll(nameLabel, progressStack, detailLabel); // 替换为 progressStack
+        progressBox.getChildren().addAll(nameLabel, progressStack, detailLabel); 
 
-        // ==================== 操作按钮 ====================
+        // ==================== operation button ====================
         Button editBtn = new Button("Edit");
         editBtn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
         editBtn.setOnAction(e -> showBudgetDialog("Edit Budget", name, planned, actual, "confirmation-dialog"));
@@ -517,32 +515,32 @@ public class BudgetController implements Initializable {
         Button deleteBtn = new Button("Delete");
         deleteBtn.setStyle("-fx-background-color: #f44336; -fx-text-fill: white;");
         deleteBtn.setOnAction(e -> {
-            // 从历史记录中删除该预算项
+            // remove the budget from history
             List<Budget> tempBudgetHistory = BudgetDataManager.loadBudgetHistory();
             tempBudgetHistory.removeIf(b -> b.getName().equals(name) && 
                                   Math.abs(b.getPlannedAmount() - planned) < 0.01 && 
                                   Math.abs(b.getActualAmount() - actual) < 0.01);
             BudgetDataManager.saveBudgetHistory(tempBudgetHistory);
             
-            // 自定义确认弹窗按钮文本为英文
+            
             Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
             confirmDialog.setTitle("Confirm deletion");
             confirmDialog.setHeaderText("Delete confirmation");
             confirmDialog.setContentText("Once deleted, it cannot be modified anymore. Are you sure you want to delete it?");
             DialogPane confirmDialogPane = confirmDialog.getDialogPane();
             confirmDialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
-            confirmDialogPane.getStyleClass().add("confirmation-dialog"); // 添加CSS类
+            confirmDialogPane.getStyleClass().add("confirmation-dialog"); 
             
-            // 自定义按钮文本为英文
+            
             ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
             ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
             confirmDialog.getButtonTypes().setAll(okButton, cancelButton);
             
-            // 等待用户确认
+            // wait for user input
             Optional<ButtonType> result = confirmDialog.showAndWait();
             if (result.isPresent() && result.get() == okButton) {
-                singleBudgetContainer.getChildren().remove(container); // 动态移除当前项
-                handleRemoveBudget(); // 调用控制器方法
+                singleBudgetContainer.getChildren().remove(container); // remove the container
+                handleRemoveBudget(); // call the method to remove the budget
             }
         });
 
@@ -551,15 +549,14 @@ public class BudgetController implements Initializable {
     }
     
     /**
-     * 创建只读的预算项目，用于历史预算记录显示
-     * 与createBudgetItem类似，但不包含Edit按钮，只有Delete按钮
+     * create a read-only budget item
      */
     private HBox createReadOnlyBudgetItem(String name, double planned, double actual) {
         HBox container = new HBox(15);
         container.setAlignment(Pos.CENTER_LEFT);
         container.setStyle("-fx-padding: 15; -fx-background-color: #f8f9fa; -fx-border-radius: 5;");
 
-        // ==================== 进度条部分 ====================
+        // ==================== progress bar ====================
         VBox progressBox = new VBox(8);
         Label nameLabel = new Label(name);
         nameLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
@@ -567,22 +564,22 @@ public class BudgetController implements Initializable {
         ProgressBar progressBar = new ProgressBar(actual / planned);
         progressBar.setPrefWidth(300);
       
-        // 动态监听进度变化并应用颜色样式
+        // apply color style based on progress
         progressBar.progressProperty().addListener((obs, oldVal, newVal) -> {
             double progress = newVal.doubleValue();
-            progressBar.getStyleClass().removeAll("warning", "caution", "safe"); // 移除所有旧状态
+            progressBar.getStyleClass().removeAll("warning", "caution", "safe"); // remove all old states
 
-            // 根据进度值添加对应的状态
+            // add the color style
             if (progress < 0.4) {
-                progressBar.getStyleClass().add("warning"); // 红色
+                progressBar.getStyleClass().add("warning"); 
             } else if (progress < 0.6) {
-                progressBar.getStyleClass().add("caution"); // 黄色
+                progressBar.getStyleClass().add("caution"); 
             } else {
-                progressBar.getStyleClass().add("safe"); // 绿色
+                progressBar.getStyleClass().add("safe"); 
             }
         });
 
-        // 百分比标签（叠加在进度条上）
+        
         Label progressLabel = new Label();
         progressLabel.textProperty().bind(
             Bindings.format("%.0f%%", progressBar.progressProperty().multiply(100))
@@ -592,11 +589,11 @@ public class BudgetController implements Initializable {
         StackPane progressStack = new StackPane();
         progressStack.getChildren().addAll(progressBar, progressLabel);
 
-        // 详细金额标签
+        
         Label detailLabel = new Label(String.format("Planned: ￥%.2f | Actual: ￥%.2f", planned, actual));
         detailLabel.setStyle("-fx-text-fill: #666;");
 
-        // 查找对应的预算对象，以获取其计划列表
+        // find the matching budget in history
         Budget matchingBudget = null;
         List<Budget> budgetHistoryList = BudgetDataManager.loadBudgetHistory();
         for (Budget b : budgetHistoryList) {
@@ -608,17 +605,17 @@ public class BudgetController implements Initializable {
             }
         }
         
-        // 添加计划列表显示
+        // add plans list
         if (matchingBudget != null && !matchingBudget.getPlans().isEmpty()) {
             Label plansLabel = new Label("Plans:");
             plansLabel.setStyle("-fx-font-weight: bold; -fx-padding: 5 0 0 0;");
             
             ListView<String> plansListView = new ListView<>();
-            plansListView.setPrefHeight(Math.min(matchingBudget.getPlans().size() * 24 + 2, 100)); // 动态调整高度，最大100
+            plansListView.setPrefHeight(Math.min(matchingBudget.getPlans().size() * 24 + 2, 100)); 
             plansListView.setItems(FXCollections.observableArrayList(matchingBudget.getPlans()));
-            plansListView.setStyle("-fx-background-color: transparent;"); // 设置透明背景
-            plansListView.setMouseTransparent(true); // 禁用鼠标事件
-            plansListView.setFocusTraversable(false); // 禁用焦点
+            plansListView.setStyle("-fx-background-color: transparent;"); 
+            plansListView.setMouseTransparent(true); 
+            plansListView.setFocusTraversable(false); 
             plansListView.setCellFactory(param -> new javafx.scene.control.ListCell<String>() {
                 @Override
                 protected void updateItem(String item, boolean empty) {
@@ -628,30 +625,30 @@ public class BudgetController implements Initializable {
                         setStyle("-fx-background-color: transparent;");
                     } else {
                         setText(item);
-                        setStyle("-fx-background-color: transparent; -fx-text-fill: #666;"); // 设置文本颜色为灰色
+                        setStyle("-fx-background-color: transparent; -fx-text-fill: #666;"); // set text color
                     }
                 }
             });
-            plansListView.getSelectionModel().clearSelection(); // 清除任何默认选择
+            plansListView.getSelectionModel().clearSelection(); // clear selection
             
             progressBox.getChildren().addAll(nameLabel, progressStack, detailLabel, plansLabel, plansListView);
         } else {
             progressBox.getChildren().addAll(nameLabel, progressStack, detailLabel);
         }
 
-        // ==================== 操作按钮 ====================
-        // 只添加Delete按钮，不添加Edit按钮
+        // ==================== operation button ====================
+        // add delete button
         Button deleteBtn = new Button("Delete");
         deleteBtn.setStyle("-fx-background-color: #f44336; -fx-text-fill: white;");
         deleteBtn.setOnAction(e -> {
-            // 从历史记录中删除该预算项
+            // remove from history
             List<Budget> tempBudgetHistory = BudgetDataManager.loadBudgetHistory();
             tempBudgetHistory.removeIf(b -> b.getName().equals(name) && 
                                   Math.abs(b.getPlannedAmount() - planned) < 0.01 && 
                                   Math.abs(b.getActualAmount() - actual) < 0.01);
             BudgetDataManager.saveBudgetHistory(tempBudgetHistory);
             
-            // 自定义确认弹窗按钮文本为英文
+            // translate button text to english
             Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
             confirmDialog.setTitle("Confirm deletion");
             confirmDialog.setHeaderText("Delete confirmation");
@@ -660,15 +657,15 @@ public class BudgetController implements Initializable {
             confirmDialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
             confirmDialogPane.getStyleClass().add("confirmation-dialog"); // 添加CSS类
             
-            // 自定义按钮文本为英文
+            // translate button text to english
             ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
             ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
             confirmDialog.getButtonTypes().setAll(okButton, cancelButton);
             
-            // 等待用户确认
+            // wait for user confirmation
             Optional<ButtonType> result = confirmDialog.showAndWait();
             if (result.isPresent() && result.get() == okButton) {
-                // 从UI中移除
+                // remove the item from the list
                 ((VBox) container.getParent()).getChildren().remove(container);
             }
         });
@@ -676,14 +673,6 @@ public class BudgetController implements Initializable {
         container.getChildren().addAll(progressBox, deleteBtn);
         return container;
     }
-    //================ Utilities ================//
-    private void loadBudgetData() {
-        currentBudget = BudgetDataManager.loadBudget();
-        if (currentBudget != null) {
-            plans.setAll(currentBudget.getPlans());
-        }
-    }
-
     private void updateBudgetBalance() {
         double balance = (currentBudget != null) ? 
             currentBudget.getPlannedAmount() - currentBudget.getActualAmount() : 0;
@@ -696,26 +685,19 @@ public class BudgetController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText(message);
 
-        // 应用CSS样式
+        // apply css
         DialogPane dialogPane = alert.getDialogPane();
         dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
         if (styleClass != null && !styleClass.isEmpty()) {
             dialogPane.getStyleClass().add(styleClass);
         }
 
-        // 修改按钮文本为英文
+        // modify text into english
         alert.getButtonTypes().clear();
         alert.getButtonTypes().addAll(
             new ButtonType("OK", ButtonBar.ButtonData.OK_DONE)
         );
 
         alert.showAndWait();
-    }
-
-
-
-    // Overload for simple info alerts if no specific class is needed, or to maintain old calls
-    private void showAlert(String message) {
-        showAlert(Alert.AlertType.INFORMATION, "Information", message, "info-alert");
     }
 }

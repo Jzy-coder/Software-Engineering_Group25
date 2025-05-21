@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import com.finance.controller.AnalysisController;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -119,24 +118,6 @@ public class MainController implements Initializable {
             String errorMessage = String.format("An unexpected error occurred while loading view: %s\nFXML Path: %s\nException: %s", 
                                               e.getMessage(), fxmlPath, e.getClass().getName());
             showAlert(errorMessage);
-        }
-    }
-    
-    /**
-     * Show under development message for features not yet implemented
-     */
-    private void showUnderDevelopmentMessage(String feature) {
-        try {
-            // Clean up current view controller resources
-            cleanupCurrentController();
-            
-            // Create a simple view with a message
-            Parent view = FXMLLoader.load(getClass().getResource("/fxml/UnderDevelopmentView.fxml"));
-            contentArea.getChildren().clear();
-            contentArea.getChildren().add(view);
-        } catch (IOException e) {
-            // If the view doesn't exist, just show an alert
-            showAlert(feature + " feature is under development.");
         }
     }
     

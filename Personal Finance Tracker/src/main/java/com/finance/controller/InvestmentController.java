@@ -1,7 +1,6 @@
 package com.finance.controller;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
@@ -12,18 +11,10 @@ import com.finance.service.TransactionService;
 
 import javafx.application.Platform;
 import javafx.scene.Node;
-import javafx.scene.effect.DropShadow;
-import javafx.scene.paint.Color;
-
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
-import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.StackPane;
 import javafx.collections.FXCollections;
@@ -35,8 +26,6 @@ import javafx.scene.chart.XYChart;
 
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.ToggleGroup;
-import javafx.animation.FadeTransition;
-import javafx.util.Duration;
 import javafx.scene.layout.HBox;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.control.Label;
@@ -100,7 +89,7 @@ public class InvestmentController {
 
     @FXML
     private void initialize() {
-        // 初始化比较视图的控件
+        // initializeTendencyView();
         initializeComparisonControls();
         viewTypeComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
@@ -108,23 +97,23 @@ public class InvestmentController {
             }
         });
         
-        // 设置默认选项
+        // setupComparisonViewListeners();
         viewTypeComboBox.getSelectionModel().selectFirst();
 
-        // 设置单选按钮监听器
+        // setupComparisonViewListeners();
         setupRadioButtonListeners();
 
-        // 设置默认选中的单选按钮
+        // setupSingleTendencyViewListeners();
         singleIncomeRadio.setSelected(true);
 
-        // 初始化类别选择框并设置默认项
+        // initializeSingleTendencyView();
         singleCategoryComboBox.setItems(incomeCategories);
         singleCategoryComboBox.getSelectionModel().selectFirst();
 
-        // 初始化TransactionService
+        // initializeSingleTendencyView();
         transactionService = com.finance.gui.LoginManager.getTransactionService();
 
-        // 设置时间段选项
+        // setupSingleTendencyViewListeners();
         ObservableList<String> timePeriods = FXCollections.observableArrayList(
             "The recent week",
             "The recent 15 days",
@@ -136,17 +125,17 @@ public class InvestmentController {
         singleTimePeriodComboBox.setItems(timePeriods);
         singleTimePeriodComboBox.getSelectionModel().selectFirst();
 
-        // 添加监听器
+        
         setupSingleTendencyViewListeners();
         
-        // 在所有组件初始化完成后，使用JavaFX的Platform.runLater确保UI线程正确处理图表更新
+        // after initializeComparisonControls();
         javafx.application.Platform.runLater(() -> {
-            // 更新图表数据
+            // updateTendencyChart(singleTendencyLineChart, singleTimePeriodComboBox.getValue(),
             updateTendencyChart(singleTendencyLineChart, singleTimePeriodComboBox.getValue(),
                 singleIncomeRadio.isSelected(), singleExpenseRadio.isSelected(), singleBalanceRadio.isSelected(),
                 singleCategoryComboBox.getValue());
             
-            // 预加载比较视图数据
+            
             singleComparisonView.applyCss();
             singleComparisonView.layout();
             updateComparisonCharts();
@@ -155,11 +144,11 @@ public class InvestmentController {
     
 
     private void updateView(String viewType) {
-        // 首先隐藏所有视图
+        
         singleTendencyView.setVisible(false);
         singleComparisonView.setVisible(false);
 
-        // 根据选择显示相应的视图
+        
         switch (viewType) {
             case "Tendency":
                 singleTendencyView.setVisible(true);
@@ -182,7 +171,7 @@ public class InvestmentController {
     // setupTendencyViewListeners method has been removed as it was related to Both view
 
     private void setupSingleTendencyViewListeners() {
-        // 添加时间段选择监听器
+        
         singleTimePeriodComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 updateTendencyChart(singleTendencyLineChart, newValue, singleIncomeRadio.isSelected(),
@@ -190,7 +179,7 @@ public class InvestmentController {
             }
         });
 
-        // 添加类型选择监听器
+        
         singleIncomeRadio.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
                 singleCategoryComboBox.setItems(incomeCategories);
@@ -219,7 +208,7 @@ public class InvestmentController {
             }
         });
 
-        // 添加类别选择监听器
+        
         singleCategoryComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null && !singleBalanceRadio.isSelected()) {
                 updateTendencyChart(singleTendencyLineChart, singleTimePeriodComboBox.getValue(),
@@ -230,24 +219,24 @@ public class InvestmentController {
 
     private void updateTendencyChart(LineChart<String, Number> chart, String timePeriod, boolean isIncome,
             boolean isExpense, boolean isBalance, String category) {
-        // 清除现有数据
+        
         chart.getData().clear();
         
-        // 先禁用动画，以便在数据准备好后再启用
+        
         chart.setAnimated(false);
 
-        // 获取日期范围
+        
         LocalDate endDate = LocalDate.now();
         LocalDate startDate = getStartDate(endDate, timePeriod);
 
-        // 预先设置图表样式
-        chart.setCreateSymbols(true); // 显示数据点
+        
+        chart.setCreateSymbols(true); 
         chart.setLegendVisible(true);
         chart.getXAxis().setLabel("Date");
         chart.getYAxis().setLabel("Amount");
         chart.setStyle("-fx-font-size: 12px; -fx-padding: 10 0 0 20;");
         
-        // 根据时间段设置标签旋转角度
+       
         if (timePeriod.equals("The recent three months") || timePeriod.equals("The recent half-year")) {
             chart.getXAxis().setTickLabelRotation(-90);
         } else {
@@ -255,16 +244,16 @@ public class InvestmentController {
             chart.getXAxis().setTickLabelRotation(daysBetween > 15 ? -45 : 0);
         }
 
-        // 获取交易数据
+       
         List<Transaction> transactions = transactionService.getAllTransactions();
 
-        // 创建数据系列
+      
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName(getSeriesName(isIncome, isExpense, isBalance, category));
 
-        // 根据时间段选择不同的数据聚合方式
+      
         if (timePeriod.equals("The recent week") || timePeriod.equals("The recent 15 days") || timePeriod.equals("The recent month")) {
-            // 按日显示数据
+       
             Map<LocalDate, Double> dailyAmounts = transactions.stream()
                 .filter(t -> filterTransaction(t, startDate, endDate, isIncome, isExpense, category))
                 .collect(Collectors.groupingBy(
@@ -277,7 +266,7 @@ public class InvestmentController {
                 series.getData().add(new XYChart.Data<>(date.toString(), amount));
             }
         } else if (timePeriod.equals("The recent three months") || timePeriod.equals("The recent half-year")) {
-            // 按周聚合数据
+    
             LocalDate currentDate = startDate;
             while (!currentDate.isAfter(endDate)) {
                 LocalDate weekEndDate = currentDate.plusDays(6);
@@ -299,7 +288,7 @@ public class InvestmentController {
                 currentDate = weekEndDate.plusDays(1);
             }
         } else if (timePeriod.equals("The recent year")) {
-            // 按月聚合数据
+
             Map<String, Double> monthlyAmounts = transactions.stream()
                 .filter(t -> filterTransaction(t, startDate, endDate, isIncome, isExpense, category))
                 .collect(Collectors.groupingBy(
@@ -316,44 +305,43 @@ public class InvestmentController {
             }
         }
 
-        // 添加数据系列到图表
+        
         chart.getData().add(series);
         
-        // 设置数据系列的颜色和样式
+
         String seriesColor = getSeriesColor(isIncome, isExpense, isBalance);
         String lineStyle = "-fx-stroke-width: 2.5px;";
         
-        // 应用样式到数据系列
+    
         series.getNode().setStyle(lineStyle + seriesColor);
         
-        // 为数据点添加样式和交互效果
+
         for (XYChart.Data<String, Number> data : series.getData()) {
-            // 确保数据点节点已创建
+
             javafx.application.Platform.runLater(() -> {
                 if (data.getNode() != null) {
-                    // 设置数据点样式
+
                     data.getNode().setStyle(seriesColor + "-fx-background-radius: 5px; -fx-padding: 5px;");
                     
-                    // 添加鼠标悬停效果
+
                     javafx.scene.effect.DropShadow shadow = new javafx.scene.effect.DropShadow();
                     shadow.setColor(javafx.scene.paint.Color.GRAY);
                     shadow.setRadius(5);
                     
-                    // 鼠标进入时添加阴影效果
+
                     data.getNode().setOnMouseEntered(event -> {
                         data.getNode().setEffect(shadow);
                         data.getNode().setScaleX(1.2);
                         data.getNode().setScaleY(1.2);
                     });
-                    
-                    // 鼠标离开时移除阴影效果
+
                     data.getNode().setOnMouseExited(event -> {
                         data.getNode().setEffect(null);
                         data.getNode().setScaleX(1);
                         data.getNode().setScaleY(1);
                     });
                     
-                    // 鼠标点击时显示数据值
+
                     data.getNode().setOnMouseClicked(event -> {
                         String message = String.format("%s: %.2f", data.getXValue(), data.getYValue().doubleValue());
                         javafx.scene.control.Tooltip tooltip = new javafx.scene.control.Tooltip(message);
@@ -363,25 +351,25 @@ public class InvestmentController {
             });
         }
         
-        // 强制布局更新
+
         chart.layout();
         
-        // 启用动画效果
+
         chart.setAnimated(true);
     }
     
     /**
-     * 根据数据类型获取适当的颜色样式
+     * aquired
      */
     private String getSeriesColor(boolean isIncome, boolean isExpense, boolean isBalance) {
         if (isBalance) {
-            return "-fx-stroke: #8A2BE2; -fx-background-color: #8A2BE2, white;"; // 紫色
+            return "-fx-stroke: #8A2BE2; -fx-background-color: #8A2BE2, white;"; 
         } else if (isIncome) {
-            return "-fx-stroke: #2E8B57; -fx-background-color: #2E8B57, white;"; // 绿色
+            return "-fx-stroke: #2E8B57; -fx-background-color: #2E8B57, white;"; 
         } else if (isExpense) {
-            return "-fx-stroke: #CD5C5C; -fx-background-color: #CD5C5C, white;"; // 红色
+            return "-fx-stroke: #CD5C5C; -fx-background-color: #CD5C5C, white;"; 
         }
-        return "-fx-stroke: #1E90FF; -fx-background-color: #1E90FF, white;"; // 默认蓝色
+        return "-fx-stroke: #1E90FF; -fx-background-color: #1E90FF, white;"; 
     }
 
     private LocalDate getStartDate(LocalDate endDate, String timePeriod) {
@@ -429,7 +417,7 @@ public class InvestmentController {
             return categoryMatch && typeMatch;
         }
 
-        // 如果既不是收入也不是支出，说明是余额模式，返回true以包含所有交易
+        
         return true;
     }
 
@@ -605,9 +593,6 @@ public class InvestmentController {
         chart.setMinSize(350, 350);
         chart.setPrefSize(350, 350);
         chart.setMaxSize(350, 350);
-        
-        // Create a copy of current data for smooth transition
-        ObservableList<PieChart.Data> oldData = FXCollections.observableArrayList(chart.getData());
         chart.getData().clear();
 
         // Filter and group transactions
@@ -726,25 +711,8 @@ public class InvestmentController {
         });
     }
     
-    private String getColorForCategory(String category) {
-        // Return different colors for different categories
-        switch(category) {
-            case "Salary": return "#2E8B57";
-            case "Bonus": return "#3CB371";
-            case "Food": return "#CD5C5C";
-            case "Shopping": return "#DC143C";
-            case "Transportation": return "#B22222";
-            case "Housing": return "#8B0000";
-            case "Entertainment": return "#FF6347";
-            default: return "#1E90FF";
-        }
-    }
-
-
-
-
     private void setupRadioButtonListeners() {
-        // 设置单独视图的单选按钮监听器
+        // setup listeners for single radio buttons
         ChangeListener<Boolean> singleRadioListener = (observable, oldValue, newValue) -> {
             if (newValue) {
                 ObservableList<String> items = FXCollections.observableArrayList();
@@ -765,7 +733,7 @@ public class InvestmentController {
             }
         };
 
-        // 添加监听器到单选按钮
+        // add listeners to single radio buttons
         singleIncomeRadio.selectedProperty().addListener(singleRadioListener);
         singleExpenseRadio.selectedProperty().addListener(singleRadioListener);
         singleBalanceRadio.selectedProperty().addListener(singleRadioListener);

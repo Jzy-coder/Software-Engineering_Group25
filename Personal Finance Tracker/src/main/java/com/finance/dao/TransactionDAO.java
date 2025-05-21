@@ -102,7 +102,7 @@ public class TransactionDAO {
         this.currentUsername = username;
 
         if (isRename && oldUsername != null && !oldUsername.equals(username)) {
-            // 用户名重命名场景：重命名数据文件
+            // rename file
             String oldFileName = String.format(FILE_NAME_TEMPLATE, oldUsername);
             File oldFile = new File(DATA_DIR, oldFileName);
             
@@ -118,28 +118,12 @@ public class TransactionDAO {
                 }
             }
         } else {
-            // 账户切换场景：直接加载新用户文件
+            // uploading new file
             initializeDataFile();
         }
     }
-    
     /**
-     * 复制文件
-     */
-    private void copyFile(File source, File dest) throws IOException {
-        try (FileReader fr = new FileReader(source);
-             FileWriter fw = new FileWriter(dest)) {
-            char[] buffer = new char[1024];
-            int length;
-            while ((length = fr.read(buffer)) > 0) {
-                fw.write(buffer, 0, length);
-            }
-        }
-    }
-    
-    
-    /**
-     * 获取所有交易记录
+     *Get all transactions 
      */
     public List<Transaction> getAllTransactions() {
         try (Reader reader = new FileReader(dataFile)) {
@@ -185,7 +169,7 @@ public void update(Transaction transaction) {
     try {
         saveToFile(transactions);
     } catch (IOException e) {
-        throw new RuntimeException("更新交易失败：" + e.getMessage(), e);
+        throw new RuntimeException("Fail to update:" + e.getMessage(), e);
     }
 }
 
@@ -198,7 +182,7 @@ public void deleteById(Long id) {
     try {
         saveToFile(transactions);
     } catch (IOException e) {
-        throw new RuntimeException("删除交易失败：" + e.getMessage(), e);
+        throw new RuntimeException("Fail to delete:" + e.getMessage(), e);
     }
 }
 
@@ -208,7 +192,7 @@ public void deleteById(Long id) {
 public void batchInsert(List<Transaction> newTransactions) {
     List<Transaction> existing = getAllTransactions();
 
-    // 使用HashSet去重（基于交易日期、类型和金额）
+    // Filter out transactions with duplicate keys
     Set<String> uniqueKeys = existing.stream()
         .map(t -> t.getDate().toString() + t.getType() + t.getAmount())
         .collect(Collectors.toSet());
@@ -221,7 +205,7 @@ public void batchInsert(List<Transaction> newTransactions) {
     try {
         saveToFile(merged);
     } catch (IOException e) {
-        throw new RuntimeException("批量添加交易失败：" + e.getMessage(), e);
+        throw new RuntimeException("Fail to add many trancations:" + e.getMessage(), e);
     }
 }
     
