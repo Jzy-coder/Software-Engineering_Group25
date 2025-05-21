@@ -1,8 +1,12 @@
 package com.finance.controller;
 
-import java.io.File;
+import com.finance.util.CsvUtil;
 import java.io.IOException;
+
+import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -15,7 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import com.finance.model.Transaction;
 import com.finance.service.TransactionService;
-import com.finance.util.CsvUtil;
+
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
@@ -39,7 +43,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.GridPane;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
 
@@ -56,6 +60,7 @@ public class IncomeExpenseController implements Initializable {
     private final ObservableList<String> expenseTypes = 
         FXCollections.observableArrayList("Food", "Shopping", "Transportation", "Housing", "Entertainment", "Others");
    
+
     private TransactionService transactionService;
     private ObservableList<Transaction> transactionList;
 
@@ -198,9 +203,9 @@ public class IncomeExpenseController implements Initializable {
             protected void updateItem(LocalDateTime item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) {
-                    setText("");
+                    setText(null);
                 } else {
-                    setText(item != null ? formatter.format(item) : "");
+                    setText(formatter.format(item.toLocalDate()));
                 }
             }
         });
@@ -435,22 +440,22 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
      * Show alert dialog
      */
     private void showAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Information");
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
         alert.setHeaderText(null);
-        
-        // 创建Label并设置自动换行
-        Label label = new Label(message);
-        label.setWrapText(true);
-        label.setMaxWidth(Double.MAX_VALUE);
+        alert.setContentText(message);
         
         // 应用CSS样式
-// 导入 DialogPane 类，解决找不到符号的问题
-DialogPane dialogPane = alert.getDialogPane();
-        dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
-        dialogPane.getStyleClass().add("dialog-pane");
+        DialogPane dialogPane = alert.getDialogPane();
+        if (getClass().getResource("/css/styles.css") != null) {
+            dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+            dialogPane.getStyleClass().add("error-alert");
+        }
         
-        alert.getDialogPane().setContent(label);
+        // 设置英文按钮
+        ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        alert.getButtonTypes().setAll(okButton);
+        
         alert.showAndWait();
     }
     
@@ -512,46 +517,84 @@ DialogPane dialogPane = alert.getDialogPane();
      * Handle edit transaction
      */
     private void handleEditTransaction(Transaction transaction) {
-        // Populate form fields with transaction data
-        categoryComboBox.setValue(transaction.getCategory());
-        typeComboBox.setValue(transaction.getType());
-        amountField.setText(String.valueOf(transaction.getAmount()));
-        descriptionArea.setText(transaction.getDescription());
+        // 创建编辑对话框
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Edit Transaction");
+        dialog.setHeaderText("Edit transaction details");
         
-        // Add visual feedback for edit mode
-        categoryComboBox.setStyle("-fx-border-color: #4CAF50; -fx-border-width: 2px");
-        typeComboBox.setStyle("-fx-border-color: #4CAF50; -fx-border-width: 2px");
-        amountField.setStyle("-fx-border-color: #4CAF50; -fx-border-width: 2px");
-        descriptionArea.setStyle("-fx-border-color: #4CAF50; -fx-border-width: 2px");
+        // 应用CSS样式
+        DialogPane dialogPane = dialog.getDialogPane();
+        if (getClass().getResource("/css/styles.css") != null) {
+            dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+            dialogPane.getStyleClass().add("edit-dialog");
+        }
         
-        // Ensure form fields are visible
-        categoryComboBox.requestFocus();
+        // 设置按钮
+        ButtonType saveButton = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().setAll(saveButton, cancelButton);
         
-        // Change add button to update button
-        addButton.setText("Update Transaction");
+        // 创建表单
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new javafx.geometry.Insets(20));
         
-        // Set onAction to update instead of add
-        addButton.setOnAction(event -> {
+        ComboBox<String> categoryBox = new ComboBox<>(FXCollections.observableArrayList("Income", "Expense"));
+        ComboBox<String> typeBox = new ComboBox<>();
+        TextField amountBox = new TextField();
+        TextArea descriptionBox = new TextArea();
+        
+        // 设置初始值
+        categoryBox.setValue(transaction.getCategory());
+        typeBox.setValue(transaction.getType());
+        amountBox.setText(String.valueOf(transaction.getAmount()));
+        descriptionBox.setText(transaction.getDescription());
+        
+        // 添加类型联动
+        categoryBox.setOnAction(e -> {
+            if ("Income".equals(categoryBox.getValue())) {
+                typeBox.setItems(incomeTypes);
+            } else if ("Expense".equals(categoryBox.getValue())) {
+                typeBox.setItems(expenseTypes);
+            }
+            typeBox.getSelectionModel().selectFirst();
+        });
+        
+        // 触发一次以设置正确的类型列表
+        categoryBox.fireEvent(new javafx.event.ActionEvent());
+        
+        grid.add(new Label("Category:"), 0, 0);
+        grid.add(categoryBox, 1, 0);
+        grid.add(new Label("Type:"), 0, 1);
+        grid.add(typeBox, 1, 1);
+        grid.add(new Label("Amount:"), 0, 2);
+        grid.add(amountBox, 1, 2);
+        grid.add(new Label("Description:"), 0, 3);
+        grid.add(descriptionBox, 1, 3);
+        
+        dialog.getDialogPane().setContent(grid);
+        
+        // 处理结果
+        Optional<ButtonType> result = dialog.showAndWait();
+        if (result.isPresent() && result.get() == saveButton) {
             try {
-                // Get updated values
-                String category = categoryComboBox.getValue();
-                String type = typeComboBox.getValue();
-                double amount = Double.parseDouble(amountField.getText());
-                String description = descriptionArea.getText();
+                // 获取更新的值
+                String category = categoryBox.getValue();
+                String type = typeBox.getValue();
+                double amount = Double.parseDouble(amountBox.getText());
+                String description = descriptionBox.getText();
                 
-                // Update transaction object
+                // 更新交易对象
                 transaction.setCategory(category);
                 transaction.setType(type);
                 transaction.setAmount(amount);
                 transaction.setDescription(description);
                 
-                // Update in database
+                // 更新数据库
                 transactionService.updateTransaction(transaction);
                 
-                // Reset form
-                resetForm();
-                
-                // Refresh table
+                // 刷新表格
                 loadTransactions();
                 updateSummary();
                 
@@ -560,61 +603,49 @@ DialogPane dialogPane = alert.getDialogPane();
             } catch (Exception e) {
                 showAlert("Failed to update transaction: " + e.getMessage());
             }
-        });
-    }
-    
-/**
- * Handle delete transaction
- */
-private void handleDeleteTransaction(Transaction transaction) {
-    Dialog<ButtonType> dialog = new Dialog<>();
-    dialog.setTitle("Confirm Delete");
-    dialog.setHeaderText(null);
-
-    // 设置内容标签
-    Label label = new Label("Are you sure you want to delete this transaction?");
-    label.setWrapText(true);
-    label.setMaxWidth(400);
-// 导入 VBox 类，解决无法解析的问题
-// 重新编写代码
-dialog.getDialogPane().setContent(new VBox(label));
-
-    // 设置按钮
-    ButtonType okButton = new ButtonType("Confirm", ButtonBar.ButtonData.OK_DONE);
-    ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-    dialog.getDialogPane().getButtonTypes().addAll(okButton, cancelButton);
-
-    // 应用CSS样式
-    DialogPane dialogPane = dialog.getDialogPane();
-    dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
-    dialogPane.getStyleClass().add("dialog-pane");
-
-    Optional<ButtonType> result = dialog.showAndWait();
-    if (result.isPresent() && result.get() == okButton) {
-        try {
-            // Check if transaction ID is null
-            if (transaction.getId() == null) {
-                showAlert("Cannot delete transaction: Invalid transaction ID");
-                return;
-            }
-
-            // Delete from database
-// 假设 deleteTransaction 方法返回值为 void，先调用该方法
-transactionService.deleteTransaction(transaction.getId());
-// 由于无法从返回值判断是否删除成功，这里先假设删除成功，可根据实际情况修改逻辑
-boolean deleted = true;
-            if (deleted) {
-                loadTransactions();
-                updateSummary();
-            } else {
-                showAlert("Failed to delete transaction: The record may not exist");
-            }
-        } catch (Exception e) {
-            logger.error("Delete transaction failed", e);
-            showAlert("Delete failed: " + e.getLocalizedMessage());
         }
     }
-}
+    
+    /**
+     * Handle delete transaction
+     */
+    private void handleDeleteTransaction(Transaction transaction) {
+        try {
+            Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+            confirmAlert.setTitle("Confirm Delete");
+            confirmAlert.setHeaderText("Delete Transaction");
+            confirmAlert.setContentText("Are you sure you want to delete this transaction?");
+            
+            // 应用CSS样式
+            DialogPane dialogPane = confirmAlert.getDialogPane();
+            URL cssUrl = getClass().getResource("/css/styles.css");
+            if (cssUrl != null) {
+                dialogPane.getStylesheets().add(cssUrl.toExternalForm());
+                dialogPane.getStyleClass().add("confirmation-dialog");
+            }
+            
+            // 设置英文按钮
+            ButtonType deleteButton = new ButtonType("Delete", ButtonBar.ButtonData.OK_DONE);
+            ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+            confirmAlert.getButtonTypes().setAll(deleteButton, cancelButton);
+            
+            Optional<ButtonType> result = confirmAlert.showAndWait();
+            if (result.isPresent() && result.get() == deleteButton) {
+                if (transaction != null) {
+                    transactionService.deleteTransaction(transaction.getId());
+                    loadTransactions();
+                    updateSummary();
+                    // 更新时间段统计信息
+                    if (startDatePicker.getValue() != null && endDatePicker.getValue() != null) {
+                        updatePeriodSummary(startDatePicker.getValue(), endDatePicker.getValue());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error deleting transaction", e);
+            showAlert("Failed to delete transaction: " + e.getMessage());
+        }
+    }
     
     /**
      * Reset form to add mode
@@ -651,12 +682,32 @@ boolean deleted = true;
                 alert.setTitle("Export Success");
                 alert.setHeaderText(null);
                 alert.setContentText("Data exported successfully!");
+                
+                // Apply CSS styles
+                DialogPane dialogPane = alert.getDialogPane();
+                dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+                dialogPane.getStyleClass().add("dialog-pane");
+                
+                // Set English button text
+                ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+                alert.getButtonTypes().setAll(okButton);
+                
                 alert.showAndWait();
             } catch (IOException e) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Export Error");
                 alert.setHeaderText("Export Failed");
                 alert.setContentText("Error exporting data: " + e.getMessage());
+                
+                // Apply CSS styles
+                DialogPane dialogPane = alert.getDialogPane();
+                dialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+                dialogPane.getStyleClass().add("error-alert");
+                
+                // Set English button text
+                ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+                alert.getButtonTypes().setAll(okButton);
+                
                 alert.showAndWait();
             }
         }
@@ -669,7 +720,7 @@ boolean deleted = true;
         confirmAlert.setTitle("CSV Format Requirements");
         confirmAlert.setHeaderText("Please ensure the CSV file contains the following columns in the correct order");
         
-        // 创建示例文本区域
+        // Create example text area
         TextArea exampleText = new TextArea(
             "Category,Type,Amount,Description,Date\n" +
             "Income,Salary,5000.00,Monthly salary,2023-08-01\n" +
@@ -680,11 +731,19 @@ boolean deleted = true;
         exampleText.setMaxWidth(Double.MAX_VALUE);
         exampleText.setPrefRowCount(5);
         
-        confirmAlert.getDialogPane().setContent(exampleText);
-        confirmAlert.getButtonTypes().setAll(ButtonType.OK, ButtonType.CANCEL);
+        // Apply CSS styles
+        DialogPane confirmDialogPane = confirmAlert.getDialogPane();
+        confirmDialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+        confirmDialogPane.getStyleClass().add("dialog-pane");
+        confirmDialogPane.setContent(exampleText);
+        
+        // Set English button text
+        ButtonType confirmOkButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        ButtonType confirmCancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        confirmAlert.getButtonTypes().setAll(confirmOkButton, confirmCancelButton);
         
         confirmAlert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
+            if (response == confirmOkButton) {
                 // 原文件选择器逻辑保持不变
                 FileChooser fileChooser = new FileChooser();
                 fileChooser.setTitle("Select CSV File");
@@ -700,21 +759,44 @@ boolean deleted = true;
 
                         // 创建预览对话框
                         Dialog<ButtonType> dialog = new Dialog<>();
-                        dialog.setTitle("Import preview");
+                        dialog.setTitle("Import Preview");
                         dialog.setHeaderText(String.format("Found %d records ready for import", importedTransactions.size()));
                         
-                        // 添加预览表格
+                        // Add preview table
                         TableView<Transaction> previewTable = createPreviewTable(importedTransactions);
                         dialog.getDialogPane().setContent(previewTable);
-                        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
                         
-                        if (dialog.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+                        // Apply CSS styles
+                        DialogPane previewDialogPane = dialog.getDialogPane();
+
+                        previewDialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+                        previewDialogPane.getStyleClass().add("dialog-pane");
+                        
+                        // Set English button text
+                        ButtonType previewOkButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+                        ButtonType previewCancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+                        dialog.getDialogPane().getButtonTypes().addAll(previewOkButton, previewCancelButton);
+                        
+                        if (dialog.showAndWait().orElse(ButtonType.CANCEL).getButtonData() == ButtonBar.ButtonData.OK_DONE) {
                             transactionService.batchImport(importedTransactions);
                             loadTransactions();
                             updateSummary();
+                            // 更新时间段统计信息
+                            updatePeriodSummary(startDatePicker.getValue(), endDatePicker.getValue());
                             Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
-                            successAlert.setTitle("Success");
+                            successAlert.setTitle("Import Success");
                             successAlert.setHeaderText(String.format("Successfully imported %d records", importedTransactions.size()));
+                            
+                            // Apply CSS styles
+                            DialogPane successDialogPane = successAlert.getDialogPane();
+                            successDialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+                            successDialogPane.getStyleClass().add("success-alert");
+
+                            
+                            // Set English button text
+                            ButtonType successOkButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+                            successAlert.getButtonTypes().setAll(successOkButton);
+                            
                             successAlert.showAndWait();
                         }
                     } catch (Exception e) {
