@@ -3,6 +3,7 @@ package com.finance.app;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Launcher class that serves as the main entry point for the application.
@@ -21,6 +22,9 @@ public class Launcher {
             // Set up JavaFX module path if running from executable
             setupJavaFXModules();
             
+            // Set default locale to English
+            Locale.setDefault(Locale.ENGLISH);
+
             // Launch the actual JavaFX application
             FinanceApplication.main(args);
         } catch (Exception e) {

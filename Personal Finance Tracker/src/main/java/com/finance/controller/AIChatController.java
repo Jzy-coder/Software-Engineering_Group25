@@ -121,6 +121,11 @@ public class AIChatController {
         nameDialog.setHeaderText("Enter a short name for the style button (e.g., 'Analytical').");
         nameDialog.setContentText("Button Name:");
 
+        // Apply CSS styles
+        DialogPane nameDialogPane = nameDialog.getDialogPane();
+        nameDialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+        nameDialogPane.getStyleClass().add("dialog-pane");
+
         Optional<String> nameResult = nameDialog.showAndWait();
         if (nameResult.isPresent() && !nameResult.get().trim().isEmpty()) {
             String buttonName = nameResult.get().trim();
@@ -134,9 +139,14 @@ public class AIChatController {
             promptDialog.setTitle("Add Custom Style Prompt");
             promptDialog.setHeaderText("Enter the system prompt for the '" + buttonName + "' style.");
             promptDialog.getDialogPane().setContent(promptArea);
-            promptDialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        promptDialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
-            // Set result converter
+        // Apply CSS styles
+        DialogPane promptDialogPane = promptDialog.getDialogPane();
+        promptDialogPane.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+        promptDialogPane.getStyleClass().add("dialog-pane");
+
+        // Set result converter
             promptDialog.setResultConverter(dialogButton -> {
                 if (dialogButton == ButtonType.OK) {
                     return promptArea.getText();
