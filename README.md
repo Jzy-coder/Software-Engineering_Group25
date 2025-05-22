@@ -78,27 +78,46 @@ A comprehensive personal finance management application built with JavaFX, helpi
 - **JUnit 5** (Unit Testing Framework)
 
 ### Project Structure
-```
-src/
-  main/
-    java/
-      com.finance/
-        app/          # Application entry
-        component/    # Date range selector
-        controller/   # MVC controllers
-        model/       # Data models
-        service/     # Business logic
-        dao/         # Data access
-        event/       # Transaction events handling
-        result/      # Import results 
-        view/        # UI elements
-        util/        # Utility classes
-        gui/         # GUI components
-    resources/
-      fxml/         # JavaFX layout files
-      css/          # Stylesheets
-      config/       # Configuration files
-```
+---
+ Personal Finance Tracker/
+ ├── .settings/
+ ├── UserInfo/
+ ├── src/
+ │   ├── main/
+ │   │   ├── java/
+ │   │   │   └── com.finance/
+ │   │   │       ├── app/          # Application entry
+ │   │   │       ├── component/    # Date range selector
+ │   │   │       ├── controller/   # MVC controllers
+ │   │   │       ├── model/       # Data models
+ │   │   │       ├── service/     # Business logic
+ │   │   │       ├── dao/         # Data access
+ │   │   │       ├── event/       # Transaction events handling
+ │   │   │       ├── result/      # Import results
+ │   │   │       ├── view/        # UI elements
+ │   │   │       ├── util/        # Utility classes
+ │   │   │       └── gui/         # GUI components
+ │   │   └── resources/
+ │   │       ├── fxml/         # JavaFX layout files
+ │   │       ├── css/          # Stylesheets
+ │   │       └── config/       # Configuration files
+ │   └── test/
+ │       └── java/
+ ├── target/
+ │   ├── classes/
+ │   │   ├── com/
+ │   │   ├── config/
+ │   │   ├── css/
+ │   │   └── fxml/
+ │   ├── lib/
+ │   └── test-classes/
+ │       └── com/
+ ├── .classpath
+ ├── .project
+ ├── dependency-reduced-pom.xml
+ ├── pom.xml
+ └── settings.xml
+---
 
 ### Build and Run
 ```bash
@@ -116,10 +135,33 @@ java -jar target/finance-manager-1.0-SNAPSHOT.jar
 - Screen resolution: 1024x768 or higher
 
 ## Configuration Details
-The application uses the following configuration files:
-- `app.properties`: Application settings
-- `logback.xml`: Logging configuration
-- User-specific configurations stored in user home directory
+Project Information:
+- Group ID: com.finance
+- Artifact ID: finance-manager
+- Version: 4.0
+
+Build Configuration:
+- Java Version: 17 (specified by maven.compiler.release property in pom.xml )
+- Source Encoding: UTF-8
+- Maven Compiler Plugin Version: 3.10.1
+- JavaFX Maven Plugin Version: 0.0.8
+- Main Class: com.finance.app.Launcher
+- Maven Shade Plugin Version: 3.4.1 (used for creating an executable JAR with dependencies)
+
+Dependencies:
+- org.openjfx:javafx-controls (Version 17)
+- org.openjfx:javafx-fxml (Version 17)
+- org.openjfx:javafx-graphics (Version 17)
+- com.toedter:jcalendar (Version 1.4)
+- org.junit.jupiter:junit-jupiter-api (Version 5.10.0, test scope)
+- org.junit.jupiter:junit-jupiter-params (Version 5.10.0, test scope)
+- org.mockito:mockito-core (Version 5.10.0, test scope)
+- org.mockito:mockito-junit-jupiter (Version 5.10.0, test scope)
+  
+Maven Settings:
+- Local Repository: D:/apache-maven-3.9.6/repository
+- Mirror: Aliyun Maven repository ( https://maven.aliyun.com/repository/public ) for central repository.
+- Profile: jdk-11 profile is active by default for JDK 11, setting maven.compiler.source , maven.compiler.target , and maven.compiler.compilerVersion to 11. (Note: This profile seems to conflict with the project's requirement for Java 17 as specified in pom.xml ).
 
 ## Data Storage
 - Transaction data: Separate JSON files per user
@@ -191,7 +233,7 @@ The application uses the following configuration files:
 - Open source contributors
 
 ## Change Log
-### Version 4.0.0 (2025-05-21)
+### Version 4.0.0 (2025-05-26)
 - Core functionality implementation
 - Basic interface design
 - Data storage functionality
