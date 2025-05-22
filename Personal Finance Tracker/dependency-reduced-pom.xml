@@ -143,14 +143,33 @@
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>3.6.3</version>
-        <configuration>
-          <encoding>UTF-8</encoding>
-          <docencoding>UTF-8</docencoding>
-          <charset>UTF-8</charset>
-          <locale>en_US</locale>
-          <additionalOptions>-locale en_US</additionalOptions>
-          <outputDirectory>${project.basedir}/javadoc</outputDirectory>
-        </configuration>
+        <executions>
+          <execution>
+            <id>default-cli</id>
+            <phase>none</phase>
+            <goals>
+              <goal>javadoc</goal>
+            </goals>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </execution>
+          <execution>
+            <id>root-javadoc</id>
+            <phase>package</phase>
+            <goals>
+              <goal>javadoc</goal>
+            </goals>
+            <configuration>
+              <encoding>UTF-8</encoding>
+              <docencoding>UTF-8</docencoding>
+              <charset>UTF-8</charset>
+              <locale>en_US</locale>
+              <additionalOptions>-locale en_US</additionalOptions>
+              <outputDirectory>${project.basedir}/javadoc</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
