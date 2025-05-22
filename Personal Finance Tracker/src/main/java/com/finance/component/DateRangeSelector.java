@@ -25,15 +25,28 @@ public class DateRangeSelector extends Dialog<DateRangeSelector.DateRange> {
         private final LocalDate startDate;
         private final LocalDate endDate;
 
+        /**
+         * Constructs a new DateRange.
+         * @param startDate The start date of the range.
+         * @param endDate The end date of the range.
+         */
         public DateRange(LocalDate startDate, LocalDate endDate) {
             this.startDate = startDate;
             this.endDate = endDate;
         }
 
+        /**
+         * Gets the start date of the range.
+         * @return The start date.
+         */
         public LocalDate getStartDate() {
             return startDate;
         }
 
+        /**
+         * Gets the end date of the range.
+         * @return The end date.
+         */
         public LocalDate getEndDate() {
             return endDate;
         }

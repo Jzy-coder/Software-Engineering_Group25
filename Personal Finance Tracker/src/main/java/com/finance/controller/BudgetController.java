@@ -64,7 +64,7 @@ public class BudgetController implements Initializable {
 
         // if there is an existing budget, show a confirmation dialog
         if (currentBudget != null) {
-            BudgetDataManager.addBudgetToHistory(currentBudget); // 新增此行
+            BudgetDataManager.addBudgetToHistory(currentBudget); 
         }
 
         // if there is an existing budget, show a confirmation dialog

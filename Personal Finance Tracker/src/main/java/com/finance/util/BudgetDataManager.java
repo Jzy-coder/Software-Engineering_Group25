@@ -17,6 +17,10 @@ public class BudgetDataManager {
     private static final String BUDGET_HISTORY_FILE_TEMPLATE = "%s_budget_history.dat";
     
     
+    /**
+     * Saves the current budget for the logged-in user.
+     * @param budget The Budget object to save.
+     */
     public static void saveBudget(Budget budget) {
         try {
             Files.createDirectories(DATA_DIR); // Auto create directory
@@ -36,6 +40,10 @@ public class BudgetDataManager {
     
     /**
      * @param budget 
+     */
+    /**
+     * Adds a budget to the history list for the logged-in user.
+     * @param budget The Budget object to add to history.
      */
     public static void addBudgetToHistory(Budget budget) {
         if (budget == null) return;
@@ -57,6 +65,10 @@ public class BudgetDataManager {
         saveBudgetHistory(history);
     }
 
+    /**
+     * Loads the current budget for the logged-in user.
+     * @return The loaded Budget object, or null if no budget file is found or loading fails.
+     */
     public static Budget loadBudget() {
         String currentUsername = com.finance.gui.LoginManager.getCurrentUsername();
         Path budgetFile = DATA_DIR.resolve(String.format(BUDGET_FILE_TEMPLATE, currentUsername));
@@ -77,6 +89,11 @@ public class BudgetDataManager {
         }
     }
 
+    /**
+     * Handles the renaming of budget and budget history files when a username changes.
+     * @param oldUsername The previous username.
+     * @param newUsername The new username.
+     */
     public static void handleUsernameChange(String oldUsername, String newUsername) {
         // rename budget file
         Path oldBudgetFile = DATA_DIR.resolve(String.format(BUDGET_FILE_TEMPLATE, oldUsername));
@@ -105,6 +122,10 @@ public class BudgetDataManager {
         }
     }
     
+    /**
+     * Saves the list of budget history for the logged-in user.
+     * @param budgetHistory The list of Budget objects representing the history.
+     */
     public static void saveBudgetHistory(List<Budget> budgetHistory) {
         try {
             Files.createDirectories(DATA_DIR);
@@ -121,6 +142,10 @@ public class BudgetDataManager {
         }
     }
     
+    /**
+     * Loads the list of budget history for the logged-in user.
+     * @return The list of historical Budget objects, or an empty list if no history file is found or loading fails.
+     */
     public static List<Budget> loadBudgetHistory() {
         String currentUsername = com.finance.gui.LoginManager.getCurrentUsername();
         Path historyFile = DATA_DIR.resolve(String.format(BUDGET_HISTORY_FILE_TEMPLATE, currentUsername));
@@ -143,9 +168,9 @@ public class BudgetDataManager {
     }
     
     /**
-     * updateBudgetInHistory
-     * @param oldBudget 
-     * @param newBudget 
+     * Updates a budget entry in the history list.
+     * @param oldBudget The old Budget object to find in history.
+     * @param newBudget The new Budget object with updated details.
      */
     public static void updateBudgetInHistory(Budget oldBudget, Budget newBudget) {
         if (oldBudget == null || newBudget == null) return;

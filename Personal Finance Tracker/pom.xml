@@ -16,7 +16,6 @@
     </properties>
 
     <dependencies>
-        <!-- JavaFX 依赖 -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
@@ -33,30 +32,25 @@
             <version>${javafx.version}</version>
         </dependency>
         
-        <!-- JCalendar依赖 -->
         <dependency>
             <groupId>com.toedter</groupId>
             <artifactId>jcalendar</artifactId>
             <version>1.4</version>
         </dependency>
         
-        <!-- JFreeChart依赖 -->
         <dependency>
             <groupId>org.jfree</groupId>
             <artifactId>jfreechart</artifactId>
             <version>1.5.4</version>
         </dependency>
         
-        <!-- OpenCSV依赖已移至下方，使用最新版本 -->
 
-<!-- JSON处理 -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.10.1</version>
         </dependency>
         
-        <!-- 日志框架 -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -68,7 +62,6 @@
             <version>1.2.13</version>
         </dependency>
         
-        <!-- OpenCSV依赖 -->
         <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
@@ -260,6 +253,8 @@
                     <docencoding>UTF-8</docencoding>
                     <charset>UTF-8</charset>
                     <locale>en_US</locale>
+                    <additionalOptions>-locale en_US</additionalOptions>
+                    <outputDirectory>${project.basedir}/javadoc</outputDirectory>
                 </configuration>
             </plugin>
         </plugins>

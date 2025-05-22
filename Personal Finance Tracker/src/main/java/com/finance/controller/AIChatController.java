@@ -12,6 +12,10 @@ import com.finance.service.AIChatService;
 
 import java.util.Optional;
 
+/**
+ * Controller for the AI Chat interface.
+ * Manages the display of chat messages and user input.
+ */
 public class AIChatController {
     @FXML private VBox chatContainer;
     @FXML private ScrollPane chatScrollPane;
@@ -21,6 +25,10 @@ public class AIChatController {
 
     private final AIChatService chatService = new AIChatService();
 
+    /**
+     * Initializes the controller after its root element has been completely processed.
+     * This method is automatically called after the fxml file has been loaded.
+     */
     @FXML
     private void initialize() {
         // Add tooltips to predefined buttons (if not set in FXML)

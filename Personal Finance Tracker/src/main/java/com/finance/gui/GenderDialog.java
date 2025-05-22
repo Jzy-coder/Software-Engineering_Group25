@@ -3,11 +3,18 @@ package com.finance.gui;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * A dialog for selecting the user's gender.
+ */
 public class GenderDialog extends JDialog {
     private ButtonGroup genderGroup;
     private JRadioButton maleButton;
     private JRadioButton femaleButton;
     
+    /**
+     * Constructs a new GenderDialog.
+     * @param parent The parent JFrame.
+     */
     public GenderDialog(JFrame parent) {
         super(parent, "Select the gender", true);
         initComponents();
@@ -15,6 +22,9 @@ public class GenderDialog extends JDialog {
         setLocationRelativeTo(parent);
     }
     
+    /**
+     * Initializes the components of the dialog.
+     */
     private void initComponents() {
         // Create gender radio buttons
         genderGroup = new ButtonGroup();
@@ -39,6 +49,9 @@ public class GenderDialog extends JDialog {
         }
     }
     
+    /**
+     * Sets up the layout of the dialog.
+     */
     private void setupLayout() {
         setLayout(new BorderLayout());
         
