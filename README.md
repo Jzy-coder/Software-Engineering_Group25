@@ -53,18 +53,29 @@ A comprehensive personal finance management application built with JavaFX, helpi
 - Current balance display
 - Quick access to all features
 
+### 8.Setting Interface
+
+-  Change of password and username
+- Change of user’s region
+- Change of user’s gender
+- Change of user’s occupation
+- Switch an account to login
+- Log out function
+
 ## Technical Details
 
 ### Technologies Used
-- Java 17
-- JavaFX 17
-- Maven
-- SQLite/JSON (Data Storage)
-- CSS (Interface Styling)
-- JFreeChart (Chart Display)
-- OpenCSV (CSV Operations)
-- SLF4J & Logback (Logging)
-- GSON (JSON Processing)
+- **Java 17** (Programming Language)
+- **JavaFX 17** (UI Framework)
+- **Maven** (Project Management and Build)
+- **SQLite/JSON** (Data Storage)
+- **CSS** (UI Styling)
+- **JFreeChart** (Chart Display)
+- **OpenCSV** (CSV Operations)
+- **SLF4J & Logback** (Logging)
+- **GSON** (JSON Processing)
+- **Git/GitHub** (Version Control and Code Management)
+- **JUnit 5** (Unit Testing Framework)
 
 ### Project Structure
 ```
@@ -73,10 +84,15 @@ src/
     java/
       com.finance/
         app/          # Application entry
+        component/    # Date range selector
         controller/   # MVC controllers
         model/       # Data models
         service/     # Business logic
         dao/         # Data access
+        event/       # Transaction events handling
+        result/      # Import results
+        service/     # Business services 
+        view/        # UI elements
         util/        # Utility classes
         gui/         # GUI components
     resources/
@@ -150,7 +166,8 @@ The application uses the following configuration files:
 3. Use income/expense management to record daily transactions
 4. Set financial goals in budget management
 5. Use analysis tools to view financial status
-6. Regularly backup important data
+6. Get financial advice with an AI financial assistant
+7. Regularly backup important data
 
 ## Future Plans
 1. Mobile support
@@ -175,7 +192,7 @@ The application uses the following configuration files:
 - Open source contributors
 
 ## Change Log
-### Version 3.0.0 (2025-05-12)
+### Version 4.0.0 (2025-05-21)
 - Core functionality implementation
 - Basic interface design
 - Data storage functionality
