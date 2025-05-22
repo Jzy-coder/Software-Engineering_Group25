@@ -9,11 +9,18 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * A custom dialog component for selecting a date range.
+ * It allows users to pick a start and end date from a list of available dates.
+ */
 public class DateRangeSelector extends Dialog<DateRangeSelector.DateRange> {
     private final DatePicker startDatePicker;
     private final DatePicker endDatePicker;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    /**
+     * A simple class to hold the selected start and end dates.
+     */
     public static class DateRange {
         private final LocalDate startDate;
         private final LocalDate endDate;
@@ -37,6 +44,13 @@ public class DateRangeSelector extends Dialog<DateRangeSelector.DateRange> {
         }
     }
 
+    /**
+     * Constructs a new DateRangeSelector dialog.
+     *
+     * @param availableDates A list of dates that are enabled for selection.
+     * @param initialStartDate The initial date to set for the start date picker.
+     * @param initialEndDate The initial date to set for the end date picker.
+     */
     public DateRangeSelector(List<LocalDate> availableDates, LocalDate initialStartDate, LocalDate initialEndDate) {
         setTitle("Select Date Range");
         setHeaderText("Please select start and end dates with transaction data");
@@ -104,6 +118,14 @@ public class DateRangeSelector extends Dialog<DateRangeSelector.DateRange> {
         });
     }
 
+    /**
+     * Displays the DateRangeSelector dialog and waits for the user's input.
+     *
+     * @param availableDates A list of dates that are enabled for selection.
+     * @param initialStartDate The initial date to set for the start date picker.
+     * @param initialEndDate The initial date to set for the end date picker.
+     * @return An Optional containing the selected DateRange if the user clicks 'Select', otherwise an empty Optional.
+     */
     public static Optional<DateRange> show(List<LocalDate> availableDates, LocalDate initialStartDate, LocalDate initialEndDate) {
         DateRangeSelector dialog = new DateRangeSelector(availableDates, initialStartDate, initialEndDate);
         return dialog.showAndWait();

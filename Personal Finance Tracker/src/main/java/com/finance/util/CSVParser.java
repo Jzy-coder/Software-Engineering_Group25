@@ -27,8 +27,6 @@ public class CSVParser {
     }
     
     private static final Logger logger = LoggerFactory.getLogger(CSVParser.class);
-    private static final DateTimeFormatter WECHAT_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    
     private static String mapChineseType(String chineseType) {
         switch(chineseType) {
             case "餐饮": return "Food";
@@ -59,7 +57,6 @@ public class CSVParser {
         long maxExistingId = transactionService.getAllTransactions().stream().mapToLong(Transaction::getId).max().orElse(0L);
 
         try (CSVReader reader = new CSVReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
-            // 跳过微信CSV文件头（前17行）
             for (int i = 0; i < 17; i++) {
                 reader.readNext();
             }
@@ -110,12 +107,9 @@ public class CSVParser {
                         date
                     );
 
-                    // 通过服务层获取事务ID
-                    // 从现有最大ID开始递增
 //long maxExistingId = transactionService.getAllTransactions().stream().mapToLong(Transaction::getId).max().orElse(0L);
 transaction.setId(++maxExistingId);
                     transactions.add(transaction);
-// 由于 TransactionService 中未定义 syncTransactionId(long) 方法，暂时注释掉该调用
 // transactionService.syncTransactionId(maxExistingId);
                 } catch (NumberFormatException e) {
                     logger.error("金额格式错误: {}", nextLine[4]);

@@ -53,6 +53,11 @@ public class TransactionDAO {
         }
     }
     
+    /**
+     * Constructs a TransactionDAO instance.
+     * Initializes Gson with a custom adapter for LocalDateTime, ensures the data directory exists,
+     * and initializes the user-specific data file.
+     */
     public TransactionDAO() {
         // Create custom TypeAdapter for LocalDateTime
         gson = new GsonBuilder()
@@ -93,10 +98,20 @@ public class TransactionDAO {
     /**
      * Update current user and switch data file
      */
+    /**
+     * Clears any cached data. Currently, this method is a placeholder.
+     */
     public void clearCache() {
         // Clear any cached data if needed
     }
     
+    /**
+     * Switches the current user context and updates the data file accordingly.
+     * If `isRename` is true, it attempts to rename the old user's data file to the new username.
+     *
+     * @param username The username to switch to.
+     * @param isRename True if the user is being renamed, false otherwise.
+     */
     public void switchUser(String username, boolean isRename) {
         String oldUsername = this.currentUsername;
         this.currentUsername = username;
@@ -125,6 +140,11 @@ public class TransactionDAO {
     /**
      *Get all transactions 
      */
+    /**
+     * Retrieves all transactions for the current user from the data file.
+     *
+     * @return A list of all transactions, or an empty list if an error occurs or the file is empty.
+     */
     public List<Transaction> getAllTransactions() {
         try (Reader reader = new FileReader(dataFile)) {
             Type type = new TypeToken<List<Transaction>>() {}.getType();
@@ -137,6 +157,13 @@ public class TransactionDAO {
     
     /**
      * Save new transaction
+     */
+    /**
+     * Saves a new transaction to the data file.
+     * Assigns a unique ID to the transaction before saving.
+     *
+     * @param transaction The transaction to save.
+     * @throws RuntimeException if saving to the file fails.
      */
     public void save(Transaction transaction) {
         List<Transaction> transactions = getAllTransactions();
@@ -158,6 +185,13 @@ public class TransactionDAO {
     /**
     * Update a transaction and persist changes
     */
+/**
+     * Updates an existing transaction in the data file.
+     * Finds the transaction by its ID and replaces it with the updated transaction.
+     *
+     * @param transaction The transaction with updated information.
+     * @throws RuntimeException if updating the file fails.
+     */
 public void update(Transaction transaction) {
     List<Transaction> transactions = getAllTransactions();
     for (int i = 0; i < transactions.size(); i++) {
@@ -176,6 +210,12 @@ public void update(Transaction transaction) {
 /**
  * Delete transaction by ID
  */
+/**
+     * Deletes a transaction from the data file by its ID.
+     *
+     * @param id The ID of the transaction to delete.
+     * @throws RuntimeException if deleting from the file fails.
+     */
 public void deleteById(Long id) {
     List<Transaction> transactions = getAllTransactions();
     transactions.removeIf(t -> t.getId().equals(id));
@@ -189,6 +229,14 @@ public void deleteById(Long id) {
 /**
  * Batch insert transactions with duplication check
  */
+/**
+     * Inserts a list of new transactions into the data file.
+     * Filters out transactions that are duplicates based on date, type, and amount before inserting.
+     * Assigns unique IDs to the new transactions.
+     *
+     * @param newTransactions The list of transactions to insert.
+     * @throws RuntimeException if saving to the file fails.
+     */
 public void batchInsert(List<Transaction> newTransactions) {
     List<Transaction> existing = getAllTransactions();
 
@@ -212,7 +260,13 @@ public void batchInsert(List<Transaction> newTransactions) {
     /**
      * Save transaction list to file
      */
-    public void saveToFile(List<Transaction> transactions) throws IOException {
+    /**
+     * Saves the list of transactions to the user's data file.
+     *
+     * @param transactions The list of transactions to save.
+     * @throws IOException if an I/O error occurs while writing to the file.
+     */
+    private void saveToFile(List<Transaction> transactions) throws IOException {
         try (Writer writer = new FileWriter(dataFile)) {
             gson.toJson(transactions, writer);
         } catch (IOException e) {
