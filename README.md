@@ -78,46 +78,50 @@ A comprehensive personal finance management application built with JavaFX, helpi
 - **JUnit 5** (Unit Testing Framework)
 
 ### Project Structure
----
- Personal Finance Tracker/
- ├── .settings/
- ├── UserInfo/
- ├── src/
- │   ├── main/
- │   │   ├── java/
- │   │   │   └── com.finance/
- │   │   │       ├── app/          # Application entry
- │   │   │       ├── component/    # Date range selector
- │   │   │       ├── controller/   # MVC controllers
- │   │   │       ├── model/       # Data models
- │   │   │       ├── service/     # Business logic
- │   │   │       ├── dao/         # Data access
- │   │   │       ├── event/       # Transaction events handling
- │   │   │       ├── result/      # Import results
- │   │   │       ├── view/        # UI elements
- │   │   │       ├── util/        # Utility classes
- │   │   │       └── gui/         # GUI components
- │   │   └── resources/
- │   │       ├── fxml/         # JavaFX layout files
- │   │       ├── css/          # Stylesheets
- │   │       └── config/       # Configuration files
- │   └── test/
- │       └── java/
- ├── target/
- │   ├── classes/
- │   │   ├── com/
- │   │   ├── config/
- │   │   ├── css/
- │   │   └── fxml/
- │   ├── lib/
- │   └── test-classes/
- │       └── com/
- ├── .classpath
- ├── .project
- ├── dependency-reduced-pom.xml
- ├── pom.xml
- └── settings.xml
----
+```
+Personal Finance Tracker/
+├── .settings/
+│   ├── org.eclipse.core.resources.prefs
+│   ├── org.eclipse.jdt.apt.core.prefs
+│   ├── org.eclipse.jdt.core.prefs
+│   └── org.eclipse.m2e.core.prefs
+├── UserInfo/
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── com.finance/
+│   │   │       ├── app/ # Application entry
+│   │   │       ├── component/ # Date range selector
+│   │   │       ├── controller/ # MVC controllers
+│   │   │       ├── model/ # Data models
+│   │   │       ├── service/ # Business logic
+│   │   │       ├── dao/ # Data access
+│   │   │       ├── event/ # Transaction events handling
+│   │   │       ├── result/ # Import results
+│   │   │       ├── view/ # UI elements
+│   │   │       ├── util/ # Utility classes
+│   │   │       └── gui/ # GUI components
+│   │   └── resources/
+│   │       ├── fxml/ # JavaFX layout files
+│   │       ├── css/ # Stylesheets
+│   │       └── config/ # Configuration files
+│   └── test/
+│       └── java/
+├── target/
+│   ├── classes/
+│   │   ├── com/
+│   │   ├── config/
+│   │   ├── css/
+│   │   └── fxml/
+│   ├── lib/
+│   └── test-classes/
+│       └── com/
+├── .classpath
+├── .project
+├── dependency-reduced-pom.xml
+├── pom.xml
+└── settings.xml
+```
 
 ### Build and Run
 ```bash
