@@ -90,8 +90,7 @@ src/
         service/     # Business logic
         dao/         # Data access
         event/       # Transaction events handling
-        result/      # Import results
-        service/     # Business services 
+        result/      # Import results 
         view/        # UI elements
         util/        # Utility classes
         gui/         # GUI components
