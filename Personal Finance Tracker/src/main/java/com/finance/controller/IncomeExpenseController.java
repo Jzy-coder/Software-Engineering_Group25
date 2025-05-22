@@ -171,8 +171,11 @@ public class IncomeExpenseController implements Initializable {
                         }
                     }
                     transactionTable.setItems(filtered);
+                    transactionTable.refresh();
                 } else {
                     transactionTable.setItems(transactionList);
+                    transactionTable.refresh();
+        transactionTable.refresh();
                 }
             });
         }
@@ -309,6 +312,7 @@ public class IncomeExpenseController implements Initializable {
             }
         }
         transactionTable.setItems(todayTransactions);
+        transactionTable.refresh();
     }
     
     /**
@@ -399,6 +403,8 @@ if (amountField.getText() == null || amountField.getText().trim().isEmpty()) {
             transactionList.clear();
             transactionList.addAll(transactionService.getTransactionsByDateRange(startDate, endDate));
             transactionTable.setItems(transactionList);
+                    transactionTable.refresh();
+        transactionTable.refresh();
         } catch (Exception e) {
             logger.error("Failed to update the time period statistics information.", e);
             showAlert("Failed to update the time period statistics information.: " + e.getMessage());
