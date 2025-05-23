@@ -17,8 +17,8 @@ public class BudgetPlan {
         this.startDate = startDate;
         this.endDate = endDate;
         this.category = category;
-        this.progress = 0.0; // 初始进度为0
-        this.doneAmount = 0.0; // 初始已完成金额为0
+        this.progress = 0.0; 
+        this.doneAmount = 0.0; 
     }
 
     

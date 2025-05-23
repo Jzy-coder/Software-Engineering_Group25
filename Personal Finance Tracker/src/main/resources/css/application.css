@@ -1,10 +1,8 @@
-/* 全局样式 */
 .root {
     -fx-font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
     -fx-background-color: #f8f9fa;
 }
 
-/* 侧边栏样式 */
 .sidebar {
     -fx-background-color: #343a40;
     -fx-padding: 15px;
@@ -33,7 +31,6 @@
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 1);
 }
 
-/* 按钮样式 */
 .button {
     -fx-background-color: #4e73df;
     -fx-text-fill: white;
@@ -59,7 +56,7 @@
     -fx-scale-y: 0.98;
 }
 
-/* 特殊按钮样式 */
+
 .primary-button {
     -fx-background-color: linear-gradient(to bottom, #4e73df, #224abe);
     -fx-text-fill: white;
@@ -80,7 +77,6 @@
     -fx-text-fill: white;
 }
 
-/* 输入框样式 */
 .text-field, .text-area, .combo-box {
     -fx-background-color: white;
     -fx-border-color: #d1d3e2;
@@ -90,7 +86,6 @@
     -fx-transition: all 0.3s ease;
 }
 
-/* 浮动下拉框样式 */
 .floating-combo-box {
     -fx-background-color: white;
     -fx-border-color: #d1d3e2;
@@ -142,7 +137,6 @@
     -fx-effect: dropshadow(three-pass-box, rgba(78,115,223,0.2), 5, 0, 0, 2);
 }
 
-/* 单选按钮样式 */
 .radio-button {
     -fx-text-fill: #5a5c69;
     -fx-font-size: 14px;
@@ -166,7 +160,6 @@
     -fx-background-radius: 50%;
 }
 
-/* 日期选择器样式 */
 .date-picker {
     -fx-background-color: white;
     -fx-border-color: #d1d3e2;
@@ -189,7 +182,6 @@
     -fx-effect: none;
 }
 
-/* 表格样式 */
 .table-view {
     -fx-background-color: white;
     -fx-border-color: #e3e6f0;
@@ -212,7 +204,6 @@
     -fx-text-fill: white;
 }
 
-/* 卡片样式 */
 .card {
     -fx-background-color: white;
     -fx-background-radius: 8px;
@@ -223,7 +214,6 @@
 } 
 
   
-/* 标签样式 */
 .label {
     -fx-text-fill: #5a5c69;
 }
@@ -234,37 +224,29 @@
     -fx-text-fill: #4e73df;
 }
 
-/* 分隔线样式 */
 .separator {
     -fx-background-color: #e3e6f0;
 }
 
-/* 进度条样式 */
-/* 进度条轨道 */
 .progress-bar > .track {
     -fx-background-color: #f0f0f0;
     -fx-background-radius: 8;
 }
 
-/* 默认填充色（绿色，≥60%） */
-/* 安全状态（绿色，≥60%） */
 .progress-bar.safe > .bar {
     -fx-background-color: #4CAF50;
     -fx-background-radius: 8;
     -fx-background-insets: 2;
 }
 
-/* 警告状态（红色，<40%） */
 .progress-bar.warning > .bar {
     -fx-background-color: #FF5722 ;
 }
 
-/* 注意状态（黄色，40%-60%） */
 .progress-bar.caution > .bar {
     -fx-background-color: #FFC107;
 }
 
-/* 百分比标签样式 */
 .progress-label {
     -fx-font-size: 14px;
     -fx-font-weight: bold;
@@ -275,7 +257,6 @@
     transition: -fx-background-color 0.3s ease;
 }
 
-/* 工具提示样式 */
 .tooltip {
     -fx-background-color: #4e73df;
     -fx-text-fill: white;
@@ -284,7 +265,6 @@
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 2);
 }
 
-/* 弹窗样式 */
 .dialog-pane {
     -fx-background-color: white;
     -fx-background-radius: 8px;
@@ -336,7 +316,6 @@
     -fx-spacing: 10px;
 }
 
-/* Alert样式 */
 .alert {
     -fx-background-color: white;
     -fx-background-radius: 8px;
@@ -383,7 +362,6 @@
     -fx-background-color: #f6c23e;
 }
 
-/* 日期选择器弹窗样式 */
 .date-picker-popup {
     -fx-background-color: white;
     -fx-background-radius: 4px;
@@ -442,7 +420,6 @@
     -fx-border-color: #4e73df;
 }
 
-/* 图表样式 */
 .chart {
     -fx-background-color: transparent;
     -fx-padding: 10px;
@@ -481,7 +458,6 @@
 .default-color3.chart-pie { -fx-pie-color: #f6c23e; }
 .default-color4.chart-pie { -fx-pie-color: #e74a3b; }
 
-/* AI Chat Styles */
 .header {
     -fx-padding: 15px;
     -fx-background-color: #4e73df;

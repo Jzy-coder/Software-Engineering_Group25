@@ -17,6 +17,10 @@ public class BudgetDataManager {
     private static final String BUDGET_HISTORY_FILE_TEMPLATE = "%s_budget_history.dat";
     
     
+    /**
+     * Saves the current budget for the logged-in user.
+     * @param budget The Budget object to save.
+     */
     public static void saveBudget(Budget budget) {
         try {
             Files.createDirectories(DATA_DIR); // Auto create directory
@@ -28,7 +32,6 @@ public class BudgetDataManager {
                 System.out.println("Budget saved to: " + budgetFile.toAbsolutePath());
             }
             
-            // 不在这里自动添加到历史记录，而是由调用方决定是否添加
         } catch (IOException e) {
             System.err.println("Failed to save budget: " + e.getMessage());
             e.printStackTrace();
@@ -36,9 +39,11 @@ public class BudgetDataManager {
     }
     
     /**
-     * 将预算添加到历史记录中
-     * 此方法应该只在创建新预算时调用，而不是在修改计划时调用
-     * @param budget 要添加到历史记录的预算
+     * @param budget 
+     */
+    /**
+     * Adds a budget to the history list for the logged-in user.
+     * @param budget The Budget object to add to history.
      */
     public static void addBudgetToHistory(Budget budget) {
         if (budget == null) return;
@@ -60,6 +65,10 @@ public class BudgetDataManager {
         saveBudgetHistory(history);
     }
 
+    /**
+     * Loads the current budget for the logged-in user.
+     * @return The loaded Budget object, or null if no budget file is found or loading fails.
+     */
     public static Budget loadBudget() {
         String currentUsername = com.finance.gui.LoginManager.getCurrentUsername();
         Path budgetFile = DATA_DIR.resolve(String.format(BUDGET_FILE_TEMPLATE, currentUsername));
@@ -80,8 +89,13 @@ public class BudgetDataManager {
         }
     }
 
+    /**
+     * Handles the renaming of budget and budget history files when a username changes.
+     * @param oldUsername The previous username.
+     * @param newUsername The new username.
+     */
     public static void handleUsernameChange(String oldUsername, String newUsername) {
-        // 处理预算文件重命名
+        // rename budget file
         Path oldBudgetFile = DATA_DIR.resolve(String.format(BUDGET_FILE_TEMPLATE, oldUsername));
         Path newBudgetFile = DATA_DIR.resolve(String.format(BUDGET_FILE_TEMPLATE, newUsername));
         
@@ -94,7 +108,7 @@ public class BudgetDataManager {
             }
         }
         
-        // 处理预算历史文件重命名
+        // handle history file renaming if neede
         Path oldHistoryFile = DATA_DIR.resolve(String.format(BUDGET_HISTORY_FILE_TEMPLATE, oldUsername));
         Path newHistoryFile = DATA_DIR.resolve(String.format(BUDGET_HISTORY_FILE_TEMPLATE, newUsername));
         
@@ -108,6 +122,10 @@ public class BudgetDataManager {
         }
     }
     
+    /**
+     * Saves the list of budget history for the logged-in user.
+     * @param budgetHistory The list of Budget objects representing the history.
+     */
     public static void saveBudgetHistory(List<Budget> budgetHistory) {
         try {
             Files.createDirectories(DATA_DIR);
@@ -124,6 +142,10 @@ public class BudgetDataManager {
         }
     }
     
+    /**
+     * Loads the list of budget history for the logged-in user.
+     * @return The list of historical Budget objects, or an empty list if no history file is found or loading fails.
+     */
     public static List<Budget> loadBudgetHistory() {
         String currentUsername = com.finance.gui.LoginManager.getCurrentUsername();
         Path historyFile = DATA_DIR.resolve(String.format(BUDGET_HISTORY_FILE_TEMPLATE, currentUsername));
@@ -134,6 +156,7 @@ public class BudgetDataManager {
         }
 
         try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(historyFile))) {
+            @SuppressWarnings("unchecked")
             List<Budget> budgetHistory = (List<Budget>) ois.readObject();
             System.out.println("Budget history loaded from: " + historyFile.toAbsolutePath());
             return budgetHistory;
@@ -145,10 +168,9 @@ public class BudgetDataManager {
     }
     
     /**
-     * 更新预算历史记录中的特定预算项
-     * 此方法在编辑预算时调用，确保历史记录中的预算也得到更新
-     * @param oldBudget 编辑前的预算（用于查找匹配项）
-     * @param newBudget 编辑后的预算
+     * Updates a budget entry in the history list.
+     * @param oldBudget The old Budget object to find in history.
+     * @param newBudget The new Budget object with updated details.
      */
     public static void updateBudgetInHistory(Budget oldBudget, Budget newBudget) {
         if (oldBudget == null || newBudget == null) return;
@@ -156,15 +178,15 @@ public class BudgetDataManager {
         List<Budget> history = loadBudgetHistory();
         boolean found = false;
         
-        // 查找匹配的预算项并更新
+        // find and update the budget in history
         for (int i = 0; i < history.size(); i++) {
             Budget historyBudget = history.get(i);
-            // 通过名称和金额匹配确定是同一预算项
+            // ensure the budget is the same
             if (historyBudget.getName().equals(oldBudget.getName()) && 
                 Math.abs(historyBudget.getPlannedAmount() - oldBudget.getPlannedAmount()) < 0.01 && 
                 Math.abs(historyBudget.getActualAmount() - oldBudget.getActualAmount()) < 0.01) {
                 
-                // 更新历史记录中的预算项
+                // update the budget
                 historyBudget.setName(newBudget.getName());
                 historyBudget.setPlannedAmount(newBudget.getPlannedAmount());
                 historyBudget.setActualAmount(newBudget.getActualAmount());
@@ -175,11 +197,11 @@ public class BudgetDataManager {
             }
         }
         
-        // 如果没有找到匹配项，则添加为新项
+        // if not found, add the new budget to history
         if (!found) {
             addBudgetToHistory(newBudget);
         } else {
-            // 保存更新后的历史记录
+            // store the updated history back to the file
             saveBudgetHistory(history);
         }
     }

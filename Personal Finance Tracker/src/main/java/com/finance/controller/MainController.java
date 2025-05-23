@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import com.finance.controller.AnalysisController;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -15,7 +14,8 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.StackPane;
 
 /**
- * Main Interface Controller
+ * Controller for the main application interface.
+ * Manages the content area where different views (Welcome, Income/Expense, Budget, etc.) are loaded.
  */
 public class MainController implements Initializable {
     
@@ -25,9 +25,17 @@ public class MainController implements Initializable {
     @FXML
     private StackPane contentArea;
     
+    /**
+     * Initializes the controller after its root element has been completely processed.
+     * This method is automatically called after the fxml file has been loaded.
+     *
+     * @param location The location used to resolve relative paths for the root object, or
+     *                 null if the location is not known.
+     * @param resources The resources used to localize the root object, or null if
+     *                  the root object was not localized.
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // ?????????????????
         showWelcomeView();
     }
     
@@ -119,24 +127,6 @@ public class MainController implements Initializable {
             String errorMessage = String.format("An unexpected error occurred while loading view: %s\nFXML Path: %s\nException: %s", 
                                               e.getMessage(), fxmlPath, e.getClass().getName());
             showAlert(errorMessage);
-        }
-    }
-    
-    /**
-     * Show under development message for features not yet implemented
-     */
-    private void showUnderDevelopmentMessage(String feature) {
-        try {
-            // Clean up current view controller resources
-            cleanupCurrentController();
-            
-            // Create a simple view with a message
-            Parent view = FXMLLoader.load(getClass().getResource("/fxml/UnderDevelopmentView.fxml"));
-            contentArea.getChildren().clear();
-            contentArea.getChildren().add(view);
-        } catch (IOException e) {
-            // If the view doesn't exist, just show an alert
-            showAlert(feature + " feature is under development.");
         }
     }
     

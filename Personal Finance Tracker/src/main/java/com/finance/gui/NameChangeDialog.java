@@ -2,7 +2,6 @@ package com.finance.gui;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.io.*;
 import java.util.Properties;
 
@@ -45,14 +44,14 @@ public class NameChangeDialog extends JDialog {
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(400, 200));
 
-        // 创建主面板
+     
         JPanel mainPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(15, 15, 15, 15);
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
 
-        // 添加输入框
+       
         JLabel label = new JLabel("New Username:");
         label.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
         usernameField = new JTextField(20);
@@ -68,12 +67,12 @@ public class NameChangeDialog extends JDialog {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         mainPanel.add(usernameField, gbc);
 
-        // 创建按钮面板
+        
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JButton applyButton = new JButton("Apply");
         JButton cancelButton = new JButton("Back");
 
-        // 设置按钮样式
+        
         Dimension buttonSize = new Dimension(80, 30);
         Font buttonFont = new Font("Microsoft YaHei", Font.PLAIN, 14);
 
@@ -82,7 +81,7 @@ public class NameChangeDialog extends JDialog {
         applyButton.setFont(buttonFont);
         cancelButton.setFont(buttonFont);
 
-        // 添加应用按钮事件
+     
         applyButton.addActionListener(e -> {
             String newUsername = usernameField.getText().trim();
             if (validateUsername(newUsername)) {
@@ -91,17 +90,17 @@ public class NameChangeDialog extends JDialog {
             }
         });
 
-        // 添加返回按钮事件
+        
         cancelButton.addActionListener(e -> dispose());
 
         buttonPanel.add(applyButton);
         buttonPanel.add(cancelButton);
 
-        // 添加面板到对话框
+    
         add(mainPanel, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
 
-        // 设置对话框属性
+     
         pack();
         setLocationRelativeTo(getParent());
         setResizable(false);
@@ -116,13 +115,13 @@ public class NameChangeDialog extends JDialog {
             JOptionPane.showMessageDialog(this, "Username cannot exceed 20 characters", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
-        // 验证用户名只能包含字母、数字和下划线
+       
         if (!username.matches("^[a-zA-Z0-9_]+$")) {
             JOptionPane.showMessageDialog(this, "Username can only contain letters, numbers, and underscores", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
         
-        // 检查新用户名是否已存在
+       
         File targetUserFile = new File(System.getProperty("user.dir") + File.separator + "target" + File.separator + "UserInfo" + File.separator + username + ".txt");
         if (targetUserFile.exists() && !username.equals(LoginManager.getCurrentUsername())) {
             JOptionPane.showMessageDialog(this, "Username already exists, please use a different username", "Error", JOptionPane.ERROR_MESSAGE);
@@ -135,18 +134,18 @@ public class NameChangeDialog extends JDialog {
     private void updateUsername(String newUsername) {
         String oldUsername = LoginManager.getCurrentUsername();
         
-        // 只有当新旧用户名不同时才进行修改
+       
         if (!oldUsername.equals(newUsername)) {
             try {
-                // 获取旧用户文件路径
+               
                 File oldUserFile = new File(System.getProperty("user.dir") + File.separator + "target" + File.separator + "UserInfo" + File.separator + oldUsername + ".txt");
                 File oldUserFileInCurrentDir = new File(System.getProperty("user.dir") + File.separator + "UserInfo" + File.separator + oldUsername + ".txt");
                 
-                // 获取新用户文件路径
+               
                 File newUserFile = new File(System.getProperty("user.dir") + File.separator + "target" + File.separator + "UserInfo" + File.separator + newUsername + ".txt");
                 File newUserFileInCurrentDir = new File(System.getProperty("user.dir") + File.separator + "UserInfo" + File.separator + newUsername + ".txt");
                 
-                // 确保UserInfo目录存在
+              
                 File targetUserInfoDir = new File(System.getProperty("user.dir") + File.separator + "target" + File.separator + "UserInfo");
                 File currentUserInfoDir = new File(System.getProperty("user.dir") + File.separator + "UserInfo");
                 if (!targetUserInfoDir.exists()) {
@@ -157,7 +156,7 @@ public class NameChangeDialog extends JDialog {
                 }
                 
                 if (oldUserFile.exists()) {
-                    // 读取旧文件内容
+                    
                     java.util.List<String> lines = new java.util.ArrayList<>();
                     try (BufferedReader reader = new BufferedReader(new FileReader(oldUserFile))) {
                         String line;
@@ -169,20 +168,20 @@ public class NameChangeDialog extends JDialog {
                         }
                     }
                     
-                    // 写入新文件
+                   
                     try (PrintWriter writer = new PrintWriter(new FileWriter(newUserFile))) {
                         for (String line : lines) {
                             writer.println(line);
                         }
                     }
                     
-                    // 删除旧文件
+                    
                     oldUserFile.delete();
                 }
                 
-                // 同样处理当前目录下的用户文件
+                
                 if (oldUserFileInCurrentDir.exists()) {
-                    // 读取旧文件内容
+                   
                     java.util.List<String> lines = new java.util.ArrayList<>();
                     try (BufferedReader reader = new BufferedReader(new FileReader(oldUserFileInCurrentDir))) {
                         String line;
@@ -194,25 +193,25 @@ public class NameChangeDialog extends JDialog {
                         }
                     }
                     
-                    // 写入新文件
+                 
                     try (PrintWriter writer = new PrintWriter(new FileWriter(newUserFileInCurrentDir))) {
                         for (String line : lines) {
                             writer.println(line);
                         }
                     }
                     
-                    // 删除旧文件
+                   
                     oldUserFileInCurrentDir.delete();
                 }
                 
-                // 更新当前用户名
+             
                 LoginManager.setCurrentUsername(newUsername);
                 
-                // 更新配置文件中的用户名
+             
                 String oldKey = oldUsername + ".username";
                 String newKey = newUsername + ".username";
                 
-                // 迁移密码属性
+                
                 String oldPasswordKey = oldUsername + ".original_password";
                 String newPasswordKey = newUsername + ".original_password";
                 
@@ -228,7 +227,7 @@ public class NameChangeDialog extends JDialog {
                 userProps.setProperty(newKey, newUsername);
                 saveConfig();
                 
-                // 更新欢迎标签
+                
                 welcomeLabel.setText("Hi~ " + newUsername);
                 
                 JOptionPane.showMessageDialog(this, "Username changed successfully", "Success", JOptionPane.INFORMATION_MESSAGE);
@@ -237,7 +236,7 @@ public class NameChangeDialog extends JDialog {
                 JOptionPane.showMessageDialog(this, "Error occurred while changing username", "Error", JOptionPane.ERROR_MESSAGE);
             }
         } else {
-            // 用户名没有变化，直接返回
+            
             JOptionPane.showMessageDialog(this, "New username is the same as current username, no changes made", "Information", JOptionPane.INFORMATION_MESSAGE);
         }
     }

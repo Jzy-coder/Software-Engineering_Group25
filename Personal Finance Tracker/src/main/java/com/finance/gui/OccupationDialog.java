@@ -17,7 +17,7 @@ public class OccupationDialog extends JDialog {
         occupationField = new JTextField(20);
         occupationField.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
         
-        // 设置当前保存的职业
+        // setup default value
         String currentOccupation = UserInfoManager.getOccupation();
         if (currentOccupation != null && !currentOccupation.isEmpty()) {
             occupationField.setText(currentOccupation);
@@ -27,19 +27,19 @@ public class OccupationDialog extends JDialog {
     private void setupLayout() {
         setLayout(new BorderLayout());
         
-        // 创建输入面板
+        // create input panel
         JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         JLabel label = new JLabel("Occupation:");
         label.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
         inputPanel.add(label);
         inputPanel.add(occupationField);
         
-        // 创建按钮面板
+        // create button panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         JButton applyButton = new JButton("Apply");
         JButton cancelButton = new JButton("Return");
         
-        // 设置按钮字体和大小
+        // setup button font and size
         Font buttonFont = new Font("Microsoft YaHei", Font.PLAIN, 14);
         Dimension buttonSize = new Dimension(80, 30);
         
@@ -48,7 +48,7 @@ public class OccupationDialog extends JDialog {
         applyButton.setPreferredSize(buttonSize);
         cancelButton.setPreferredSize(buttonSize);
         
-        // 添加按钮事件
+        // add action listener
         applyButton.addActionListener(e -> {
             String occupation = occupationField.getText().trim();
             if (!occupation.isEmpty()) {
@@ -62,11 +62,11 @@ public class OccupationDialog extends JDialog {
         buttonPanel.add(applyButton);
         buttonPanel.add(cancelButton);
         
-        // 添加到主面板
+        // add panels to dialog
         add(inputPanel, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
         
-        // 设置对话框大小
+        // set dialog properties
         setSize(300, 150);
     }
 }

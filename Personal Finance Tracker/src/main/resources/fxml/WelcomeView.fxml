@@ -10,19 +10,19 @@
 
 <AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.finance.controller.WelcomeController">
     <VBox spacing="20" alignment="CENTER" layoutX="50" layoutY="50" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50">
-        <!-- ???????? -->
+        
         <Label fx:id="userNameLabel" text="Hi, User's Name ~" styleClass="label-heading" />
 
-        <!-- ????? -->
+        
         <Label fx:id="totalTodayExpenditureLabel" text="Today's total expenditure is: 0.00 yuan" />
 
-        <!-- ??? -->
+       
         <Label fx:id="balanceLabel" text="Your balance is: 0.00 yuan short of your deposit target." />
 
-        <!-- ?????????? -->
+        
         <Label text="This is your transaction record for today" styleClass="label-heading" style="-fx-font-size: 16px;" />
 
-        <!-- ??????????????HBox?зр??з╡? -->
+       
         <HBox alignment="CENTER">
             <TableView fx:id="expenditureDetailsTable" prefWidth="500" styleClass="table-view">
                 <columns>

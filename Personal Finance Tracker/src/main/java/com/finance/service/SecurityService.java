@@ -21,8 +21,5 @@ public class SecurityService {
     }
     
     public void savePassword(String username, String password) {
-        String hashedPassword = hashPassword(password);
-        // 实现密码保存逻辑，建议使用加密存储
-        // TODO: 实现安全的密码存储
     }
 }

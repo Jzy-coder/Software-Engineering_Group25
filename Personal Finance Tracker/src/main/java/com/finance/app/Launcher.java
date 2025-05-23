@@ -1,8 +1,6 @@
 package com.finance.app;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 /**
@@ -37,6 +35,12 @@ public class Launcher {
      * Sets up JavaFX modules by determining the correct module path.
      * This is necessary when running from an executable where the JavaFX libraries
      * might be in a different location than during development.
+     *
+     * This method attempts to locate the JavaFX libraries in `target/lib` or `lib` directories
+     * relative to the executable's location and sets the `javafx.module.path` system property.
+     * It also sets other necessary system properties for JavaFX.
+     *
+     * @throws RuntimeException if JavaFX libraries are not found in the expected locations.
      */
     private static void setupJavaFXModules() {
         try {
